@@ -1,0 +1,407 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{# display name map used in multiple places #}
+{% set DN = {
+  'total_cholesterol': 'Total Chol.',
+  'ldl_cholesterol':   'LDL',
+  'hdl_cholesterol':   'HDL',
+  'triglycerides':     'Triglycerides',
+  'fasting_glucose':   'Fasting Glucose',
+  'hba1c':             'HbA1c',
+  'hs_crp':            'hs-CRP',
+  'egfr':              'eGFR',
+  'creatinine':        'Creatinine',
+  'alt':               'ALT',
+  'ast':               'AST',
+  'tsh':               'TSH',
+  'vitamin_d':         'Vitamin D',
+  'hemoglobin':        'Hemoglobin',
+  'uric_acid':         'Uric Acid',
+  'ferritin':          'Ferritin',
+  'albumin':           'Albumin'
+} %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="dash-header">
+  <div>
+    <div class="dash-greeting">Welcome back, <span>{{ user.username }}</span></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap;">
+      {% if user.smartwatch %}
+        <div class="watch-badge connected"><div class="dot dot-green"></div>{{ user.smartwatch|capitalize }} connected</div>
+      {% else %}
+        <div class="watch-badge disconnected"><div class="dot dot-gray"></div>No watch connected</div>
+      {% endif %}
+      <span class="muted" style="font-size:13px;">{{ today }}</span>
+      <span class="tag tag-teal" style="font-size:11px;">{{ daily_count }} day{{ 's' if daily_count != 1 }} logged</span>
+    </div>
+  </div>
+  <div class="dash-actions">
+    <a href="{{ url_for('labs') }}" class="btn btn-ghost btn-sm">+ Lab Results</a>
+    <button class="btn btn-sm" id="syncBtn" type="button">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Sync Watch
+    </button>
+  </div>
+</div>
+
+<!-- Profile bar -->
+{% if profile_pct < 100 %}
+<div class="completion-row" style="margin-bottom:14px;">
+  <div class="completion-label" style="min-width:130px;">Profile complete</div>
+  <div class="completion-bar">
+    <div class="prog-wrap"><div class="prog-fill prog-teal" style="width:0%" data-target="{{ profile_pct }}"></div></div>
+  </div>
+  <div class="completion-pct">{{ profile_pct }}%</div>
+  <a href="{{ url_for('profile') }}" class="btn btn-ghost btn-sm">Edit →</a>
+</div>
+{% endif %}
+
+<!-- Gating banner: pick the most relevant gate across all 3 diseases -->
+{% set gates = [] %}
+{% for name, data in risk.items() %}
+  {% if not name.startswith('_') and data.gate is defined %}
+    {% set _ = gates.append(data.gate) %}
+  {% endif %}
+{% endfor %}
+
+{% if 'profile' in gates %}
+<div class="alert alert-warning" style="margin-bottom:14px;">
+  <span>⚠</span>
+  <div>Complete your profile (age, sex, height, weight) to unlock risk score calculations.
+  <a href="{{ url_for('profile') }}" style="color:var(--amber);margin-left:6px;font-weight:600;">Go to Profile →</a></div>
+</div>
+{% elif 'daily_log' in gates %}
+<div class="alert alert-info" style="margin-bottom:14px;">
+  <span>📅</span>
+  <div>
+    <strong>{{ daily_count }}/7 days logged.</strong>
+    Log daily health data for 7 days minimum before predictions are shown — this ensures they reflect your real habits, not a single day.
+    <div class="prog-wrap" style="margin-top:7px;max-width:240px;">
+      <div class="prog-fill prog-teal" style="width:0%" data-target="{{ (daily_count / 7 * 100)|int }}"></div>
+    </div>
+  </div>
+</div>
+{% elif 'labs' in gates %}
+<div class="alert alert-warning" style="margin-bottom:14px;">
+  <span>🔬</span>
+  <div>
+    <strong>Lab results required.</strong>
+    Enter at least one blood test panel to unlock predictions.
+    <a href="{{ url_for('labs') }}" style="color:var(--amber);margin-left:6px;font-weight:600;">Add Labs →</a>
+  </div>
+</div>
+{% endif %}
+
+<!-- Health Age + Stats -->
+<div class="grid-2" style="margin-bottom:14px;">
+
+  {% if risk._health_age and risk._health_age.health_age %}
+  {% set ha = risk._health_age %}
+  <div class="health-age-card">
+    <div>
+      <div class="ha-number" style="color:var(--{{ ha.color }});">{{ ha.health_age }}</div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:2px;">Health Age (est.)</div>
+    </div>
+    <div class="ha-detail">
+      <div class="ha-delta" style="color:var(--{{ ha.color }});">
+        {% if ha.delta > 0 %}+{{ ha.delta }} yrs vs your age
+        {% elif ha.delta < 0 %}{{ ha.delta }} yrs (biologically younger)
+        {% else %}On par with chronological age{% endif %}
+      </div>
+      <div class="ha-verdict muted">{{ ha.verdict }}</div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:4px;">{{ ha.note }}</div>
+    </div>
+  </div>
+  {% else %}
+  <div class="health-age-card">
+    <div class="ha-number" style="color:var(--text-3);">—</div>
+    <div class="ha-detail muted">Complete your profile to see estimated Health Age</div>
+  </div>
+  {% endif %}
+
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div class="grid-3" style="gap:10px;">
+      <div class="stat-box">
+        <div class="stat-label">Avg Sleep</div>
+        <div class="stat-value" style="color:var(--sky);">{{ stats.avg_sleep or '—' }}</div>
+        <div class="stat-sub">hrs / night</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Avg Steps</div>
+        <div class="stat-value" style="color:var(--teal);">
+          {% if stats.avg_steps %}{{ '{:,}'.format(stats.avg_steps) }}{% else %}—{% endif %}
+        </div>
+        <div class="stat-sub">last 30 days</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Avg Stress</div>
+        <div class="stat-value" style="color:{% if (stats.avg_stress or 10) < 4 %}var(--green){% elif (stats.avg_stress or 0) < 7 %}var(--orange){% else %}var(--red){% endif %};">
+          {{ stats.avg_stress or '—' }}
+        </div>
+        <div class="stat-sub">/ 10 scale</div>
+      </div>
+    </div>
+    {% if stats.avg_steps %}
+    <div class="card" style="margin:0;padding:14px 16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:13px;color:var(--text-2);">Daily step goal</span>
+        <span class="mono" style="font-size:12px;color:var(--teal);">{{ '{:,}'.format(stats.avg_steps) }} / {{ '{:,}'.format(goals.steps) }}</span>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-fill prog-teal" style="width:0%" data-target="{{ [100, (stats.avg_steps / goals.steps * 100)|int]|min }}"></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Risk Scores -->
+<div class="card" style="margin-bottom:14px;">
+  <div class="card-head">
+    <h3>Evidence-Based Risk Scores</h3>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="tag tag-teal" style="font-size:11px;">Clinical Algorithms</span>
+      {% if daily_count >= 7 %}
+        <span class="tag tag-green" style="font-size:11px;">✓ {{ daily_count }} days</span>
+      {% else %}
+        <span class="tag tag-gray" style="font-size:11px;">{{ daily_count }}/7 days</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:12px;">
+  {% for name, data in risk.items() %}
+  {% if not name.startswith('_') %}
+
+  <div class="risk-card color-{{ data.color or 'gray' }}">
+    <div class="risk-name">{{ name }}</div>
+
+    {% set has_score = (data.risk_pct is not none and data.risk_pct != None) or
+                       (data.relative_risk is not none and data.relative_risk != None) %}
+
+    {% if has_score %}
+      <!-- Score available -->
+      {% if data.relative_risk is defined and data.relative_risk != None and name == 'Cancer' %}
+        <div class="risk-pct" style="color:var(--{{ data.color }});">{{ data.relative_risk }}×</div>
+        <div class="risk-gauge">
+          <div class="risk-gauge-fill" style="width:0%"
+               data-target="{{ [100, (data.relative_risk / 3 * 100)|int]|min }}"></div>
+        </div>
+        <div class="risk-category">{{ data.risk_category }}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px;">relative to avg. lifestyle</div>
+        {% if data.lifestyle_score is defined %}
+        <div style="margin-top:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-bottom:3px;">
+            <span>Lifestyle score</span><span>{{ data.lifestyle_score }}/100</span>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-fill" style="width:0%;background:var(--{{ data.color }});" data-target="{{ data.lifestyle_score }}"></div>
+          </div>
+        </div>
+        {% endif %}
+      {% else %}
+        <div class="risk-pct" style="color:var(--{{ data.color }});">{{ data.risk_pct }}%</div>
+        <div class="risk-gauge">
+          {% if name == 'Diabetes' %}
+            <div class="risk-gauge-fill" style="width:0%" data-target="{{ [100, (data.risk_pct / 50 * 100)|int]|min }}"></div>
+          {% else %}
+            <div class="risk-gauge-fill" style="width:0%" data-target="{{ [100, (data.risk_pct / 30 * 100)|int]|min }}"></div>
+          {% endif %}
+        </div>
+        <div class="risk-category">{{ data.risk_category }}</div>
+        {% if name == 'Diabetes' and data.score is defined %}
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px;">FINDRISC {{ data.score }}/26</div>
+        {% endif %}
+      {% endif %}
+
+      {% if data.note %}
+        <div style="font-size:11px;color:var(--amber);margin-top:6px;line-height:1.4;">{{ data.note }}</div>
+      {% endif %}
+
+    {% else %}
+      <!-- Gated -->
+      <div class="risk-pct" style="color:var(--text-3);font-size:22px;margin:8px 0;">—</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text-2);">{{ data.risk_category }}</div>
+      {% if data.note %}
+        <div style="font-size:12px;color:var(--text-3);margin-top:6px;line-height:1.4;">{{ data.note }}</div>
+      {% endif %}
+      {% if data.gate == 'labs' or data.gate == 'labs_cholesterol' %}
+        <a href="{{ url_for('labs') }}" class="btn btn-ghost btn-sm" style="margin-top:10px;font-size:12px;display:inline-flex;">Add labs →</a>
+      {% elif data.gate == 'daily_log' %}
+        <div style="margin-top:8px;">
+          <div class="prog-wrap"><div class="prog-fill prog-teal" style="width:0%" data-target="{{ (daily_count / 7 * 100)|int }}"></div></div>
+        </div>
+      {% elif data.gate == 'profile' %}
+        <a href="{{ url_for('profile') }}" class="btn btn-ghost btn-sm" style="margin-top:10px;font-size:12px;display:inline-flex;">Complete profile →</a>
+      {% endif %}
+    {% endif %}
+
+    <!-- Expandable factors -->
+    {% if data.modifiable_factors and data.modifiable_factors|length > 0 %}
+    <button class="expand-btn" onclick="toggleExpand(this)" style="margin-top:10px;">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      {{ data.modifiable_factors|length }} modifiable factor{{ 's' if data.modifiable_factors|length != 1 }}
+    </button>
+    <div class="expand-body">
+      <ul class="factor-list">
+        {% for f in data.modifiable_factors %}
+        <li class="factor-item">
+          <div>
+            <div class="factor-name">{{ f.factor }}</div>
+            <div class="factor-action">{{ f.action }}</div>
+          </div>
+          <div class="factor-impact tag tag-orange" style="font-size:10px;white-space:nowrap;">{{ f.impact }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if data.source %}
+    <div class="source-cite">{{ data.source }}</div>
+    {% endif %}
+  </div>
+
+  {% endif %}
+  {% endfor %}
+  </div>
+
+  <div class="alert alert-warning" style="margin-top:4px;">
+    <span>⚕</span>
+    <div style="font-size:12px;">Statistical estimates only — not a medical diagnosis. Discuss results with your healthcare provider.</div>
+  </div>
+</div>
+
+<!-- Log Today + Latest Labs -->
+<div class="grid-2" style="margin-bottom:14px;">
+
+  <div class="card" style="margin:0;">
+    <div class="card-head">
+      <h3>Log Today</h3>
+      <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-3);">{{ today }}</span>
+    </div>
+    <form method="post" id="dailyForm" novalidate>
+      <div class="form-grid">
+        <div>
+          <label>Sleep (hours)</label>
+          <input name="sleep" type="number" step="0.25" min="0" max="24" placeholder="e.g. 7.5">
+        </div>
+        <div>
+          <label>Steps</label>
+          <input name="steps" type="number" min="0" placeholder="e.g. 8500">
+        </div>
+        <div>
+          <label>Active minutes</label>
+          <input name="active_minutes" type="number" min="0" placeholder="e.g. 45">
+        </div>
+        <div>
+          <label>Water (mL)</label>
+          <input name="water_ml" type="number" min="0" placeholder="e.g. 2000">
+        </div>
+        <div>
+          <label>Fruit servings</label>
+          <input name="fruit_servings" type="number" step="0.5" min="0" placeholder="e.g. 2">
+        </div>
+        <div>
+          <label>Veg servings</label>
+          <input name="veg_servings" type="number" step="0.5" min="0" placeholder="e.g. 3">
+        </div>
+        <div>
+          <label>Red meat servings</label>
+          <input name="red_meat_servings" type="number" step="0.5" min="0" placeholder="e.g. 1">
+        </div>
+        <div>
+          <label>Sugary drinks (mL)</label>
+          <input name="sugar_drinks_ml" type="number" min="0" placeholder="e.g. 330">
+        </div>
+        <div>
+          <label>Stress (0–10)</label>
+          <input name="stress_level" id="stressInput" type="number" min="0" max="10" step="1" placeholder="e.g. 4">
+        </div>
+        <div style="display:flex;align-items:flex-end;padding-bottom:3px;">
+          <label class="checkbox-label" style="margin:0;">
+            <input type="checkbox" name="processed_meat" style="width:auto;margin-right:8px;">
+            Processed meat today
+          </label>
+        </div>
+      </div>
+      <div>
+        <label>Notes <span class="muted" style="font-size:11px;">(optional)</span></label>
+        <textarea name="notes" rows="2" placeholder="How you're feeling, medication changes…"></textarea>
+      </div>
+      <div class="form-row" style="margin-top:14px;">
+        <button class="btn" type="submit">Save Entry</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card" style="margin:0;">
+    <div class="card-head">
+      <h3>Latest Labs</h3>
+      <a href="{{ url_for('labs') }}" class="btn btn-ghost btn-sm">
+        {% if lab_status %}View all →{% else %}+ Add labs{% endif %}
+      </a>
+    </div>
+
+    {% if lab_status %}
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      {% for key, info in lab_status.items() %}
+      <div style="display:flex;justify-content:space-between;align-items:center;
+                  background:var(--surface-2);border-radius:6px;padding:8px 12px;">
+        <span style="font-size:13px;color:var(--text-2);">{{ DN.get(key, key) }}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="mono" style="font-size:14px;font-weight:600;">{{ info.value }}</span>
+          <span class="tag tag-{{ info.color }}">{{ info.status }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:24px 12px;">
+      <div class="empty-icon">🧪</div>
+      <div style="font-size:14px;">No lab results yet</div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:4px;max-width:200px;margin:4px auto 0;">
+        Labs are required to unlock CVD risk and improve all predictions
+      </div>
+      <a href="{{ url_for('labs') }}" class="btn btn-sm" style="margin-top:14px;">Add Lab Results</a>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Trends -->
+<div class="card">
+  <div class="card-head">
+    <h3>30-Day Trends</h3>
+    <div style="display:flex;gap:6px;" id="chartToggle">
+      <button class="btn btn-ghost btn-sm chart-toggle-btn active" data-chart="main">Sleep &amp; Steps</button>
+      <button class="btn btn-ghost btn-sm chart-toggle-btn" data-chart="stress">Stress</button>
+    </div>
+  </div>
+
+  {% if chart.dates %}
+  <div id="mainChartWrap" class="chart-wrap" style="height:220px;">
+    <canvas id="mainChart"></canvas>
+  </div>
+  <div id="stressChartWrap" class="chart-wrap" style="height:180px;display:none;">
+    <canvas id="stressChart"></canvas>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📈</div>
+    <div>Log some entries to see your 30-day trends here</div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+const CHART_DATA  = {{ chart  | tojson }};
+const STATS       = {{ stats  | tojson }};
+const GOALS       = {{ goals  | tojson }};
+const DAILY_COUNT = {{ daily_count }};
+</script>
+{% endblock %}
