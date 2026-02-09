@@ -1,0 +1,112 @@
+HEALTH AI TRACKER — MODEL TRAINING REPORT
+Generated: 2026-03-27T18:24:25.903909
+Data source: synthetic (DEMO ONLY — not validated on real outcomes)
+
+DISCLAIMER: These models are trained on synthetic data and are
+NOT validated against real patient outcomes. Output probabilities
+must not be used for clinical decision-making.
+
+{
+  "CVD_metrics": {
+    "name": "CVD (10-year)",
+    "n_test": 4000,
+    "prevalence_test": 0.088,
+    "roc_auc": 0.7696,
+    "brier_score": 0.0731,
+    "avg_precision": 0.2565,
+    "sensitivity_80spec": 0.5739,
+    "ece": 0.0094,
+    "auc_male": null,
+    "auc_female": null,
+    "confusion_matrix": [
+      [
+        3645,
+        3
+      ],
+      [
+        346,
+        6
+      ]
+    ]
+  },
+  "Diabetes_metrics": {
+    "name": "Diabetes (10-year)",
+    "n_test": 4000,
+    "prevalence_test": 0.54575,
+    "roc_auc": 0.7156,
+    "brier_score": 0.2134,
+    "avg_precision": 0.7486,
+    "sensitivity_80spec": 0.4792,
+    "ece": 0.0158,
+    "auc_male": null,
+    "auc_female": null,
+    "confusion_matrix": [
+      [
+        1083,
+        734
+      ],
+      [
+        631,
+        1552
+      ]
+    ]
+  }
+}
+
+FEATURE COEFFICIENTS (CVD):
+  age                            +0.621005
+  ldl_chol                       +0.517603
+  hdl_chol                       -0.394953
+  smoking_current                +0.239124
+  smoking_ex                     +0.180835
+  avg_steps_k                    -0.140082
+  family_cvd                     +0.131698
+  sbp                            +0.122156
+  pulse_pressure                 +0.075588
+  dbp                            +0.068766
+  bp_medication                  +0.063418
+  chol_ratio                     -0.063038
+  diabetes_existing              +0.052549
+  family_diabetes                -0.029313
+  total_chol                     +0.029156
+  fasting_glucose                -0.027338
+  avg_sleep                      -0.025026
+  bmi                            +0.020721
+  hba1c                          -0.017212
+  sex_male                       +0.015079
+  waist_cm                       -0.002047
+  imp_total_chol                 +0.000000
+  imp_hdl_chol                   +0.000000
+  imp_ldl_chol                   +0.000000
+  imp_fasting_glucose            +0.000000
+  imp_hba1c                      +0.000000
+  imp_waist_cm                   +0.000000
+
+FEATURE COEFFICIENTS (Diabetes):
+  age                            +0.467949
+  bmi                            +0.388891
+  waist_cm                       +0.258602
+  family_diabetes                +0.239106
+  fasting_glucose                +0.227646
+  avg_steps_k                    -0.182500
+  bp_medication                  +0.110792
+  total_chol                     -0.082676
+  ldl_chol                       +0.081667
+  smoking_current                +0.066683
+  hba1c                          -0.046476
+  smoking_ex                     +0.027110
+  diabetes_existing              -0.021859
+  family_cvd                     +0.012224
+  sex_male                       -0.008428
+  avg_sleep                      -0.007494
+  sbp                            +0.006857
+  pulse_pressure                 +0.005617
+  chol_ratio                     -0.004789
+  dbp                            +0.001453
+  hdl_chol                       -0.000498
+  imp_total_chol                 +0.000000
+  imp_hdl_chol                   +0.000000
+  imp_ldl_chol                   +0.000000
+  imp_fasting_glucose            +0.000000
+  imp_hba1c                      +0.000000
+  imp_waist_cm                   +0.000000
