@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+{% block title %}Health Survey{% endblock %}
+{% block content %}
+<div style="max-width:640px;margin:0 auto;">
+  <div style="margin-bottom:24px;">
+    <h1 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;">Periodic Health Survey</h1>
+    <div class="muted" style="font-size:14px;margin-top:4px;">
+      Answers improve the accuracy of your risk scores. Takes ~2 minutes.
+    </div>
+  </div>
+
+  <div class="card">
+    <form method="post" novalidate>
+
+      <div class="section-label">Physical Activity</div>
+
+      <label>How many days per week do you do at least 30 min of moderate exercise?</label>
+      <select name="exercise_days">
+        <option value="0">None</option>
+        <option value="1">1 day</option>
+        <option value="2">2 days</option>
+        <option value="3">3 days</option>
+        <option value="4">4 days</option>
+        <option value="5">5+ days</option>
+      </select>
+
+      <label>How often do you do strength / resistance training?</label>
+      <select name="strength_training">
+        <option value="never">Never</option>
+        <option value="occasionally">Occasionally (once a week)</option>
+        <option value="regularly">Regularly (2–3x per week)</option>
+        <option value="often">Often (4+ times per week)</option>
+      </select>
+
+      <div class="section-label">Diet Quality</div>
+
+      <label>How would you describe your overall diet?</label>
+      <select name="diet_quality">
+        <option value="poor">Mostly processed / fast food</option>
+        <option value="average">Mix of healthy and processed</option>
+        <option value="good">Mostly whole foods</option>
+        <option value="excellent">Whole foods, minimal processed</option>
+      </select>
+
+      <label>Do you eat breakfast most days?</label>
+      <select name="breakfast">
+        <option value="no">No</option>
+        <option value="sometimes">Sometimes</option>
+        <option value="yes">Yes</option>
+      </select>
+
+      <label>How many meals do you typically skip per week?</label>
+      <select name="meals_skipped">
+        <option value="0">None</option>
+        <option value="1_2">1–2 meals</option>
+        <option value="3_plus">3 or more</option>
+      </select>
+
+      <div class="section-label">Mental Health</div>
+
+      <label>How often do you feel overwhelmed by stress?</label>
+      <select name="stress_frequency">
+        <option value="rarely">Rarely</option>
+        <option value="sometimes">Sometimes (weekly)</option>
+        <option value="often">Often (most days)</option>
+        <option value="always">Almost always</option>
+      </select>
+
+      <label>How would you rate your overall mood over the past month?</label>
+      <select name="mood">
+        <option value="very_good">Very good</option>
+        <option value="good">Good</option>
+        <option value="neutral">Neutral</option>
+        <option value="low">Often low or anxious</option>
+        <option value="very_low">Very low / depressed</option>
+      </select>
+
+      <div class="section-label">Sleep Quality</div>
+
+      <label>How would you rate your sleep quality?</label>
+      <select name="sleep_quality">
+        <option value="excellent">Excellent — wake refreshed</option>
+        <option value="good">Good — mostly restful</option>
+        <option value="fair">Fair — some disruption</option>
+        <option value="poor">Poor — unrefreshed most days</option>
+      </select>
+
+      <label class="checkbox-label" style="margin-top:10px;">
+        <input type="checkbox" name="snoring"> I snore or have been told I stop breathing at night (possible sleep apnoea)
+      </label>
+
+      <div class="section-label">Preventive Care</div>
+
+      <label>When was your last comprehensive blood test?</label>
+      <select name="last_blood_test">
+        <option value="lt6m">Less than 6 months ago</option>
+        <option value="lt1y">6–12 months ago</option>
+        <option value="lt2y">1–2 years ago</option>
+        <option value="gt2y">More than 2 years ago</option>
+        <option value="never">Never</option>
+      </select>
+
+      <label>Are you up to date with recommended cancer screenings? (mammogram, colonoscopy, etc.)</label>
+      <select name="screenings">
+        <option value="yes">Yes, all current</option>
+        <option value="some">Some, not all</option>
+        <option value="no">No / not sure</option>
+        <option value="na">Not applicable for my age</option>
+      </select>
+
+      <div class="section-label">Any other notes for your health log?</div>
+      <textarea name="notes" rows="3" placeholder="Medication changes, symptoms, life events…"></textarea>
+
+      <div class="form-row" style="margin-top:20px;">
+        <button class="btn" type="submit">Submit Survey</button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">Skip for now</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
