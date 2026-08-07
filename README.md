@@ -1,6 +1,8 @@
-﻿# Health-AI
+# Drift
 
-Health-AI is a Flask-based personal health tracking platform that combines daily lifestyle logging, lab trend tracking, smartwatch ingestion, and evidence-based risk estimation.
+**Keywords:** clinical risk scoring · ACC/AHA · FINDRISC · biomarkers · health tracker · wearables OAuth · Flask · explainable ML
+
+**Drift** (repo formerly branded Health-AI) is a Flask-based personal health tracking platform that combines daily lifestyle logging, 17-biomarker lab trend tracking, smartwatch OAuth ingestion, and evidence-based clinical risk estimation (ACC/AHA Pooled Cohort + FINDRISC).
 
 ## What This Repo Actually Does
 
