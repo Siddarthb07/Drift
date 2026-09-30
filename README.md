@@ -88,6 +88,8 @@ Imported rows are upserted into `daily_log` with `source='csv_import'`.
 
 This repo also contains an advanced experimental ML stack under `ml/` (`predictor.py`, `train_model.py`, `safety.py`, etc.).
 
+Design notes and phase plan: [`ml/AUDIT_AND_DESIGN.md`](ml/AUDIT_AND_DESIGN.md).
+
 Important: the primary runtime in `app_v5.py` currently uses the rule-based calculator path from `risk_calculators.py`, not the `ml/` predictor as the default serving path.
 
 ## Local Setup
