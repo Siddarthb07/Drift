@@ -18,8 +18,8 @@ def test_white_female_not_100_percent():
     assert r is not None
     assert r["risk_pct"] < 20
     assert r["risk_pct"] > 0.5
-    # Published ACC example-ish ~2%; allow calibration tolerance
-    assert abs(r["risk_pct"] - 2.1) < 3.0
+    # Published ACC worked example ≈2.1%; tight transcription regression bound
+    assert abs(r["risk_pct"] - 2.1) < 0.35
 
 
 def test_aa_female_ballpark():

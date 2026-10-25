@@ -27,7 +27,9 @@
     "legacy_white_fallback_rate_among_pce_scored": 0.3935,
     "misattributed_equation_count": 1967,
     "band_reclassification_rate_when_both_numeric": 0.4871,
-    "construction_note": "For races outside {white,aa}, every legacy PCE score is a White fallback by design. NHANES estimates burden counts, weighted show/refuse, gate decomposition, and band shifts."
+    "weighted_honest_show_rate_age_40_79": 0.8102,
+    "weighted_legacy_show_rate_age_40_79": 0.9474,
+    "construction_note": "For races outside {white,aa}, every legacy PCE score is a White fallback by design. NHANES estimates burden counts, weighted show/refuse, gate decomposition, and band shifts. Primary apples-to-apples coverage contrast uses ages 40\u201379 (excludes legacy under-40 green)."
   },
   "by_race": {
     "white": {
@@ -44,6 +46,7 @@
         "refuse_rate": 0.2458,
         "weighted_show_rate": 0.835,
         "weighted_refuse_rate": 0.165,
+        "weighted_show_rate_age_40_79": 0.8373,
         "refuse_gates": {
           "compute_fail": 168,
           "labs_cholesterol": 82,
@@ -62,6 +65,7 @@
       "legacy": {
         "show_rate": 0.72,
         "weighted_show_rate": 0.7636,
+        "weighted_show_rate_age_40_79": 0.9546,
         "white_fallback_rate_among_all": 0.0,
         "white_fallback_rate_among_pce_scored": 0.0,
         "pce_scored_n": 1684,
@@ -91,6 +95,7 @@
         "refuse_rate": 0.2929,
         "weighted_show_rate": 0.8211,
         "weighted_refuse_rate": 0.1789,
+        "weighted_show_rate_age_40_79": 0.7972,
         "refuse_gates": {
           "compute_fail": 22,
           "labs_cholesterol": 16,
@@ -107,6 +112,7 @@
       "legacy": {
         "show_rate": 0.6598,
         "weighted_show_rate": 0.6849,
+        "weighted_show_rate_age_40_79": 0.9395,
         "white_fallback_rate_among_all": 0.6598,
         "white_fallback_rate_among_pce_scored": 1.0,
         "pce_scored_n": 223,
@@ -136,6 +142,7 @@
         "refuse_rate": 0.2772,
         "weighted_show_rate": 0.7708,
         "weighted_refuse_rate": 0.2292,
+        "weighted_show_rate_age_40_79": 0.7747,
         "refuse_gates": {
           "compute_fail": 89,
           "labs_cholesterol": 44,
@@ -154,6 +161,7 @@
       "legacy": {
         "show_rate": 0.712,
         "weighted_show_rate": 0.6642,
+        "weighted_show_rate_age_40_79": 0.9642,
         "white_fallback_rate_among_all": 0.712,
         "white_fallback_rate_among_pce_scored": 1.0,
         "pce_scored_n": 1125,
@@ -183,6 +191,7 @@
         "refuse_rate": 0.3167,
         "weighted_show_rate": 0.7173,
         "weighted_refuse_rate": 0.2827,
+        "weighted_show_rate_age_40_79": 0.733,
         "refuse_gates": {
           "compute_fail": 52,
           "labs_cholesterol": 51,
@@ -201,6 +210,7 @@
       "legacy": {
         "show_rate": 0.6714,
         "weighted_show_rate": 0.6665,
+        "weighted_show_rate_age_40_79": 0.9282,
         "white_fallback_rate_among_all": 0.6714,
         "white_fallback_rate_among_pce_scored": 1.0,
         "pce_scored_n": 619,
@@ -230,6 +240,7 @@
         "refuse_rate": 0.3271,
         "weighted_show_rate": 0.7296,
         "weighted_refuse_rate": 0.2704,
+        "weighted_show_rate_age_40_79": 0.7358,
         "refuse_gates": {
           "compute_fail": 150,
           "labs_cholesterol": 174,
@@ -248,6 +259,7 @@
       "legacy": {
         "show_rate": 0.6764,
         "weighted_show_rate": 0.6727,
+        "weighted_show_rate_age_40_79": 0.896,
         "white_fallback_rate_among_all": 0.0,
         "white_fallback_rate_among_pce_scored": 0.0,
         "pce_scored_n": 1348,
@@ -263,6 +275,10 @@
       },
       "note": null
     }
+  },
+  "audit_design": {
+    "daily_lifestyle": "empty \u2014 CVD path only; no fabricated complete diary",
+    "age_primary_contrast": "40-79"
   },
   "limitations": [
     "Full eligible adults 30\u201379 with exam weight WTMECPRP (pre-pandemic 2017\u2013March 2020).",

@@ -196,16 +196,18 @@ def main():
         idx = rng.choice(len(df), size=MAX_N, replace=False)
         df = df.iloc[idx].copy()
 
-    daily = [{
-        "sleep": 7, "steps": 8000, "stress_level": 4, "active_minutes": 25,
-        "veg_servings": 2, "fruit_servings": 1, "red_meat_servings": 1, "processed_meat": 0,
-    }] * 14
+    # CVD-only audit: do NOT invent a complete lifestyle diary (that would silence
+    # FINDRISC/cancer missingness and inflate a multi-outcome coverage narrative).
+    daily = []
 
     by_race = defaultdict(lambda: {
         "n": 0, "wt": 0.0, "complete": 0, "has_egfr": 0, "has_lipids": 0, "has_sbp": 0,
         "honest_show": 0, "honest_refuse": 0, "wt_honest_show": 0.0, "wt_honest_refuse": 0.0,
         "legacy_fallback": 0, "legacy_pce_scored": 0, "legacy_under40_green": 0,
         "legacy_show": 0, "wt_legacy_show": 0.0,
+        "n_age_40_79": 0, "wt_age_40_79": 0.0,
+        "honest_show_40_79": 0, "wt_honest_show_40_79": 0.0,
+        "legacy_show_40_79": 0, "wt_legacy_show_40_79": 0.0,
         "gates": defaultdict(float), "gates_wt": defaultdict(float),
         "reclass_diff_band": 0, "reclass_n": 0, "abs_delta_sum": 0.0,
         "reclass_no_fallback_n": 0, "reclass_no_fallback_diff": 0,
@@ -216,6 +218,9 @@ def main():
         "legacy_show": 0, "wt_legacy_show": 0.0,
         "wt_honest_show": 0.0, "reclass_diff_band": 0, "reclass_n": 0,
         "reclass_no_fallback_n": 0, "reclass_no_fallback_diff": 0,
+        "n_age_40_79": 0, "wt_age_40_79": 0.0,
+        "honest_show_40_79": 0, "wt_honest_show_40_79": 0.0,
+        "legacy_show_40_79": 0, "wt_legacy_show_40_79": 0.0,
     }
 
     for _, row in df.iterrows():
@@ -240,6 +245,9 @@ def main():
         legacy = compute_risk_scores(user, daily, labs, mode="baseline", username="nhanes")
         hc = honest.get("CVD") or {}
         lc = legacy.get("CVD") or {}
+
+        age = float(user.get("age") or 0)
+        age_40_79 = 40 <= age <= 79
 
         if _honest_shows(hc):
             b["honest_show"] += 1
@@ -267,6 +275,23 @@ def main():
             b["wt_legacy_show"] += wt
             overall["legacy_show"] += 1
             overall["wt_legacy_show"] += wt
+
+        # Apples-to-apples coverage: ages 40–79 (excludes legacy under-40 green "show")
+        if age_40_79:
+            b["n_age_40_79"] += 1
+            b["wt_age_40_79"] += wt
+            overall["n_age_40_79"] += 1
+            overall["wt_age_40_79"] += wt
+            if _honest_shows(hc):
+                b["honest_show_40_79"] += 1
+                b["wt_honest_show_40_79"] += wt
+                overall["honest_show_40_79"] += 1
+                overall["wt_honest_show_40_79"] += wt
+            if _honest_shows(lc) and "Under 40" not in str(lc.get("risk_category") or ""):
+                b["legacy_show_40_79"] += 1
+                b["wt_legacy_show_40_79"] += wt
+                overall["legacy_show_40_79"] += 1
+                overall["wt_legacy_show_40_79"] += wt
 
         # Reclassification when both produce a numeric (honest exact vs legacy pct)
         hp = _exact_pct(hc)
@@ -305,6 +330,9 @@ def main():
                 "refuse_rate": round(b["honest_refuse"] / n, 4),
                 "weighted_show_rate": round(b["wt_honest_show"] / wt, 4),
                 "weighted_refuse_rate": round(b["wt_honest_refuse"] / wt, 4),
+                "weighted_show_rate_age_40_79": round(
+                    b["wt_honest_show_40_79"] / max(b["wt_age_40_79"], 1e-9), 4
+                ) if b["n_age_40_79"] else None,
                 "refuse_gates": {k: int(v) for k, v in sorted(b["gates"].items())},
                 "refuse_gates_weighted_share": {
                     k: round(v / max(b["wt_honest_refuse"], 1e-9), 4)
@@ -314,6 +342,9 @@ def main():
             "legacy": {
                 "show_rate": round(b["legacy_show"] / n, 4),
                 "weighted_show_rate": round(b["wt_legacy_show"] / wt, 4),
+                "weighted_show_rate_age_40_79": round(
+                    b["wt_legacy_show_40_79"] / max(b["wt_age_40_79"], 1e-9), 4
+                ) if b["n_age_40_79"] else None,
                 "white_fallback_rate_among_all": round(b["legacy_fallback"] / n, 4),
                 "white_fallback_rate_among_pce_scored": (
                     round(b["legacy_fallback"] / b["legacy_pce_scored"], 4)
@@ -369,12 +400,23 @@ def main():
             "band_reclassification_rate_when_both_numeric": round(
                 overall["reclass_diff_band"] / max(overall["reclass_n"], 1), 4
             ),
+            "weighted_honest_show_rate_age_40_79": round(
+                overall["wt_honest_show_40_79"] / max(overall["wt_age_40_79"], 1e-9), 4
+            ) if overall["n_age_40_79"] else None,
+            "weighted_legacy_show_rate_age_40_79": round(
+                overall["wt_legacy_show_40_79"] / max(overall["wt_age_40_79"], 1e-9), 4
+            ) if overall["n_age_40_79"] else None,
             "construction_note": (
                 "For races outside {white,aa}, every legacy PCE score is a White fallback by design. "
-                "NHANES estimates burden counts, weighted show/refuse, gate decomposition, and band shifts."
+                "NHANES estimates burden counts, weighted show/refuse, gate decomposition, and band shifts. "
+                "Primary apples-to-apples coverage contrast uses ages 40–79 (excludes legacy under-40 green)."
             ),
         },
         "by_race": by_race_out,
+        "audit_design": {
+            "daily_lifestyle": "empty — CVD path only; no fabricated complete diary",
+            "age_primary_contrast": "40-79",
+        },
         "limitations": [
             "Full eligible adults 30–79 with exam weight WTMECPRP (pre-pandemic 2017–March 2020).",
             "Cross-sectional; no mortality linkage / clinical calibration; no survey-design (strata/PSU) variance here.",

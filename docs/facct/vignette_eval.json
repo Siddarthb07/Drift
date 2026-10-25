@@ -1,5 +1,5 @@
 {
-  "n_cases": 17,
+  "n_cases": 23,
   "keys": [
     "no_white_pce_fallback",
     "no_green_under40",
@@ -19,109 +19,109 @@
   "per_key": {
     "no_white_pce_fallback": {
       "honest": 1.0,
-      "baseline": 0.47058823529411764,
-      "n": 17,
+      "baseline": 0.5652173913043478,
+      "n": 23,
       "honest_wilson_95": [
-        0.8156763396284354,
-        1.0
+        0.8568788745827373,
+        1.0000000000000002
       ],
       "baseline_wilson_95": [
-        0.26164801196088106,
-        0.6903710268845051
+        0.36811049305016963,
+        0.7436563166780135
       ],
-      "delta": 0.5294117647058824
+      "delta": 0.4347826086956522
     },
     "no_green_under40": {
       "honest": 1.0,
-      "baseline": 0.9411764705882353,
-      "n": 17,
+      "baseline": 0.9130434782608695,
+      "n": 23,
       "honest_wilson_95": [
-        0.8156763396284354,
-        1.0
+        0.8568788745827373,
+        1.0000000000000002
       ],
       "baseline_wilson_95": [
-        0.730174547964372,
-        0.9895398693548358
+        0.7320359570190598,
+        0.9758205045927666
       ],
-      "delta": 0.05882352941176472
+      "delta": 0.08695652173913049
     },
     "no_silent_waist": {
       "honest": 1.0,
-      "baseline": 0.9411764705882353,
-      "n": 17,
+      "baseline": 0.9565217391304348,
+      "n": 23,
       "honest_wilson_95": [
-        0.8156763396284354,
-        1.0
+        0.8568788745827373,
+        1.0000000000000002
       ],
       "baseline_wilson_95": [
-        0.730174547964372,
-        0.9895398693548358
+        0.7900841350594088,
+        0.9922835330378733
       ],
-      "delta": 0.05882352941176472
+      "delta": 0.04347826086956519
     },
     "no_silent_sbp": {
       "honest": 1.0,
-      "baseline": 0.9411764705882353,
-      "n": 17,
+      "baseline": 0.9565217391304348,
+      "n": 23,
       "honest_wilson_95": [
-        0.8156763396284354,
-        1.0
+        0.8568788745827373,
+        1.0000000000000002
       ],
       "baseline_wilson_95": [
-        0.730174547964372,
-        0.9895398693548358
+        0.7900841350594088,
+        0.9922835330378733
       ],
-      "delta": 0.05882352941176472
+      "delta": 0.04347826086956519
     },
     "no_cancer_rr_hero": {
       "honest": 1.0,
       "baseline": 0.0,
-      "n": 17,
+      "n": 23,
       "honest_wilson_95": [
-        0.8156763396284354,
-        1.0
+        0.8568788745827373,
+        1.0000000000000002
       ],
       "baseline_wilson_95": [
-        0.0,
-        0.18432366037156456
+        -1.1891583198458084e-17,
+        0.14312112541726274
       ],
       "delta": 1.0
     },
     "no_health_age_hero": {
       "honest": 1.0,
       "baseline": 0.0,
-      "n": 17,
+      "n": 23,
       "honest_wilson_95": [
-        0.8156763396284354,
-        1.0
+        0.8568788745827373,
+        1.0000000000000002
       ],
       "baseline_wilson_95": [
-        0.0,
-        0.18432366037156456
+        -1.1891583198458084e-17,
+        0.14312112541726274
       ],
       "delta": 1.0
     },
     "shows_estimate_when_complete": {
       "honest": 1.0,
-      "baseline": 1.0,
-      "n": 17,
+      "baseline": 0.9565217391304348,
+      "n": 23,
       "honest_wilson_95": [
-        0.8156763396284354,
-        1.0
+        0.8568788745827373,
+        1.0000000000000002
       ],
       "baseline_wilson_95": [
-        0.8156763396284354,
-        1.0
+        0.7900841350594088,
+        0.9922835330378733
       ],
-      "delta": 0.0
+      "delta": 0.04347826086956519
     }
   },
   "honest_mean_pass_rate": 1.0,
-  "baseline_mean_pass_rate": 0.6134453781512605,
-  "delta_honest_minus_baseline": 0.38655462184873945,
+  "baseline_mean_pass_rate": 0.6211180124223601,
+  "delta_honest_minus_baseline": 0.3788819875776399,
   "core_honest_mean": 1.0,
-  "core_baseline_mean": 0.8588235294117649,
-  "core_delta": 0.14117647058823513,
+  "core_baseline_mean": 0.8695652173913045,
+  "core_delta": 0.13043478260869545,
   "honest_all_pass": true,
   "mutation_tests": {
     "no_white_pce_fallback": {
@@ -148,7 +148,12 @@
       "caught": true,
       "vector_value": false
     },
-    "all_caught": true
+    "all_caught": true,
+    "engine_prefer_pce_no_white_fallback": {
+      "caught": true,
+      "equation": "PREVENT",
+      "claim_id": "prevent_ascvd"
+    }
   },
   "baseline_git_pin": "a8dcc33 (pre-fix silent waist/SBP/under-40/health-age in app_v5.py)",
   "rows": [
@@ -691,6 +696,198 @@
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.42857142857142855,
+      "core_pass_rate": 0.6,
+      "all_pass": false
+    },
+    {
+      "id": "region_global_complete",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "region_global_complete",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
+      "all_pass": false
+    },
+    {
+      "id": "region_uk_europe_complete",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "region_uk_europe_complete",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
+      "all_pass": false
+    },
+    {
+      "id": "region_south_asia_complete",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "region_south_asia_complete",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
+      "all_pass": false
+    },
+    {
+      "id": "region_us_complete",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "region_us_complete",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
+      "all_pass": false
+    },
+    {
+      "id": "prefer_pce_south_asian_must_not_fallback",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "prefer_pce_south_asian_must_not_fallback",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": false,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.5714285714285714,
+      "core_pass_rate": 0.8,
+      "all_pass": false
+    },
+    {
+      "id": "age_35_not_green_low",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "age_35_not_green_low",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": false,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": false
       },
       "pass_rate": 0.42857142857142855,
       "core_pass_rate": 0.6,

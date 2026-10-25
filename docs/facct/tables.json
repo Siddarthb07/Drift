@@ -150,15 +150,22 @@
       "asian_nhanes": 619,
       "multiracial": 223
     },
-    "construction_note": "For races outside {white,aa}, every legacy PCE score is a White fallback by design. NHANES estimates burden counts, weighted show/refuse, gate decomposition, and band shifts."
+    "construction_note": "For races outside {white,aa}, every legacy PCE score is a White fallback by design. NHANES estimates burden counts, weighted show/refuse, gate decomposition, and band shifts. Primary apples-to-apples coverage contrast uses ages 40\u201379 (excludes legacy under-40 green).",
+    "weighted_honest_show_rate_age_40_79": 0.8102,
+    "weighted_legacy_show_rate_age_40_79": 0.9474,
+    "audit_design": {
+      "daily_lifestyle": "empty \u2014 CVD path only; no fabricated complete diary",
+      "age_primary_contrast": "40-79"
+    }
   },
   "table3_vignette": {
-    "n_cases": 17,
+    "n_cases": 23,
     "honest_mean": 1.0,
-    "baseline_mean": 0.6134,
-    "delta": 0.3866,
-    "core_delta": 0.1412,
-    "mutation_all_caught": true
+    "baseline_mean": 0.6211,
+    "delta": 0.3789,
+    "core_delta": 0.1304,
+    "mutation_all_caught": true,
+    "engine_prefer_pce_caught": true
   },
   "baseline_git_pin": "a8dcc33"
 }

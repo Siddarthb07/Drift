@@ -2,10 +2,11 @@
 
 ## What ships
 - Claim-honest CVD/diabetes/cancer disclosure engine (`risk_engine.py`, `disclosure.py`, `claims.yaml`)
-- Race-free PREVENT default; PCE only for White/AA
+- Race-free PREVENT default; PCE only for White/AA; `public_view()` strips exact percents on UI/API
+- FINDRISC waist-missing → ledger-backed interval; 16 regions with honest coverage notes
 - Git-pinned legacy baseline (`legacy_baseline.py` ↔ `a8dcc33`)
-- NHANES coverage + reclassification audit (`scripts/nhanes_coverage_audit.py`)
-- Metamorphic honesty tests + PREVENT goldens
+- NHANES coverage + reclassification audit (`scripts/nhanes_coverage_audit.py`) incl. age 40–79 contrast
+- Metamorphic + engine-boundary honesty tests; tight PREVENT/PCE goldens (±0.35pp)
 - Study kit (PROTOCOL/OSF draft; server assignment; collector; keys still locked:false)
 - CI: `.github/workflows/ci.yml`
 
@@ -36,3 +37,4 @@ export DRIFT_AUDIT=0 STUDY_ALLOW_BASELINE=1
 
 ## Non-claims
 No clinical validation. Human RCT not fielded. No synthetic human results.
+Systems-only ceiling remains below a true 9 until fielded RCT + locked clinician keys; this build closes prior serving-path / NHANES-confound / golden gaps.

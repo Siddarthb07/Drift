@@ -5,6 +5,14 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import sqlite3, os, numpy as np, datetime, bcrypt, json, io, csv
 from risk_calculators import classify_lab, LAB_REFS
 from risk_engine import compute_risk_scores
+from disclosure import public_view
+from regions import (
+    EQUATION_SEX_OPTIONS,
+    GENDER_IDENTITY_OPTIONS,
+    REGIONS,
+    REGION_BY_ID,
+    region_note,
+)
 import oauth_watch
 from token_vault import seal as seal_token, open_token
 
@@ -14,6 +22,17 @@ _DEFAULT_SECRET = "change-me-in-production-32chars+"
 app.secret_key = os.getenv("SECRET_KEY", _DEFAULT_SECRET)
 STUDY_INSECURE = app.secret_key == _DEFAULT_SECRET
 OAUTH_CFG = oauth_watch.oauth_config()
+
+
+@app.context_processor
+def inject_region_helpers():
+    return {
+        "REGIONS": REGIONS,
+        "GENDER_IDENTITY_OPTIONS": GENDER_IDENTITY_OPTIONS,
+        "EQUATION_SEX_OPTIONS": EQUATION_SEX_OPTIONS,
+        "region_note": region_note,
+        "REGION_BY_ID": REGION_BY_ID,
+    }
 
 # ─── DB init ─────────────────────────────────────────────────
 def init_db():
@@ -260,17 +279,21 @@ def onboarding(step):
     if request.method == "POST":
         with sqlite3.connect(DB) as conn:
             if step == 2:
-                sex = request.form.get("sex")
-                sex_eq = request.form.get("sex_for_equation") or (
-                    sex if sex in ("male", "female") else ""
-                )
+                sex = request.form.get("sex") or ""
+                sex_eq = request.form.get("sex_for_equation") or ""
+                # If equation sex blank but identity is male/female, sync (they often match)
+                if sex_eq not in ("male", "female") and sex in ("male", "female"):
+                    sex_eq = sex
+                region = request.form.get("region") or "global"
+                if region not in REGION_BY_ID:
+                    region = "global"
                 conn.execute(
                     "UPDATE users SET age=?,sex=?,sex_for_equation=?,height=?,weight=?,waist_cm=?,race=?,region=? WHERE username=?",
-                    (request.form.get("age"), sex, sex_eq or None,
+                    (request.form.get("age"), sex or None, sex_eq or None,
                      request.form.get("height"), request.form.get("weight"),
                      request.form.get("waist_cm") or None,
                      request.form.get("race") or None,
-                     request.form.get("region") or "global",
+                     region,
                      un))
             elif step == 3:
                 conn.execute(
@@ -359,7 +382,7 @@ def dashboard():
     }
 
     mode = ui_mode()
-    risk = compute_risk_scores(user, daily, labs, mode=mode, username=un)
+    risk = public_view(compute_risk_scores(user, daily, labs, mode=mode, username=un))
 
     # Only classify labs that have a real positive numeric value
     lab_status = {}
@@ -467,6 +490,17 @@ def profile():
                 vals.append(1 if v in ("on","1","true") else 0)
             else:
                 vals.append(v if v not in ("","None") else None)
+        # Sync equation sex from gender identity when identity is binary and equation sex empty
+        try:
+            idx_sex = fields.index("sex")
+            idx_eq = fields.index("sex_for_equation")
+            if vals[idx_eq] not in ("male", "female") and vals[idx_sex] in ("male", "female"):
+                vals[idx_eq] = vals[idx_sex]
+            idx_reg = fields.index("region")
+            if vals[idx_reg] not in REGION_BY_ID:
+                vals[idx_reg] = "global"
+        except ValueError:
+            pass
         with sqlite3.connect(DB) as conn:
             conn.execute(f"UPDATE users SET {','.join(f+'=?' for f in fields)} WHERE username=?", (*vals, un))
         flash("Profile updated!","success")
@@ -617,7 +651,7 @@ def api_risk_summary():
     user = get_user(un)
     daily = get_daily_data(un)
     labs  = get_latest_labs(un)
-    risk  = compute_risk_scores(user, daily, labs, mode=ui_mode(), username=un)
+    risk = public_view(compute_risk_scores(user, daily, labs, mode=ui_mode(), username=un))
     return jsonify(risk)
 
 

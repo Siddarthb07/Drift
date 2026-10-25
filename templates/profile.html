@@ -2,242 +2,247 @@
 {% block title %}Profile{% endblock %}
 {% block content %}
 
-<div class="dash-header" style="margin-bottom:0;">
+<div class="page-hero">
   <div>
-    <h1 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;">Profile</h1>
-    <div class="muted" style="font-size:14px;margin-top:4px;">Your health profile powers the risk calculators. More data = more accurate scores.</div>
+    <p class="page-kicker">Profile</p>
+    <h1 class="page-title">Your health profile</h1>
+    <p class="page-sub">Inputs for claim-honest risk cards. Missing fields refuse a number — defaults are never invented.</p>
   </div>
-  <div>
-    <div class="completion-row" style="min-width:260px;">
-      <div class="completion-label">Profile complete</div>
-      <div class="completion-bar">
-        <div class="prog-wrap">
-          <div class="prog-fill prog-teal" style="width:0%" data-target="{{ pct }}"></div>
-        </div>
+  <div class="completion-card">
+    <div class="completion-label">Profile complete</div>
+    <div class="completion-bar">
+      <div class="prog-wrap">
+        <div class="prog-fill prog-teal" style="width:0%" data-target="{{ pct }}"></div>
       </div>
-      <div class="completion-pct">{{ pct }}%</div>
     </div>
+    <div class="completion-pct">{{ pct }}%</div>
   </div>
 </div>
 
-<div class="card" style="margin-top:20px;">
-  <form method="post" novalidate>
+<form method="post" novalidate class="profile-form">
 
-    <div class="section-label">Basic Info</div>
-    <div class="form-grid-3">
-      <div>
-        <label>Age</label>
-        <input name="age" type="number" min="1" max="120" value="{{ user.age or '' }}" placeholder="e.g. 34">
-      </div>
-      <div>
-        <label>Gender identity (optional)</label>
-        <select name="sex">
-          <option value="">Select</option>
-          <option value="male"   {% if user.sex=='male'   %}selected{% endif %}>Male</option>
-          <option value="female" {% if user.sex=='female' %}selected{% endif %}>Female</option>
-          <option value="other"  {% if user.sex=='other'  %}selected{% endif %}>Other / Prefer not to say</option>
+  <section class="panel">
+    <header class="panel-head">
+      <h2>Identity &amp; region</h2>
+      <p>Gender identity and sex for equations are <strong>often the same</strong> when you identify as male or female — we auto-fill. They are <strong>not always identical</strong>: published PREVENT/PCE equations need a binary sex coefficient. Non-binary identities keep a separate equation-sex choice (or we refuse a CVD number).</p>
+    </header>
+
+    <div class="field" style="max-width:160px;margin-bottom:16px;">
+      <label for="age">Age</label>
+      <input id="age" name="age" type="number" min="1" max="120" value="{{ user.age or '' }}" placeholder="e.g. 34">
+    </div>
+
+    <div class="identity-pair">
+      <div class="field">
+        <label for="sex">Gender identity</label>
+        <select id="sex" name="sex" data-sync-equation-sex>
+          {% for val, lab in GENDER_IDENTITY_OPTIONS %}
+          <option value="{{ val }}" {% if (user.sex or '')==val %}selected{% endif %}>{{ lab }}</option>
+          {% endfor %}
         </select>
       </div>
-      <div>
-        <label>Sex for equations <span style="font-size:11px;color:var(--text-3);">required for PREVENT/FINDRISC</span></label>
-        <select name="sex_for_equation">
-          <option value="">Not set (we refuse a number)</option>
-          <option value="male"   {% if user.sex_for_equation=='male'   %}selected{% endif %}>Male</option>
-          <option value="female" {% if user.sex_for_equation=='female' %}selected{% endif %}>Female</option>
+      <div class="identity-bridge" aria-hidden="true">→ often same →</div>
+      <div class="field">
+        <label for="sex_for_equation">Sex for equations <span class="hint">binary · CVD / FINDRISC</span></label>
+        <select id="sex_for_equation" name="sex_for_equation">
+          {% for val, lab in EQUATION_SEX_OPTIONS %}
+          <option value="{{ val }}" {% if (user.sex_for_equation or '')==val %}selected{% endif %}>{{ lab }}</option>
+          {% endfor %}
         </select>
       </div>
     </div>
-    <div class="form-grid-3">
-      <div>
-        <label>Race / Ethnicity <span style="font-size:11px;color:var(--text-3);">optional · PREVENT is race-free</span></label>
-        <select name="race">
+
+    <div class="callout callout-info" id="sexSyncNote" style="margin-top:14px;">
+      Choosing Male or Female for gender identity fills equation sex to match. You can still override equation sex if needed.
+    </div>
+
+    <div class="form-grid-2" style="margin-top:18px;">
+      <div class="field">
+        <label for="race">Race / ethnicity <span class="hint">optional · PREVENT is race-free</span></label>
+        <select id="race" name="race">
           <option value="">Prefer not to say</option>
-          <option value="white"        {% if user.race=='white' %}selected{% endif %}>White</option>
-          <option value="aa"           {% if user.race=='aa' %}selected{% endif %}>Black / African American</option>
-          <option value="south_asian"  {% if user.race=='south_asian' %}selected{% endif %}>South Asian</option>
-          <option value="east_asian"   {% if user.race=='east_asian' %}selected{% endif %}>East Asian</option>
-          <option value="hispanic"     {% if user.race=='hispanic' %}selected{% endif %}>Hispanic / Latino</option>
+          <option value="white" {% if user.race=='white' %}selected{% endif %}>White</option>
+          <option value="aa" {% if user.race=='aa' %}selected{% endif %}>Black / African American</option>
+          <option value="south_asian" {% if user.race=='south_asian' %}selected{% endif %}>South Asian</option>
+          <option value="east_asian" {% if user.race=='east_asian' %}selected{% endif %}>East Asian</option>
+          <option value="hispanic" {% if user.race=='hispanic' %}selected{% endif %}>Hispanic / Latino</option>
           <option value="middle_eastern" {% if user.race=='middle_eastern' %}selected{% endif %}>Middle Eastern / North African</option>
-          <option value="indigenous"   {% if user.race=='indigenous' %}selected{% endif %}>Indigenous</option>
-          <option value="multiracial"  {% if user.race=='multiracial' %}selected{% endif %}>Multiracial / Other</option>
+          <option value="indigenous" {% if user.race=='indigenous' %}selected{% endif %}>Indigenous</option>
+          <option value="multiracial" {% if user.race=='multiracial' %}selected{% endif %}>Multiracial / Other</option>
         </select>
       </div>
-      <div>
-        <label>Region / equation preference</label>
-        <select name="region">
-          <option value="global" {% if (user.region or 'global')=='global' %}selected{% endif %}>Global — PREVENT (race-free, default)</option>
-          <option value="us_pce" {% if user.region=='us_pce' %}selected{% endif %}>US — prefer PCE if White/AA</option>
+      <div class="field">
+        <label for="region">Region</label>
+        <select id="region" name="region" data-region-select>
+          {% for r in REGIONS %}
+          <option value="{{ r.id }}" {% if (user.region or 'global')==r.id %}selected{% endif %}
+            data-note="{{ r.note }}">{{ r.short }}</option>
+          {% endfor %}
         </select>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end;">
-        <label class="checkbox-label">
-          <input type="checkbox" name="prefer_pce" {% if user.prefer_pce %}checked{% endif %}>
-          Prefer PCE when eligible (White/AA, age 40+)
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" name="statin" {% if user.statin %}checked{% endif %}>
-          Currently on a statin
-        </label>
+        <div class="region-note-box" id="regionNote">{{ region_note(user.region or 'global') }}</div>
       </div>
     </div>
 
-    <div class="form-grid-3">
-      <div>
-        <label>Height (cm)</label>
-        <input name="height" type="number" step="0.1" value="{{ user.height or '' }}" placeholder="e.g. 172">
-      </div>
-      <div>
-        <label>Weight (kg)</label>
-        <input name="weight" type="number" step="0.1" value="{{ user.weight or '' }}" placeholder="e.g. 70">
-      </div>
-      <div>
-        <label>Waist circumference (cm) <span style="font-size:11px;color:var(--text-3);">FINDRISC required</span></label>
-        <input name="waist_cm" type="number" step="0.5" value="{{ user.waist_cm or '' }}" placeholder="e.g. 88">
-      </div>
+    <div class="chip-row">
+      <label class="chip-check">
+        <input type="checkbox" name="prefer_pce" {% if user.prefer_pce %}checked{% endif %}>
+        <span>Prefer PCE when eligible (White/AA, age 40+)</span>
+      </label>
+      <label class="chip-check">
+        <input type="checkbox" name="statin" {% if user.statin %}checked{% endif %}>
+        <span>On a statin</span>
+      </label>
     </div>
+  </section>
 
-    <div class="section-label">Cardiovascular Vitals</div>
+  <section class="panel">
+    <header class="panel-head">
+      <h2>Body measurements</h2>
+      <p>Height and weight unlock BMI. Waist is required for an exact FINDRISC score (otherwise we show an interval).</p>
+    </header>
     <div class="form-grid-3">
-      <div>
-        <label>Systolic BP (mmHg)</label>
-        <input name="systolic" type="number" value="{{ user.systolic or '' }}" placeholder="e.g. 118">
+      <div class="field">
+        <label for="height">Height (cm)</label>
+        <input id="height" name="height" type="number" step="0.1" value="{{ user.height or '' }}" placeholder="e.g. 172">
       </div>
-      <div>
-        <label>Diastolic BP (mmHg)</label>
-        <input name="diastolic" type="number" value="{{ user.diastolic or '' }}" placeholder="e.g. 76">
+      <div class="field">
+        <label for="weight">Weight (kg)</label>
+        <input id="weight" name="weight" type="number" step="0.1" value="{{ user.weight or '' }}" placeholder="e.g. 70">
       </div>
-      <div>
-        <label>Resting heart rate (bpm)</label>
-        <input name="resting_hr" type="number" value="{{ user.resting_hr or '' }}" placeholder="e.g. 62">
+      <div class="field">
+        <label for="waist_cm">Waist (cm) <span class="hint">at navel</span></label>
+        <input id="waist_cm" name="waist_cm" type="number" step="0.5" value="{{ user.waist_cm or '' }}" placeholder="e.g. 88">
       </div>
     </div>
-    <label class="checkbox-label" style="margin-top:12px;">
+  </section>
+
+  <section class="panel">
+    <header class="panel-head">
+      <h2>Cardiovascular vitals</h2>
+      <p>Systolic BP is required for CVD — we do not invent 120 mmHg.</p>
+    </header>
+    <div class="form-grid-3">
+      <div class="field">
+        <label for="systolic">Systolic BP (mmHg)</label>
+        <input id="systolic" name="systolic" type="number" value="{{ user.systolic or '' }}" placeholder="e.g. 118">
+      </div>
+      <div class="field">
+        <label for="diastolic">Diastolic BP (mmHg)</label>
+        <input id="diastolic" name="diastolic" type="number" value="{{ user.diastolic or '' }}" placeholder="e.g. 76">
+      </div>
+      <div class="field">
+        <label for="resting_hr">Resting HR (bpm)</label>
+        <input id="resting_hr" name="resting_hr" type="number" value="{{ user.resting_hr or '' }}" placeholder="e.g. 62">
+      </div>
+    </div>
+    <label class="chip-check" style="margin-top:14px;">
       <input type="checkbox" name="bp_medication" {% if user.bp_medication %}checked{% endif %}>
-      Currently taking blood pressure medication
+      <span>Taking blood pressure medication</span>
     </label>
+  </section>
 
-    <div class="section-label">Lifestyle Risk Factors</div>
+  <section class="panel">
+    <header class="panel-head">
+      <h2>Lifestyle</h2>
+    </header>
     <div class="form-grid-3">
-      <div>
-        <label>Smoking status</label>
-        <select name="smoking_status">
-          <option value="never"   {% if (user.smoking_status or 'never')=='never'   %}selected{% endif %}>Never smoked</option>
-          <option value="ex"      {% if user.smoking_status=='ex'      %}selected{% endif %}>Ex-smoker</option>
+      <div class="field">
+        <label for="smoking_status">Smoking</label>
+        <select id="smoking_status" name="smoking_status">
+          <option value="never" {% if (user.smoking_status or 'never')=='never' %}selected{% endif %}>Never smoked</option>
+          <option value="ex" {% if user.smoking_status=='ex' %}selected{% endif %}>Ex-smoker</option>
           <option value="current" {% if user.smoking_status=='current' %}selected{% endif %}>Current smoker</option>
         </select>
       </div>
-      <div>
-        <label>Alcohol (standard drinks/week)</label>
-        <input name="alcohol_per_week" type="number" step="0.5" min="0" value="{{ user.alcohol_per_week or 0 }}" placeholder="e.g. 5">
+      <div class="field">
+        <label for="alcohol_per_week">Alcohol (drinks / week)</label>
+        <input id="alcohol_per_week" name="alcohol_per_week" type="number" step="0.5" min="0" value="{{ user.alcohol_per_week or 0 }}">
       </div>
     </div>
+  </section>
 
-    <div class="section-label">Existing Conditions</div>
+  <section class="panel">
+    <header class="panel-head">
+      <h2>Conditions &amp; family history</h2>
+    </header>
+    <div class="chip-grid">
+      <label class="chip-check"><input type="checkbox" name="existing_diabetes" {% if user.existing_diabetes %}checked{% endif %}><span>Diagnosed diabetes</span></label>
+      <label class="chip-check"><input type="checkbox" name="existing_cvd" {% if user.existing_cvd %}checked{% endif %}><span>Heart disease / CVD</span></label>
+      <label class="chip-check"><input type="checkbox" name="existing_cancer" {% if user.existing_cancer %}checked{% endif %}><span>Cancer (diagnosed)</span></label>
+      <label class="chip-check"><input type="checkbox" name="existing_hypertension" {% if user.existing_hypertension %}checked{% endif %}><span>Hypertension</span></label>
+      <label class="chip-check"><input type="checkbox" name="existing_asthma" {% if user.existing_asthma %}checked{% endif %}><span>Asthma / COPD</span></label>
+      <label class="chip-check"><input type="checkbox" name="high_glucose_history" {% if user.high_glucose_history %}checked{% endif %}><span>Told glucose was high</span></label>
+      <label class="chip-check"><input type="checkbox" name="family_history_diabetes" {% if user.family_history_diabetes %}checked{% endif %}><span>Family diabetes</span></label>
+      <label class="chip-check"><input type="checkbox" name="family_history_cvd" {% if user.family_history_cvd %}checked{% endif %}><span>Family CVD</span></label>
+      <label class="chip-check"><input type="checkbox" name="family_history_cancer" {% if user.family_history_cancer %}checked{% endif %}><span>Family cancer</span></label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <header class="panel-head">
+      <h2>Goals</h2>
+    </header>
     <div class="form-grid-3">
-      <label class="checkbox-label">
-        <input type="checkbox" name="existing_diabetes" {% if user.existing_diabetes %}checked{% endif %}>
-        Diagnosed diabetes
-      </label>
-      <label class="checkbox-label">
-        <input type="checkbox" name="existing_cvd" {% if user.existing_cvd %}checked{% endif %}>
-        Heart disease / CVD
-      </label>
-      <label class="checkbox-label">
-        <input type="checkbox" name="existing_cancer" {% if user.existing_cancer %}checked{% endif %}>
-        Cancer (diagnosed)
-      </label>
-      <label class="checkbox-label">
-        <input type="checkbox" name="existing_hypertension" {% if user.existing_hypertension %}checked{% endif %}>
-        Hypertension
-      </label>
-      <label class="checkbox-label">
-        <input type="checkbox" name="existing_asthma" {% if user.existing_asthma %}checked{% endif %}>
-        Asthma / COPD
-      </label>
-      <label class="checkbox-label">
-        <input type="checkbox" name="high_glucose_history" {% if user.high_glucose_history %}checked{% endif %}>
-        Ever told blood glucose was high
-      </label>
-    </div>
-
-    <div class="section-label">Family History</div>
-    <div class="form-grid-3">
-      <label class="checkbox-label">
-        <input type="checkbox" name="family_history_diabetes" {% if user.family_history_diabetes %}checked{% endif %}>
-        Diabetes (parent/sibling) — FINDRISC score +5
-      </label>
-      <label class="checkbox-label">
-        <input type="checkbox" name="family_history_cvd" {% if user.family_history_cvd %}checked{% endif %}>
-        Heart disease / CVD
-      </label>
-      <label class="checkbox-label">
-        <input type="checkbox" name="family_history_cancer" {% if user.family_history_cancer %}checked{% endif %}>
-        Cancer (any type)
-      </label>
-    </div>
-
-    <div class="section-label">Goals</div>
-    <div class="form-grid-3">
-      <div>
-        <label>Goal weight (kg)</label>
-        <input name="goal_weight" type="number" step="0.1" value="{{ user.goal_weight or '' }}" placeholder="e.g. 68">
+      <div class="field">
+        <label for="goal_weight">Goal weight (kg)</label>
+        <input id="goal_weight" name="goal_weight" type="number" step="0.1" value="{{ user.goal_weight or '' }}">
       </div>
-      <div>
-        <label>Daily step goal</label>
-        <input name="goal_steps" type="number" value="{{ user.goal_steps or 8000 }}" placeholder="e.g. 10000">
+      <div class="field">
+        <label for="goal_steps">Daily step goal</label>
+        <input id="goal_steps" name="goal_steps" type="number" value="{{ user.goal_steps or 8000 }}">
       </div>
-      <div>
-        <label>Sleep goal (hrs)</label>
-        <input name="goal_sleep" type="number" step="0.25" value="{{ user.goal_sleep or 8 }}" placeholder="e.g. 8">
+      <div class="field">
+        <label for="goal_sleep">Sleep goal (hrs)</label>
+        <input id="goal_sleep" name="goal_sleep" type="number" step="0.25" value="{{ user.goal_sleep or 8 }}">
       </div>
     </div>
+  </section>
 
-    <div class="form-row" style="margin-top:24px;">
-      <button class="btn" type="submit">Save Profile</button>
-      <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">Back to Dashboard</a>
-    </div>
-  </form>
-</div>
+  <div class="form-actions">
+    <button class="btn" type="submit">Save profile</button>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">Dashboard</a>
+  </div>
+</form>
 
-<div class="card" style="margin-top:14px;">
-  <div class="section-label">Your data</div>
-  <p class="muted" style="font-size:13px;margin-bottom:12px;">Export a JSON copy or permanently delete this account and all health records.</p>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+<section class="panel panel-muted">
+  <header class="panel-head">
+    <h2>Your data</h2>
+    <p>Export a JSON copy or permanently delete this account.</p>
+  </header>
+  <div class="form-actions" style="margin-top:0;">
     <a class="btn btn-ghost btn-sm" href="{{ url_for('api_export') }}">Export JSON</a>
     <form method="post" action="{{ url_for('api_delete_account') }}" onsubmit="return confirm('Delete all your Drift data permanently?');">
-      <button class="btn btn-ghost btn-sm" type="submit" style="color:var(--red);">Delete account</button>
+      <button class="btn btn-ghost btn-sm btn-danger" type="submit">Delete account</button>
     </form>
   </div>
-</div>
+</section>
 
 {% if user.age and user.height and user.weight %}
-<div class="card">
-  <div class="card-head">
-    <h3>Computed Values</h3>
-  </div>
+<section class="panel">
+  <header class="panel-head"><h2>Computed</h2></header>
   {% set bmi = (user.weight / ((user.height/100)**2)) | round(1) %}
-  <div class="grid-3">
+  <div class="stat-row">
     <div class="stat-box">
       <div class="stat-label">BMI</div>
       <div class="stat-value" style="color:{% if bmi < 18.5 or bmi >= 30 %}var(--orange){% elif bmi < 25 %}var(--green){% else %}var(--yellow){% endif %};">{{ bmi }}</div>
-      <div class="stat-sub">kg/m²  ·  {% if bmi < 18.5 %}Underweight{% elif bmi < 25 %}Normal{% elif bmi < 30 %}Overweight{% else %}Obese{% endif %}</div>
+      <div class="stat-sub">{% if bmi < 18.5 %}Underweight{% elif bmi < 25 %}Normal{% elif bmi < 30 %}Overweight{% else %}Obese{% endif %}</div>
     </div>
     {% if user.waist_cm %}
     <div class="stat-box">
       <div class="stat-label">Waist</div>
       <div class="stat-value">{{ user.waist_cm }}</div>
-      <div class="stat-sub">cm  ·  {% if user.sex=='male' %}Risk ≥ 102 cm{% else %}Risk ≥ 88 cm{% endif %}</div>
+      <div class="stat-sub">cm</div>
     </div>
     {% endif %}
     {% if user.systolic and user.diastolic %}
     <div class="stat-box">
-      <div class="stat-label">Blood Pressure</div>
+      <div class="stat-label">Blood pressure</div>
       <div class="stat-value">{{ user.systolic }}/{{ user.diastolic }}</div>
-      <div class="stat-sub">mmHg  ·  {% if user.systolic < 120 %}Normal{% elif user.systolic < 130 %}Elevated{% elif user.systolic < 140 %}Stage 1 HTN{% else %}Stage 2 HTN{% endif %}</div>
+      <div class="stat-sub">mmHg</div>
     </div>
     {% endif %}
   </div>
-</div>
+</section>
 {% endif %}
 
 {% endblock %}

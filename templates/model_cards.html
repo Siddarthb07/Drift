@@ -1,12 +1,13 @@
 {% extends "layout.html" %}
 {% block title %}Calculator cards{% endblock %}
 {% block content %}
-<div class="dash-header">
+<div class="page-hero">
   <div>
-    <h1 style="font-size:22px;font-weight:700;">Calculator &amp; claim cards</h1>
-    <p class="muted" style="font-size:14px;margin-top:4px;">Mitchell-style transparency for every Drift output (from <code>claims.yaml</code>).</p>
+    <p class="page-kicker">Transparency</p>
+    <h1 class="page-title">Calculator cards</h1>
+    <p class="page-sub">Evidence class, population, and display policy for every published output.</p>
   </div>
-  <a class="btn btn-ghost btn-sm" href="{{ url_for('dashboard') }}">← Dashboard</a>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('dashboard') }}">Dashboard</a>
 </div>
 
 {% for id, c in claims.items() %}

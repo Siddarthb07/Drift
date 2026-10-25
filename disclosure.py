@@ -110,7 +110,7 @@ def apply_disclosure(
     out["validated_population"] = claim["validated_population"]
     out["prohibited_uses"] = list(claim.get("prohibited_uses") or [])
     policy = claim["display_policy"]
-    if policy not in ("band", "refuse", "factors_only", "qualitative", "number"):
+    if policy not in ("band", "refuse", "factors_only", "qualitative", "number", "interval"):
         raise DisclosureError(f"Invalid display_policy for {claim_id}: {policy}")
     out["display_policy"] = policy
 
@@ -121,6 +121,17 @@ def apply_disclosure(
         return out
 
     out["ui_mode"] = "honest"
+
+    # Enforce prohibited White-fallback on PCE claim payloads
+    if claim_id == "pce_ascvd" and out.get("legacy_white_fallback"):
+        out["refused"] = True
+        out["gate"] = "prohibited_use"
+        out["note"] = "White-equation fallback is prohibited for PCE"
+        out["risk_pct"] = None
+        out["relative_risk"] = None
+        out["display_policy"] = "refuse"
+        return out
+
     # Predicate checks (e.g. PCE race coverage)
     pred_fail = _check_requires(claim, out)
     if pred_fail and not out.get("refused"):
@@ -150,13 +161,24 @@ def apply_disclosure(
             out["shown_as"] = "factors" if policy == "factors_only" else "suppressed"
         return out
 
-    if policy == "band" and out.get("risk_pct") is not None:
+    # FINDRISC waist-missing: ledger-backed interval (not a collapsed mid-score)
+    if claim_id == "findrisc" and out.get("score_range") and out.get("risk_pct") is None:
+        out["display_policy"] = "interval"
+        out["shown_as"] = "interval"
+        out.pop("risk_pct_exact", None)
+        out.setdefault(
+            "note",
+            "Waist missing — FINDRISC shown as a score interval, not a silent waist default.",
+        )
+        return out
+
+    if policy in ("band", "interval") and out.get("risk_pct") is not None:
         pct = float(out["risk_pct"])
         bands = DIAB_BANDS if claim_id == "findrisc" else CVD_BANDS
         b = _band_for(pct, bands)
         out["risk_band_label"] = b["label"]
         out["risk_category"] = out.get("risk_category") or b["category"]
-        # Keep exact only for audit/tests — templates must not render risk_pct_exact
+        # Exact retained for offline audit/NHANES only — strip via public_view() before UI/API
         out["risk_pct_exact"] = pct
         out["risk_pct"] = None
         out["shown_as"] = "band"
@@ -178,6 +200,33 @@ def apply_disclosure(
         out["shown_as"] = "qualitative"
 
     return out
+
+
+_PUBLIC_STRIP_KEYS = (
+    "risk_pct_exact",
+    "relative_risk_exact",
+    "_audit_exact",
+)
+
+
+def public_view(payload: Any) -> Any:
+    """Strip false-precision fields from any serving-path payload (UI / JSON API)."""
+    if isinstance(payload, dict):
+        out = {}
+        for k, v in payload.items():
+            if k in _PUBLIC_STRIP_KEYS:
+                continue
+            if k == "comparison_pce" and isinstance(v, dict):
+                out[k] = {
+                    kk: vv for kk, vv in v.items()
+                    if kk not in ("risk_pct", "risk_pct_exact")
+                }
+                continue
+            out[k] = public_view(v)
+        return out
+    if isinstance(payload, list):
+        return [public_view(x) for x in payload]
+    return payload
 
 
 def input_hash(payload: Dict[str, Any]) -> str:

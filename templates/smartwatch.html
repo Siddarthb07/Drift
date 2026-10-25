@@ -2,20 +2,19 @@
 {% block title %}Smartwatch{% endblock %}
 {% block content %}
 
-<div class="dash-header">
+<div class="page-hero">
   <div>
-    <h1 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;">Watch &amp; Device Sync</h1>
-    <div class="muted" style="font-size:14px;margin-top:4px;">Connect your device or import health data manually.</div>
+    <p class="page-kicker">Devices</p>
+    <h1 class="page-title">Wearables &amp; import</h1>
+    <p class="page-sub">Link a provider securely, or import activity data manually. Tokens stay on this server.</p>
   </div>
 </div>
 
-<!-- Current status -->
 {% if user.smartwatch %}
 <div class="alert alert-success" style="margin-bottom:16px;">
-  <span>✓</span>
   <div>
-    <strong>{{ user.smartwatch|capitalize }} connected.</strong>
-    Use the "Sync Watch" button on the dashboard to pull today's data.
+    <strong style="color:var(--text);">{{ user.smartwatch|capitalize }} connected.</strong>
+    Use Sync device on the dashboard to pull today’s data.
   </div>
 </div>
 {% endif %}

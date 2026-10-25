@@ -36,11 +36,14 @@ claims:
     title: "FINDRISC Type 2 diabetes score"
     evidence_class: cohort_score
     display_policy: band
+    # When waist is missing, disclosure.py upgrades to display_policy: interval
     validated_population: "Primarily European / Finnish derivation; widely used internationally"
     prohibited_uses:
       - silent_waist_imputation
+      - collapse_interval_to_point
     source: "Lindström & Tuomilehto, Diabetes Care 2003"
     runtime: default
+    notes: "Missing waist → score interval enforced by disclosure layer; never silent 94/80 cm."
 
   cancer_lifestyle_factors:
     title: "WCRF/IARC lifestyle factor list"

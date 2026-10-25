@@ -104,7 +104,14 @@ def compute_risk_scores(
     sbp = _sf(user.get("systolic"))
     race = str(user.get("race") or "").lower() or None
     region = str(user.get("region") or "global").lower()
-    prefer_pce = bool(user.get("prefer_pce")) or region in ("us_pce",)
+    try:
+        from regions import region_prefers_pce, region_note
+        prefer_pce = region_prefers_pce(region, bool(user.get("prefer_pce")))
+        region_coverage_note = region_note(region)
+    except Exception:
+        # Fallback if regions.py unavailable: only us_pce auto-prefers PCE
+        prefer_pce = bool(user.get("prefer_pce")) or region == "us_pce"
+        region_coverage_note = ""
 
     # Profile gate (shared)
     if not age or not height or not weight:
@@ -255,6 +262,9 @@ def compute_risk_scores(
             cvd = dict(raw)
             cvd["race"] = race
             cvd["age"] = age
+            cvd["region"] = region
+            if region_coverage_note:
+                cvd["region_note"] = region_coverage_note
             if bmi is not None and not (18.5 <= bmi <= 39.9):
                 cvd["bmi_out_of_published_range"] = True
                 cvd["note"] = (
@@ -267,10 +277,13 @@ def compute_risk_scores(
                     age, sex_eq, total_chol, hdl_chol, sbp, bp_meds, smoker, diabetes, race
                 )
                 if pce:
+                    # Band-only sidecar — do not expose exact % on the serving path
+                    from disclosure import _band_for, CVD_BANDS
+                    band = _band_for(float(pce["risk_pct"]), CVD_BANDS)
                     cvd["comparison_pce"] = {
-                        "risk_pct": pce["risk_pct"],
-                        "risk_category": pce["risk_category"],
-                        "note": "Optional PCE comparison (race-stratified, US White/AA only).",
+                        "risk_band_label": band["label"],
+                        "risk_category": band["category"],
+                        "note": "Optional PCE comparison (race-stratified, US White/AA only) — shown as a band, not a false-precision percent.",
                     }
 
     # Ensure refused path also carries race/age for claim predicates

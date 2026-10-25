@@ -71,3 +71,29 @@ def test_unknown_claim_fails_closed():
 def test_honest_never_emits_health_age():
     risk = compute_risk_scores(_user(), DAILY, LABS, mode="honest")
     assert not (risk.get("_health_age") or {}).get("health_age")
+
+
+def test_engine_mutation_prefer_pce_unsupported_race_no_white_coeffs():
+    """Engine boundary: prefer_pce + South Asian must not emit PCE / White fallback."""
+    cvd = compute_risk_scores(
+        _user(race="south_asian", prefer_pce=True, age=55),
+        DAILY, LABS, mode="honest",
+    )["CVD"]
+    assert _shown(cvd)
+    assert cvd.get("equation") != "PCE"
+    assert not cvd.get("legacy_white_fallback")
+    assert "no White fallback" in (cvd.get("note") or "") or cvd.get("claim_id") == "prevent_ascvd"
+
+
+def test_engine_mutation_under30_refuses_not_green():
+    cvd = compute_risk_scores(_user(age=28), DAILY, LABS, mode="honest")["CVD"]
+    assert cvd.get("refused") or cvd.get("gate") == "age_range"
+    assert "Under 40" not in str(cvd.get("risk_category") or "")
+    assert cvd.get("color") != "green" or cvd.get("refused")
+
+
+def test_engine_mutation_region_us_does_not_auto_pce():
+    from regions import region_prefers_pce
+    assert region_prefers_pce("us") is False
+    cvd = compute_risk_scores(_user(region="us", race="white", age=55), DAILY, LABS, mode="honest")["CVD"]
+    assert cvd.get("claim_id") == "prevent_ascvd"

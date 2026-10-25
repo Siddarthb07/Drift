@@ -21,6 +21,8 @@ def fail(msg: str) -> None:
 
 
 def _vignette_means(vg: dict) -> tuple[float, float]:
+    if "honest_mean_pass_rate" in vg and "baseline_mean_pass_rate" in vg:
+        return float(vg["honest_mean_pass_rate"]), float(vg["baseline_mean_pass_rate"])
     if "honest_mean" in vg and "baseline_mean" in vg:
         return float(vg["honest_mean"]), float(vg["baseline_mean"])
     per = vg["per_key"]
@@ -88,11 +90,27 @@ def main() -> int:
         fail("table3 honest_mean mismatch vs vignette_eval.json")
     if abs(tables["table3_vignette"]["baseline_mean"] - bm) > 0.01:
         fail("table3 baseline_mean mismatch vs vignette_eval.json")
+    if tables["table3_vignette"].get("n_cases") != vg.get("n_cases"):
+        fail(f"table3 n_cases {tables['table3_vignette'].get('n_cases')} != vignette {vg.get('n_cases')}")
+    if f"n={vg.get('n_cases')}" not in paper.replace(" ", "") and "Twenty-three" not in paper and "23 fixtures" not in paper and "n=23" not in paper:
+        # Accept prose "Twenty-three fixtures"
+        if "Twenty-three fixtures" not in paper and "23 fixtures" not in paper:
+            fail("PAPER_DRAFT.md missing updated vignette fixture count")
+
+    # Age 40–79 apples-to-apples contrast must appear when present in JSON
+    h40 = nh["overall"].get("weighted_honest_show_rate_age_40_79")
+    l40 = nh["overall"].get("weighted_legacy_show_rate_age_40_79")
+    if h40 is not None and f"{h40:.3f}"[:5] not in paper and "0.810" not in paper:
+        fail("PAPER_DRAFT.md missing age 40–79 honest weighted show")
+    if l40 is not None and "0.947" not in paper:
+        fail("PAPER_DRAFT.md missing age 40–79 legacy weighted show")
 
     if "STUDY_ALLOW_BASELINE=1" not in (ROOT / "ARTIFACT.md").read_text():
         fail("ARTIFACT.md missing STUDY_ALLOW_BASELINE=1")
+    if "public_view" not in (ROOT / "ARTIFACT.md").read_text():
+        fail("ARTIFACT.md missing public_view serving-path strip")
 
-    print(json.dumps({"ok": True, "n_analyzed": n, "misattributed": nh["overall"]["misattributed_equation_count"]}))
+    print(json.dumps({"ok": True, "n_analyzed": n, "misattributed": nh["overall"]["misattributed_equation_count"], "n_vignettes": vg.get("n_cases")}))
     return 0
 
 

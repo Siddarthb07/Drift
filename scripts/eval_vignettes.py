@@ -122,8 +122,47 @@ def load_cases():
             "waist_cm": 84, "systolic": None, "race": "south_asian", "smoking_status": "never",
             "bp_medication": 0, "existing_diabetes": 0, "high_glucose_history": 0,
             "family_history_diabetes": 0, "family_history_cancer": 0, "alcohol_per_week": 1,
+            "region": "global",
         },
         "labs": {"total_cholesterol": 210, "hdl_cholesterol": 50, "egfr": 90},
+    })
+    # Region / age / prefer_pce coverage (expand beyond n=17)
+    for region in ("global", "uk_europe", "south_asia", "us"):
+        cases.append({
+            "id": f"region_{region}_complete",
+            "complete": True,
+            "user": {
+                "age": 55, "sex": "female", "sex_for_equation": "female", "height": 165, "weight": 70,
+                "waist_cm": 82, "systolic": 130, "race": "white", "smoking_status": "never",
+                "bp_medication": 0, "existing_diabetes": 0, "high_glucose_history": 0,
+                "family_history_diabetes": 0, "family_history_cancer": 0, "alcohol_per_week": 1,
+                "region": region,
+            },
+            "labs": {"total_cholesterol": 210, "hdl_cholesterol": 55, "egfr": 90},
+        })
+    cases.append({
+        "id": "prefer_pce_south_asian_must_not_fallback",
+        "complete": True,
+        "user": {
+            "age": 55, "sex": "male", "sex_for_equation": "male", "height": 172, "weight": 78,
+            "waist_cm": 90, "systolic": 132, "race": "south_asian", "smoking_status": "never",
+            "bp_medication": 0, "existing_diabetes": 0, "high_glucose_history": 0,
+            "family_history_diabetes": 0, "family_history_cancer": 0, "alcohol_per_week": 0,
+            "prefer_pce": 1, "region": "us_pce",
+        },
+        "labs": {"total_cholesterol": 200, "hdl_cholesterol": 48, "egfr": 95},
+    })
+    cases.append({
+        "id": "age_35_not_green_low",
+        "complete": True,
+        "user": {
+            "age": 35, "sex": "female", "sex_for_equation": "female", "height": 160, "weight": 62,
+            "waist_cm": 76, "systolic": 118, "race": "white", "smoking_status": "never",
+            "bp_medication": 0, "existing_diabetes": 0, "high_glucose_history": 0,
+            "family_history_diabetes": 0, "family_history_cancer": 0, "alcohol_per_week": 0,
+            "region": "global",
+        },
+        "labs": {"total_cholesterol": 190, "hdl_cholesterol": 60, "egfr": 100},
     })
     return cases
 
@@ -162,8 +201,22 @@ def mutation_tests() -> dict:
         vec = honesty_vector("mut", r, True, base_user)
         results[key] = {"caught": vec[key] is False, "vector_value": vec[key]}
     results["all_caught"] = all(v["caught"] for v in results.values() if isinstance(v, dict) and "caught" in v)
-    return results
 
+    # Engine-boundary mutations (not scorer-only): prefer_pce on unsupported race
+    engine = compute_risk_scores(
+        {**base_user, "prefer_pce": 1, "region": "us_pce", "age": 55},
+        DAILY,
+        {"total_cholesterol": 200, "hdl_cholesterol": 55, "egfr": 90},
+        mode="honest",
+    )
+    cvd = engine.get("CVD") or {}
+    results["engine_prefer_pce_no_white_fallback"] = {
+        "caught": not bool(cvd.get("legacy_white_fallback")) and cvd.get("equation") != "PCE",
+        "equation": cvd.get("equation"),
+        "claim_id": cvd.get("claim_id"),
+    }
+    results["all_caught"] = bool(results["all_caught"] and results["engine_prefer_pce_no_white_fallback"]["caught"])
+    return results
 
 def _mut(risk, section, key, value):
     risk.setdefault(section, {})

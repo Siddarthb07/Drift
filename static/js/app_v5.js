@@ -3,9 +3,9 @@
 
 // ─── Chart defaults ──────────────────────────────────────────
 if (typeof Chart !== "undefined") {
-  Chart.defaults.color = "#94a3b8";
-  Chart.defaults.borderColor = "rgba(255,255,255,0.06)";
-  Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+  Chart.defaults.color = "#a8a094";
+  Chart.defaults.borderColor = "rgba(242,236,224,0.08)";
+  Chart.defaults.font.family = "'Outfit', sans-serif";
   Chart.defaults.font.size = 11;
 }
 
@@ -148,17 +148,17 @@ function initDashboardCharts() {
         datasets: [
           {
             label: "Sleep (hrs)", data: CHART_DATA.sleep,
-            borderColor: "#38bdf8", backgroundColor: "rgba(56,189,248,0.06)",
+            borderColor: "#8fa3b0", backgroundColor: "rgba(143,163,176,0.08)",
             tension: 0.35, pointRadius: 2.5, pointHoverRadius: 5, yAxisID: "y"
           },
           {
             label: "Steps", data: CHART_DATA.steps,
-            borderColor: "#0fd6c8", backgroundColor: "rgba(15,214,200,0.05)",
+            borderColor: "#d4b896", backgroundColor: "rgba(212,184,150,0.08)",
             tension: 0.35, pointRadius: 2.5, pointHoverRadius: 5, yAxisID: "y2"
           },
           {
             label: "Active min", data: CHART_DATA.active,
-            borderColor: "#22c55e", backgroundColor: "rgba(34,197,94,0.05)",
+            borderColor: "#8fad8a", backgroundColor: "rgba(143,173,138,0.08)",
             tension: 0.35, pointRadius: 2.5, pointHoverRadius: 5, yAxisID: "y"
           }
         ]
@@ -178,12 +178,12 @@ function initDashboardCharts() {
           label: "Stress level",
           data: CHART_DATA.stress,
           backgroundColor: CHART_DATA.stress.map(v =>
-            v === null ? "transparent" : v >= 7 ? "rgba(239,68,68,0.5)" : v >= 5 ? "rgba(249,115,22,0.5)" : "rgba(34,197,94,0.5)"
+            v === null ? "transparent" : v >= 7 ? "rgba(192,112,112,0.55)" : v >= 5 ? "rgba(196,138,90,0.5)" : "rgba(143,173,138,0.5)"
           ),
-          borderRadius: 4
+          borderRadius: 2
         }]
       },
-      options: { ...makeChartOptions("0–10"), scales: { ...makeChartOptions("0–10").scales, y: { min: 0, max: 10, grid: { color: "rgba(255,255,255,0.04)" } } } }
+      options: { ...makeChartOptions("0–10"), scales: { ...makeChartOptions("0–10").scales, y: { min: 0, max: 10, grid: { color: "rgba(242,236,224,0.05)" } } } }
     });
   }
 
@@ -214,9 +214,9 @@ function initLabCharts() {
       data: {
         labels: dates,
         datasets: [
-          { label: "Total", data: total_cholesterol, borderColor: "#f59e0b", backgroundColor: "rgba(245,158,11,0.05)", tension: 0.35, pointRadius: 3 },
-          { label: "LDL",   data: ldl_cholesterol,   borderColor: "#ef4444", backgroundColor: "rgba(239,68,68,0.05)",   tension: 0.35, pointRadius: 3 },
-          { label: "HDL",   data: hdl_cholesterol,   borderColor: "#22c55e", backgroundColor: "rgba(34,197,94,0.05)",   tension: 0.35, pointRadius: 3 },
+          { label: "Total", data: total_cholesterol, borderColor: "#c9a05a", backgroundColor: "rgba(201,160,90,0.08)", tension: 0.35, pointRadius: 3 },
+          { label: "LDL",   data: ldl_cholesterol,   borderColor: "#c07070", backgroundColor: "rgba(192,112,112,0.08)", tension: 0.35, pointRadius: 3 },
+          { label: "HDL",   data: hdl_cholesterol,   borderColor: "#8fad8a", backgroundColor: "rgba(143,173,138,0.08)", tension: 0.35, pointRadius: 3 },
         ]
       },
       options: makeChartOptions("mg/dL")
@@ -230,8 +230,8 @@ function initLabCharts() {
       data: {
         labels: dates,
         datasets: [
-          { label: "Fasting glucose", data: fasting_glucose, borderColor: "#0fd6c8", backgroundColor: "rgba(15,214,200,0.05)", tension: 0.35, pointRadius: 3, yAxisID: "y" },
-          { label: "HbA1c %",         data: hba1c,            borderColor: "#8b5cf6", backgroundColor: "rgba(139,92,246,0.05)", tension: 0.35, pointRadius: 3, yAxisID: "y2" },
+          { label: "Fasting glucose", data: fasting_glucose, borderColor: "#d4b896", backgroundColor: "rgba(212,184,150,0.08)", tension: 0.35, pointRadius: 3, yAxisID: "y" },
+          { label: "HbA1c %",         data: hba1c,            borderColor: "#8fa3b0", backgroundColor: "rgba(143,163,176,0.08)", tension: 0.35, pointRadius: 3, yAxisID: "y2" },
         ]
       },
       options: makeChartOptions("mg/dL", "%")
@@ -286,6 +286,43 @@ function initStressInput() {
   });
 }
 
+// ─── Gender identity ↔ equation sex sync ──────────────────────
+function initSexSync() {
+  const identity = document.querySelector("[data-sync-equation-sex]");
+  const equation = document.getElementById("sex_for_equation");
+  const note = document.getElementById("sexSyncNote");
+  if (!identity || !equation) return;
+
+  const MSG_MATCH =
+    "Choosing Male or Female for gender identity fills equation sex to match. You can still override equation sex if needed.";
+  const MSG_SEPARATE =
+    "Gender identity and equation sex are separate here. PREVENT/PCE need a binary male/female coefficient — pick the category your clinician uses, or leave unset and we refuse a CVD number.";
+
+  const sync = () => {
+    const v = identity.value;
+    if (v === "male" || v === "female") {
+      equation.value = v;
+      if (note) note.textContent = MSG_MATCH;
+    } else if (note) {
+      note.textContent = MSG_SEPARATE;
+    }
+  };
+  identity.addEventListener("change", sync);
+  sync();
+}
+
+function initRegionNote() {
+  const sel = document.querySelector("[data-region-select]");
+  const note = document.getElementById("regionNote");
+  if (!sel || !note) return;
+  const update = () => {
+    const opt = sel.options[sel.selectedIndex];
+    note.textContent = (opt && opt.getAttribute("data-note")) || "";
+  };
+  sel.addEventListener("change", update);
+  update();
+}
+
 // ─── Init ─────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   animateProgressBars();
@@ -297,4 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initLabCharts();
   initBmiCalc();
   initStressInput();
+  initSexSync();
+  initRegionNote();
 });

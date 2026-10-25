@@ -2,58 +2,78 @@
 {% block title %}Home{% endblock %}
 {% block content %}
 
-<div class="hero">
-  <div class="hero-eyebrow">Claim-honest · Race-free PREVENT default · Refuse when unsure</div>
-  <h1 class="hero-title">Health tracking with<br><em>evidence-contingent disclosure.</em></h1>
+<section class="hero">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <p class="hero-eyebrow">Evidence-contingent disclosure</p>
+  <h1 class="hero-title">Health<span class="accent-italic">Tracker</span></h1>
+  <p class="hero-tagline">Risk only when the equation covers you.</p>
   <p class="hero-sub">
-    Drift shows risk bands only when a published equation covers you and your inputs.
-    Missing data and out-of-coverage cases refuse a number — we do not invent defaults or route every ethnicity through White coefficients.
+    Published calculators. Honest refusals. No invented defaults,
+    no silent White-coefficient remapping.
   </p>
   <div class="hero-cta">
-    <a href="{{ url_for('register') }}" class="hero-btn">Get started</a>
-    <a href="{{ url_for('model_cards') }}" class="hero-btn-ghost">Read calculator cards</a>
+    {% if session.username %}
+      <a href="{{ url_for('dashboard') }}" class="hero-btn">Open dashboard</a>
+      <a href="{{ url_for('profile') }}" class="hero-btn-ghost">Edit profile</a>
+    {% else %}
+      <a href="{{ url_for('register') }}" class="hero-btn">Begin</a>
+      <a href="{{ url_for('model_cards') }}" class="hero-btn-ghost">Calculator cards</a>
+    {% endif %}
   </div>
-</div>
+</section>
 
-<div class="feature-grid">
-  <div class="feature-card">
-    <div class="feature-icon">🫀</div>
-    <div class="feature-title">CVD — AHA PREVENT (race-free)</div>
-    <div class="feature-desc">Default 10-year ASCVD estimate uses sex-specific PREVENT equations that do not take race as an input. Optional US PCE only for White / African American cohorts when you ask for it.</div>
+<section class="home-section">
+  <h2 class="home-section-title">Built for clarity, not theatre.</h2>
+  <p class="home-section-sub">
+    Every score carries a claim class. When coverage ends, the number ends with it.
+  </p>
+  <div class="feature-grid">
+    <article class="feature-card">
+      <div class="feature-kicker">Cardiovascular</div>
+      <h3 class="feature-title">Race-free PREVENT</h3>
+      <p class="feature-desc">Sex-specific AHA PREVENT by default. Optional US PCE only when race and age make it valid — shown as a band, never false precision.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-kicker">Coverage</div>
+      <h3 class="feature-title">{{ REGIONS|length }} regions</h3>
+      <p class="feature-desc">From South Asia to the Nordics. Local notes stay honest — we do not invent SCORE2 or WHO coefficients we have not shipped.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-kicker">Identity</div>
+      <h3 class="feature-title">Gender and equation sex</h3>
+      <p class="feature-desc">Often the same for male and female — auto-filled. Separated when needed. Missing binary sex refuses a CVD percent.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-kicker">Metabolic</div>
+      <h3 class="feature-title">FINDRISC</h3>
+      <p class="feature-desc">Published diabetes score. Missing waist yields an interval — not a silent imputed cutoff.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-kicker">Ledger</div>
+      <h3 class="feature-title">Claims on every card</h3>
+      <p class="feature-desc">Evidence class, equation source, and refusal reason travel with the output. <a href="{{ url_for('model_cards') }}">Read the cards</a>.</p>
+    </article>
+    <article class="feature-card">
+      <div class="feature-kicker">Custody</div>
+      <h3 class="feature-title">Consent, export, delete</h3>
+      <p class="feature-desc">Limitations before data entry. Export JSON or permanently remove your account whenever you choose.</p>
+    </article>
   </div>
-  <div class="feature-card">
-    <div class="feature-icon">🩸</div>
-    <div class="feature-title">Diabetes — FINDRISC</div>
-    <div class="feature-desc">Published cohort score. If waist is missing we show a score interval — not a silent +3 points at the cutoff.</div>
-  </div>
-  <div class="feature-card">
-    <div class="feature-icon">📋</div>
-    <div class="feature-title">Claim ledger on every card</div>
-    <div class="feature-desc">Each output carries an evidence class (published equation, cohort score, heuristic). See <a href="{{ url_for('model_cards') }}">/model-cards</a>.</div>
-  </div>
-  <div class="feature-card">
-    <div class="feature-icon">⌚</div>
-    <div class="feature-title">Wearables with honest OAuth</div>
-    <div class="feature-desc">Fitbit and Google Fit with token refresh. Garmin is OAuth1 — we say so and offer CSV instead of a broken button.</div>
-  </div>
-  <div class="feature-card">
-    <div class="feature-icon">🧭</div>
-    <div class="feature-title">Habit trajectory, not “health age”</div>
-    <div class="feature-desc">Honest mode leads with protective habits over time. We do not present an invented biological-age number as a validated clinical biomarker.</div>
-  </div>
-  <div class="feature-card">
-    <div class="feature-icon">🔒</div>
-    <div class="feature-title">Consent, export, delete</div>
-    <div class="feature-desc">Limitations are shown before data entry. Export JSON or permanently delete your account anytime.</div>
-  </div>
-</div>
 
-<div class="card" style="text-align:center;padding:32px;margin-bottom:32px;">
-  <div style="font-size:13px;color:var(--text-3);max-width:640px;margin:0 auto;line-height:1.5;">
-    <strong style="color:var(--text-2);">Not a medical device</strong><br>
-    Drift is an educational disclosure tool. Estimates are not diagnoses. Discuss decisions with a clinician.
-    Research draft: claim-honest interfaces for FAccT-style accountability evaluation.
+  <div style="margin-top:40px;">
+    <p class="section-label" style="margin-top:0;">Regions available</p>
+    <div class="region-strip" aria-label="Supported regions">
+      {% for r in REGIONS if r.id != 'us_pce' %}
+      <span class="region-pill">{{ r.label.split('(')[0].strip() }}</span>
+      {% endfor %}
+    </div>
   </div>
-</div>
+</section>
+
+<p class="disclaimer-bar">
+  <strong>Not a medical device.</strong>
+  HealthTracker is an educational disclosure product. Estimates are not diagnoses.
+  Discuss clinical decisions with a qualified clinician.
+</p>
 
 {% endblock %}

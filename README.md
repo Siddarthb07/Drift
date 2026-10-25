@@ -48,7 +48,7 @@ Implemented in `risk_engine.py` (not the old engagement gate in `app_v5`):
 | Cancer | WCRF/IARC factor list | Factors only |
 | Hero | Habit trajectory | Qualitative |
 
-Missing SBP, lipids, or equation-sex → **refuse** (we do not invent 120 mmHg or median cholesterol). Age &lt; 30 → refuse CVD, not green “low risk”.
+Missing SBP, lipids, or equation-sex → **refuse** (we do not invent 120 mmHg or median cholesterol). Age &lt; 30 → refuse CVD, not green “low risk”. Honest UI/API never emit `risk_pct_exact` (`disclosure.public_view`). Regions (`regions.py`) add coverage notes without inventing local coefficients.
 
 ## OAuth setup
 
