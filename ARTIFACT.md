@@ -19,17 +19,19 @@ export DRIFT_AUDIT=0 STUDY_ALLOW_BASELINE=1
 .venv/bin/python scripts/baseline_git_pin.py
 .venv/bin/python scripts/check_paper_numbers.py
 .venv/bin/python scripts/eval_adversarial.py
+.venv/bin/python scripts/simulate_study_calibration.py --reps 40
 # Optional NHANES (downloads ~10MB XPTs; full eligible n=7172):
 .venv/bin/python scripts/fetch_nhanes.py
 .venv/bin/python scripts/nhanes_coverage_audit.py
 ```
 
 ## Expected
-- 28+ pytest passes
+- 40+ pytest passes (includes study Type I / power checks)
 - `validate_claims.py` → OK
 - `eval_vignettes.py` → honest mean 1.0, mutation `all_caught`
 - `eval_adversarial.py` → all_passed
 - `check_paper_numbers.py` → ok
+- `simulate_study_calibration.py` → gates all true (null Type I ≈ α; null fixture = no issue)
 - NHANES JSON under `docs/facct/nhanes_coverage_audit.json` (n=7172)
 
 ## Non-claims

@@ -1,0 +1,59 @@
+{
+  "method": "Monte Carlo; identical DGP under null; Welch two-sided \u03b1=0.05",
+  "seed": 20261025,
+  "reps": 120,
+  "calibration": [
+    {
+      "scenario": "null_n300",
+      "n_reps": 120,
+      "n_per_arm": 300,
+      "effect_shift": 0.0,
+      "alpha": 0.05,
+      "empirical_reject_rate": 0.05,
+      "empirical_care_ni_hold_rate": 1.0,
+      "mean_p": 0.5036,
+      "passes_type_I_calibration": true,
+      "passes_power_target": null
+    },
+    {
+      "scenario": "null_n40_pilot",
+      "n_reps": 120,
+      "n_per_arm": 20,
+      "effect_shift": 0.0,
+      "alpha": 0.05,
+      "empirical_reject_rate": 0.05,
+      "empirical_care_ni_hold_rate": 0.6083,
+      "mean_p": 0.4867,
+      "passes_type_I_calibration": true,
+      "passes_power_target": null
+    },
+    {
+      "scenario": "alt_shift_neg0.35_n252",
+      "n_reps": 120,
+      "n_per_arm": 252,
+      "effect_shift": -0.35,
+      "alpha": 0.05,
+      "empirical_reject_rate": 1.0,
+      "empirical_care_ni_hold_rate": 1.0,
+      "mean_p": 0.0,
+      "passes_type_I_calibration": null,
+      "passes_power_target": true
+    }
+  ],
+  "null_fixture": {
+    "path": "study/simulated/null_arm_equal.jsonl",
+    "n_participants": 600,
+    "p_two_sided": 0.7152923482917937,
+    "reject_null": false,
+    "decision": "fail_to_reject_null_no_issue_flagged",
+    "plain_language": "No statistically significant evidence of an arm difference at \u03b1=0.05 (two-sided p=0.7153). Primary null not rejected \u2014 do not treat this as an 'issue' or as proof of equivalence.",
+    "expect": "fail_to_reject_null_no_issue_flagged when arms truly equal"
+  },
+  "gates": {
+    "null_type_I_in_02_08": true,
+    "pilot_type_I_in_02_08": true,
+    "alt_power_ge_70": true,
+    "null_fixture_no_issue": true
+  },
+  "healthcare_note": "Under no true arm difference the analyzer must usually NOT reject. A single p\u22480.05 is not an 'issue'; reject only at the prereg \u03b1 threshold."
+}

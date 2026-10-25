@@ -52,3 +52,7 @@ jobs:
           STUDY_ALLOW_BASELINE: "1"
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/eval_adversarial.py
+      - name: Study analyzer null calibration (fast)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/simulate_study_calibration.py --reps 40
