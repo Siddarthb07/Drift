@@ -1,0 +1,105 @@
+{
+  "fixtures": [
+    {
+      "id": "v1_midrisk_white",
+      "title": "v1_midrisk_white",
+      "profile": "Age 52 \u00b7 female \u00b7 race/ethnicity: white \u00b7 SBP 132 \u00b7 labs as seeded",
+      "honest": {
+        "cvd": "10-year heart risk band: <5%",
+        "diab": "Diabetes score: <5%",
+        "cancer": "Lifestyle factors listed (no combined risk %)",
+        "hero": "Habit trajectory",
+        "foot": "Published equation \u00b7 educational only \u00b7 not a diagnosis",
+        "heroClass": ""
+      },
+      "baseline": {
+        "cvd": "10-year heart risk: 1.8%",
+        "diab": "Diabetes risk: 1.0%",
+        "cancer": "Cancer relative risk: 0.97\u00d7",
+        "hero": "Health age: 52.5",
+        "foot": "See on-screen disclaimer \u00b7 educational tool",
+        "heroClass": ""
+      },
+      "engine_meta": {
+        "honest_equation": "PREVENT",
+        "baseline_fallback": false
+      }
+    },
+    {
+      "id": "v2_south_asian_same_vitals",
+      "title": "v2_south_asian_same_vitals",
+      "profile": "Age 52 \u00b7 female \u00b7 race/ethnicity: south_asian \u00b7 SBP 132 \u00b7 labs as seeded",
+      "honest": {
+        "cvd": "10-year heart risk band: <5%",
+        "diab": "Diabetes score: <5%",
+        "cancer": "Lifestyle factors listed (no combined risk %)",
+        "hero": "Habit trajectory",
+        "foot": "Published equation \u00b7 educational only \u00b7 not a diagnosis",
+        "heroClass": ""
+      },
+      "baseline": {
+        "cvd": "10-year heart risk: 1.8%",
+        "diab": "Diabetes risk: 1.0%",
+        "cancer": "Cancer relative risk: 0.97\u00d7",
+        "hero": "Health age: 52.5",
+        "foot": "See on-screen disclaimer \u00b7 educational tool",
+        "heroClass": ""
+      },
+      "engine_meta": {
+        "honest_equation": "PREVENT",
+        "baseline_fallback": true
+      }
+    },
+    {
+      "id": "v3_under30",
+      "title": "v3_under30",
+      "profile": "Age 28 \u00b7 male \u00b7 race/ethnicity: hispanic \u00b7 SBP 118 \u00b7 labs as seeded",
+      "honest": {
+        "cvd": "Heart-risk % not estimated \u2014 PREVENT is validated for ages 30\u201379. Under-30 is not shown as 'low risk'.",
+        "diab": "Diabetes score: <5%",
+        "cancer": "Lifestyle factors listed (no combined risk %)",
+        "hero": "Habit trajectory",
+        "foot": "Published equation \u00b7 educational only \u00b7 not a diagnosis",
+        "heroClass": "gray"
+      },
+      "baseline": {
+        "cvd": "Under 40 \u2014 low absolute risk",
+        "diab": "Diabetes risk: 1.0%",
+        "cancer": "Cancer relative risk: 0.95\u00d7",
+        "hero": "Health age: 25.0",
+        "foot": "See on-screen disclaimer \u00b7 educational tool",
+        "heroClass": "green"
+      },
+      "engine_meta": {
+        "honest_equation": null,
+        "baseline_fallback": false
+      }
+    },
+    {
+      "id": "v6_high_risk_smoker",
+      "title": "v6_high_risk_smoker",
+      "profile": "Age 60 \u00b7 male \u00b7 race/ethnicity: white \u00b7 SBP 152 \u00b7 labs as seeded",
+      "honest": {
+        "cvd": "10-year heart risk band: \u226520%",
+        "diab": "Diabetes score: >50%",
+        "cancer": "Lifestyle factors listed (no combined risk %)",
+        "hero": "Consider talking with a clinician soon",
+        "foot": "Published equation \u00b7 educational only \u00b7 not a diagnosis",
+        "heroClass": ""
+      },
+      "baseline": {
+        "cvd": "10-year heart risk: 48.4%",
+        "diab": "Diabetes risk: 50.0%",
+        "cancer": "Cancer relative risk: 2.49\u00d7",
+        "hero": "Health age: 76.0",
+        "foot": "See on-screen disclaimer \u00b7 educational tool",
+        "heroClass": ""
+      },
+      "engine_meta": {
+        "honest_equation": "PREVENT",
+        "baseline_fallback": false
+      }
+    }
+  ],
+  "generated_by": "scripts/render_study_fixtures.py"
+}

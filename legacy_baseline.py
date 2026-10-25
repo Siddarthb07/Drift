@@ -43,7 +43,9 @@ def compute_legacy_baseline(user: Dict[str, Any], daily_rows: List[dict], labs: 
     height = float(user.get("height") or 170)
     weight = float(user.get("weight") or 70)
     bmi = weight / ((height / 100) ** 2) if height else 24
-    # Silent defaults (the harm)
+    # Silent defaults (the harm) — flags enable honesty-key scoring
+    silent_waist = user.get("waist_cm") in (None, "", 0)
+    silent_sbp = user.get("systolic") in (None, "", 0)
     waist = float(user.get("waist_cm") or (94 if sex == "male" else 80))
     sbp = float(user.get("systolic") or 120)
     race_raw = str(user.get("race") or "white").lower()
@@ -115,6 +117,7 @@ def compute_legacy_baseline(user: Dict[str, Any], daily_rows: List[dict], labs: 
             # Fallback only when PCE actually ran on a remapped race
             cvd["legacy_white_fallback"] = race_raw not in ("white", "aa")
             cvd["mapped_race"] = race
+            cvd["silent_sbp_default"] = silent_sbp
             results["CVD"] = cvd
         else:
             results["CVD"] = {
@@ -123,13 +126,19 @@ def compute_legacy_baseline(user: Dict[str, Any], daily_rows: List[dict], labs: 
                 "color": "gray",
                 "modifiable_factors": [],
                 "legacy_white_fallback": False,
+                "silent_sbp_default": silent_sbp,
             }
+
+    # Under-40 path also used silent SBP if missing
+    if "CVD" in results:
+        results["CVD"] = dict(results["CVD"])
+        results["CVD"].setdefault("silent_sbp_default", silent_sbp)
 
     diab = findrisc_diabetes(
         age, bmi, waist, sex, active, veg_daily, bp_meds, has_glucose_hx, family_diab
     )
     diab = dict(diab)
-    diab["silent_waist_default"] = user.get("waist_cm") in (None, "", 0)
+    diab["silent_waist_default"] = silent_waist
     results["Diabetes"] = diab
 
     canc = cancer_lifestyle_risk(

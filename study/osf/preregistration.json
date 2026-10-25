@@ -1,0 +1,64 @@
+{
+  "title": "Executable disclosure contracts for consumer health-risk UIs: vignette RCT (Drift)",
+  "prereg_version": "1.0",
+  "date_drafted": "2026-10-25",
+  "status": "draft_for_OSF_timestamp_before_recruitment",
+  "design": "between-subjects 2-arm (honest vs legacy_baseline)",
+  "platform": "Prolific",
+  "sample": {
+    "target_n_analyzed": 600,
+    "per_arm": 300,
+    "pilot_n": 40,
+    "power": {
+      "primary_effect_size_d": 0.25,
+      "alpha_two_sided": 0.05,
+      "power": 0.8,
+      "n_per_arm_required_approx": 252,
+      "attrition_buffer": "15%"
+    },
+    "quotas": "≥30% Black, Hispanic, or Asian (combined) for arm×race exploratory"
+  },
+  "exclusions": [
+    "failed attention check",
+    "completion time < 3 minutes",
+    "duplicate prolific_id",
+    "incomplete primary items"
+  ],
+  "primary_outcomes": [
+    {
+      "name": "calibrated_overconfidence",
+      "definition": "mean over vignettes of (stated_precision_certainty_1to7 - warranted_certainty_key)",
+      "warranted_keys_locked_before_data": true,
+      "contrast": "honest - baseline (negative = success)"
+    },
+    {
+      "name": "comprehension",
+      "definition": "proportion correct on 4 MC items"
+    }
+  ],
+  "secondary_outcomes": [
+    "care_seeking_v6_noninferiority_margin_0.5_likert",
+    "false_reassurance_v3",
+    "perceived_fairness_v2",
+    "anxiety_single_item",
+    "trust_usefulness",
+    "abandon_after_refusal"
+  ],
+  "analysis": {
+    "primary_model": "LMM: calibrated_overconfidence ~ arm + (1|participant) + (1|vignette); covariates age, gender, health_literacy",
+    "multiple_comparisons": "BH-FDR on secondary family",
+    "care_seeking": "TOST non-inferiority",
+    "confirmatory_vs_exploratory": "separate sections in results"
+  },
+  "ethics": {
+    "irb": "exempt_determination_required_before_recruitment",
+    "data": "no PHI; vignettes fictional; prolific_id only; not stored in users.db"
+  },
+  "materials": [
+    "study/PROTOCOL.md",
+    "study/prolific_survey.html",
+    "study/vignettes.json",
+    "legacy_baseline.py",
+    "scripts/analyze_study.py"
+  ]
+}

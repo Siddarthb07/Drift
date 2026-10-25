@@ -1,0 +1,21 @@
+{
+  "type": "llm_expert_cognitive_walkthrough",
+  "not_human_participants": true,
+  "experts": [
+    {
+      "expert": "A",
+      "scores": {
+        "honest": {"overconfidence": 2, "false_reassurance": 2, "care_seeking": 6, "fairness": 5},
+        "baseline": {"overconfidence": 6, "false_reassurance": 7, "care_seeking": 2, "fairness": 2}
+      },
+      "delta_overconfidence_honest_minus_baseline": -4,
+      "critical_fixes_applied": [
+        "Hide arm label from participants",
+        "Remove researcher annotation leakage from fixture notes",
+        "Rewrite race MC item to be arm-fair; score only on v2",
+        "Add attention check; end-of-study debrief"
+      ]
+    }
+  ],
+  "note": "Exploratory triangulation only. Does not substitute for the preregistered human vignette RCT."
+}

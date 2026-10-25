@@ -1,56 +1,171 @@
 {
-  "n_cases": 16,
+  "n_cases": 17,
   "keys": [
     "no_white_pce_fallback",
-    "no_green_under30",
+    "no_green_under40",
     "no_silent_waist",
+    "no_silent_sbp",
     "no_cancer_rr_hero",
     "no_health_age_hero",
+    "shows_estimate_when_complete"
+  ],
+  "core_keys": [
+    "no_white_pce_fallback",
+    "no_green_under40",
+    "no_silent_waist",
+    "no_silent_sbp",
     "shows_estimate_when_complete"
   ],
   "per_key": {
     "no_white_pce_fallback": {
       "honest": 1.0,
-      "baseline": 0.5
+      "baseline": 0.47058823529411764,
+      "n": 17,
+      "honest_wilson_95": [
+        0.8156763396284354,
+        1.0
+      ],
+      "baseline_wilson_95": [
+        0.26164801196088106,
+        0.6903710268845051
+      ],
+      "delta": 0.5294117647058824
     },
-    "no_green_under30": {
+    "no_green_under40": {
       "honest": 1.0,
-      "baseline": 0.9375
+      "baseline": 0.9411764705882353,
+      "n": 17,
+      "honest_wilson_95": [
+        0.8156763396284354,
+        1.0
+      ],
+      "baseline_wilson_95": [
+        0.730174547964372,
+        0.9895398693548358
+      ],
+      "delta": 0.05882352941176472
     },
     "no_silent_waist": {
       "honest": 1.0,
-      "baseline": 0.9375
+      "baseline": 0.9411764705882353,
+      "n": 17,
+      "honest_wilson_95": [
+        0.8156763396284354,
+        1.0
+      ],
+      "baseline_wilson_95": [
+        0.730174547964372,
+        0.9895398693548358
+      ],
+      "delta": 0.05882352941176472
+    },
+    "no_silent_sbp": {
+      "honest": 1.0,
+      "baseline": 0.9411764705882353,
+      "n": 17,
+      "honest_wilson_95": [
+        0.8156763396284354,
+        1.0
+      ],
+      "baseline_wilson_95": [
+        0.730174547964372,
+        0.9895398693548358
+      ],
+      "delta": 0.05882352941176472
     },
     "no_cancer_rr_hero": {
       "honest": 1.0,
-      "baseline": 0.0
+      "baseline": 0.0,
+      "n": 17,
+      "honest_wilson_95": [
+        0.8156763396284354,
+        1.0
+      ],
+      "baseline_wilson_95": [
+        0.0,
+        0.18432366037156456
+      ],
+      "delta": 1.0
     },
     "no_health_age_hero": {
       "honest": 1.0,
-      "baseline": 0.0
+      "baseline": 0.0,
+      "n": 17,
+      "honest_wilson_95": [
+        0.8156763396284354,
+        1.0
+      ],
+      "baseline_wilson_95": [
+        0.0,
+        0.18432366037156456
+      ],
+      "delta": 1.0
     },
     "shows_estimate_when_complete": {
       "honest": 1.0,
-      "baseline": 1.0
+      "baseline": 1.0,
+      "n": 17,
+      "honest_wilson_95": [
+        0.8156763396284354,
+        1.0
+      ],
+      "baseline_wilson_95": [
+        0.8156763396284354,
+        1.0
+      ],
+      "delta": 0.0
     }
   },
   "honest_mean_pass_rate": 1.0,
-  "baseline_mean_pass_rate": 0.5625,
-  "delta_honest_minus_baseline": 0.4375,
+  "baseline_mean_pass_rate": 0.6134453781512605,
+  "delta_honest_minus_baseline": 0.38655462184873945,
+  "core_honest_mean": 1.0,
+  "core_baseline_mean": 0.8588235294117649,
+  "core_delta": 0.14117647058823513,
   "honest_all_pass": true,
+  "mutation_tests": {
+    "no_white_pce_fallback": {
+      "caught": true,
+      "vector_value": false
+    },
+    "no_green_under40": {
+      "caught": true,
+      "vector_value": false
+    },
+    "no_silent_waist": {
+      "caught": true,
+      "vector_value": false
+    },
+    "no_silent_sbp": {
+      "caught": true,
+      "vector_value": false
+    },
+    "no_cancer_rr_hero": {
+      "caught": true,
+      "vector_value": false
+    },
+    "no_health_age_hero": {
+      "caught": true,
+      "vector_value": false
+    },
+    "all_caught": true
+  },
+  "baseline_git_pin": "a8dcc33 (pre-fix silent waist/SBP/under-40/health-age in app_v5.py)",
   "rows": [
     {
       "id": "v1_midrisk_white",
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -58,13 +173,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.6666666666666666,
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
       "all_pass": false
     },
     {
@@ -72,13 +189,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -86,13 +205,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": false,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.5,
+      "pass_rate": 0.5714285714285714,
+      "core_pass_rate": 0.8,
       "all_pass": false
     },
     {
@@ -100,13 +221,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -114,13 +237,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": false,
+        "no_green_under40": false,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.5,
+      "pass_rate": 0.5714285714285714,
+      "core_pass_rate": 0.8,
       "all_pass": false
     },
     {
@@ -128,13 +253,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -142,13 +269,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": false,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": false,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.3333333333333333,
+      "pass_rate": 0.42857142857142855,
+      "core_pass_rate": 0.6,
       "all_pass": false
     },
     {
@@ -156,13 +285,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -170,13 +301,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.6666666666666666,
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
       "all_pass": false
     },
     {
@@ -184,13 +317,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -198,13 +333,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.6666666666666666,
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
       "all_pass": false
     },
     {
@@ -212,13 +349,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -226,13 +365,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.6666666666666666,
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
       "all_pass": false
     },
     {
@@ -240,13 +381,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -254,13 +397,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.6666666666666666,
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
       "all_pass": false
     },
     {
@@ -268,13 +413,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -282,13 +429,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.6666666666666666,
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
       "all_pass": false
     },
     {
@@ -296,13 +445,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -310,13 +461,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.6666666666666666,
+      "pass_rate": 0.7142857142857143,
+      "core_pass_rate": 1.0,
       "all_pass": false
     },
     {
@@ -324,13 +477,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -338,13 +493,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": false,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.5,
+      "pass_rate": 0.5714285714285714,
+      "core_pass_rate": 0.8,
       "all_pass": false
     },
     {
@@ -352,13 +509,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -366,13 +525,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": false,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.5,
+      "pass_rate": 0.5714285714285714,
+      "core_pass_rate": 0.8,
       "all_pass": false
     },
     {
@@ -380,13 +541,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -394,13 +557,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": false,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.5,
+      "pass_rate": 0.5714285714285714,
+      "core_pass_rate": 0.8,
       "all_pass": false
     },
     {
@@ -408,13 +573,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -422,13 +589,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": false,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.5,
+      "pass_rate": 0.5714285714285714,
+      "core_pass_rate": 0.8,
       "all_pass": false
     },
     {
@@ -436,13 +605,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -450,13 +621,15 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": false,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.5,
+      "pass_rate": 0.5714285714285714,
+      "core_pass_rate": 0.8,
       "all_pass": false
     },
     {
@@ -464,13 +637,15 @@
       "mode": "honest",
       "checks": {
         "no_white_pce_fallback": true,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": true,
         "no_health_age_hero": true,
         "shows_estimate_when_complete": true
       },
       "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
       "all_pass": true
     },
     {
@@ -478,13 +653,47 @@
       "mode": "baseline",
       "checks": {
         "no_white_pce_fallback": false,
-        "no_green_under30": true,
+        "no_green_under40": true,
         "no_silent_waist": true,
+        "no_silent_sbp": true,
         "no_cancer_rr_hero": false,
         "no_health_age_hero": false,
         "shows_estimate_when_complete": true
       },
-      "pass_rate": 0.5,
+      "pass_rate": 0.5714285714285714,
+      "core_pass_rate": 0.8,
+      "all_pass": false
+    },
+    {
+      "id": "miss_sbp_south_asian",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "core_pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "miss_sbp_south_asian",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": false,
+        "no_green_under40": true,
+        "no_silent_waist": true,
+        "no_silent_sbp": false,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.42857142857142855,
+      "core_pass_rate": 0.6,
       "all_pass": false
     }
   ]

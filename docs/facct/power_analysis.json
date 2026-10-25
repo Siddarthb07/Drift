@@ -1,0 +1,44 @@
+{
+  "method": "two-sample equal-n z approximation for t-test",
+  "alpha_two_sided": 0.05,
+  "power": 0.8,
+  "rows": [
+    {
+      "d": 0.2,
+      "n_per_arm": 393,
+      "n_total": 786,
+      "with_15pct_attrition_total": 925
+    },
+    {
+      "d": 0.25,
+      "n_per_arm": 252,
+      "n_total": 504,
+      "with_15pct_attrition_total": 593
+    },
+    {
+      "d": 0.3,
+      "n_per_arm": 175,
+      "n_total": 350,
+      "with_15pct_attrition_total": 412
+    },
+    {
+      "d": 0.35,
+      "n_per_arm": 129,
+      "n_total": 258,
+      "with_15pct_attrition_total": 304
+    },
+    {
+      "d": 0.5,
+      "n_per_arm": 63,
+      "n_total": 126,
+      "with_15pct_attrition_total": 149
+    }
+  ],
+  "chosen": {
+    "d": 0.25,
+    "n_per_arm": 252,
+    "n_total": 504,
+    "with_15pct_attrition_total": 593
+  },
+  "note": "Prereg targets d=0.25 \u2192 ~252/arm; study aims 300/arm after attrition."
+}

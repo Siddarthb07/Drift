@@ -1,95 +1,95 @@
 {
-  "n_rows": 864,
-  "n_per_cell": 12,
+  "n_rows": 2880,
+  "n_per_cell": 40,
   "summary": {
     "complete_coverage": {
       "white|honest": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "white|baseline": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "aa|honest": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "aa|baseline": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "south_asian|honest": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "south_asian|baseline": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "east_asian|honest": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "east_asian|baseline": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "hispanic|honest": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "hispanic|baseline": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "middle_eastern|honest": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "middle_eastern|baseline": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "indigenous|honest": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "indigenous|baseline": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "multiracial|honest": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "multiracial|baseline": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "unspecified|honest": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       },
       "unspecified|baseline": {
-        "show": 12,
+        "show": 40,
         "refuse": 0,
         "show_rate": 1.0
       }

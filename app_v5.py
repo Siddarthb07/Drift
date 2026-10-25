@@ -10,7 +10,9 @@ from token_vault import seal as seal_token, open_token
 
 DB = "users.db"
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production-32chars+")
+_DEFAULT_SECRET = "change-me-in-production-32chars+"
+app.secret_key = os.getenv("SECRET_KEY", _DEFAULT_SECRET)
+STUDY_INSECURE = app.secret_key == _DEFAULT_SECRET
 OAUTH_CFG = oauth_watch.oauth_config()
 
 # ─── DB init ─────────────────────────────────────────────────
@@ -657,10 +659,171 @@ def model_cards():
 
 @app.route("/study/prolific")
 def study_prolific():
-    """Prolific vignette survey (static HTML; arm via ?arm=honest|baseline)."""
+    """Prolific vignette survey. Arm assigned server-side (session); ignore client ?arm=."""
     path = os.path.join(os.path.dirname(__file__), "study", "prolific_survey.html")
     with open(path, encoding="utf-8") as f:
         return f.read()
+
+
+def _study_db_init():
+    with sqlite3.connect(DB) as conn:
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS study_assignments (
+                token TEXT PRIMARY KEY,
+                arm TEXT NOT NULL,
+                prolific_id TEXT,
+                created_at TEXT NOT NULL
+            )"""
+        )
+
+
+@app.route("/study/assign", methods=["GET"])
+def study_assign():
+    """Server-side assignment stored in SQLite (opaque token only to client)."""
+    import random
+    if STUDY_INSECURE:
+        return jsonify({
+            "error": "set_SECRET_KEY",
+            "hint": "Export a strong SECRET_KEY before fielding; default key refuses study assign.",
+        }), 503
+    _study_db_init()
+    token = session.get("study_token")
+    if token:
+        with sqlite3.connect(DB) as conn:
+            row = conn.execute(
+                "SELECT arm FROM study_assignments WHERE token=?", (token,)
+            ).fetchone()
+        if row:
+            return jsonify({"token": token, "fixtures_url": "/study/fixtures"})
+    # Balance on assignments (not only completions)
+    with sqlite3.connect(DB) as conn:
+        n_h = conn.execute(
+            "SELECT COUNT(*) FROM study_assignments WHERE arm='honest'"
+        ).fetchone()[0]
+        n_b = conn.execute(
+            "SELECT COUNT(*) FROM study_assignments WHERE arm='baseline'"
+        ).fetchone()[0]
+    if n_h < n_b:
+        arm = "honest"
+    elif n_b < n_h:
+        arm = "baseline"
+    else:
+        arm = random.choice(["honest", "baseline"])
+    token = os.urandom(16).hex()
+    with sqlite3.connect(DB) as conn:
+        conn.execute(
+            "INSERT INTO study_assignments(token, arm, created_at) VALUES (?,?,?)",
+            (token, arm, datetime.datetime.utcnow().isoformat() + "Z"),
+        )
+    session["study_token"] = token
+    # Do NOT put arm in the session cookie
+    return jsonify({"token": token, "fixtures_url": "/study/fixtures"})
+
+
+def _arm_for_token(token: str):
+    if not token:
+        return None
+    _study_db_init()
+    with sqlite3.connect(DB) as conn:
+        row = conn.execute(
+            "SELECT arm FROM study_assignments WHERE token=?", (token,)
+        ).fetchone()
+    return row[0] if row else None
+
+
+@app.route("/study/fixtures")
+def study_fixtures():
+    """Return participant cards for the assigned arm only (no arm field in payload)."""
+    token = request.args.get("token") or session.get("study_token")
+    arm = _arm_for_token(token)
+    if arm not in ("honest", "baseline"):
+        return jsonify({"error": "assign_first"}), 400
+    path = os.path.join(os.path.dirname(__file__), "study", "rendered_fixtures.json")
+    if not os.path.exists(path):
+        return jsonify({"error": "run scripts/render_study_fixtures.py first"}), 503
+    data = json.loads(open(path, encoding="utf-8").read())
+    cards = []
+    for fx in data.get("fixtures", []):
+        view = fx.get(arm) or {}
+        cards.append({
+            "id": fx["id"],
+            "title": fx.get("title"),
+            "profile": fx.get("profile"),
+            "cvd": view.get("cvd"),
+            "diab": view.get("diab"),
+            "cancer": view.get("cancer"),
+            "hero": view.get("hero"),
+            "foot": view.get("foot"),
+            "heroClass": view.get("heroClass") or "",
+        })
+    order_key = f"study_order_{token}"
+    if order_key not in session:
+        import random
+        order = list(range(len(cards)))
+        random.shuffle(order)
+        session[order_key] = order
+    order = session[order_key]
+    ordered = [cards[i] for i in order if i < len(cards)]
+    return jsonify({"cards": ordered, "token": token})
+
+
+@app.route("/study/collect", methods=["POST"])
+def study_collect():
+    """Append-only collector for vignette study JSON (no PHI; Prolific ID only)."""
+    try:
+        payload = request.get_json(force=True, silent=False)
+    except Exception:
+        return jsonify({"ok": False, "error": "invalid_json"}), 400
+    if not isinstance(payload, dict):
+        return jsonify({"ok": False, "error": "expected_object"}), 400
+    token = payload.get("token") or session.get("study_token")
+    arm = _arm_for_token(token)
+    if arm not in ("honest", "baseline"):
+        return jsonify({"ok": False, "error": "no_assignment"}), 400
+    allowed = {
+        "completion_code", "pid", "prolific_id", "responses",
+        "started", "finished", "consent_version", "attention_ok", "token",
+    }
+    clean = {k: payload[k] for k in payload if k in allowed}
+    clean["arm"] = arm  # server truth from SQLite
+    clean["received_at"] = datetime.datetime.utcnow().isoformat() + "Z"
+    clean["remote"] = (request.headers.get("X-Forwarded-For") or request.remote_addr or "")[:64]
+    # Bind prolific_id on first completion; reject arm re-roll via new token for same pid later (soft)
+    pid = clean.get("prolific_id") or clean.get("pid")
+    if pid:
+        _study_db_init()
+        with sqlite3.connect(DB) as conn:
+            conn.execute(
+                "UPDATE study_assignments SET prolific_id=? WHERE token=? AND (prolific_id IS NULL OR prolific_id='')",
+                (pid, token),
+            )
+    out_dir = os.path.join(os.path.dirname(__file__), "study", "results")
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, "responses.jsonl")
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(clean, ensure_ascii=False) + "\n")
+    return jsonify({"ok": True, "stored": True})
+
+
+@app.route("/study/status")
+def study_status():
+    path = os.path.join(os.path.dirname(__file__), "study", "results", "responses.jsonl")
+    n = n_h = n_b = 0
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                n += 1
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if row.get("arm") == "honest":
+                    n_h += 1
+                elif row.get("arm") == "baseline":
+                    n_b += 1
+    return jsonify({"n_submissions": n, "n_honest": n_h, "n_baseline": n_b, "collector": "/study/collect"})
 
 
 if __name__ == "__main__":

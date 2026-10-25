@@ -1,29 +1,39 @@
 # Prolific runbook (Drift vignette study)
 
+## Gate checklist (do not skip)
+- [ ] IRB / ethics **exemption determination letter** on file (`IRB_EXEMPTION_REQUEST.md` drafted)
+- [ ] OSF preregistration **timestamped** (`osf/preregistration.json`)
+- [ ] Warranted-certainty keys dual-coded by two clinicians and locked
+- [ ] Survey hosted on HTTPS with `/study/collect` reachable
+- [ ] Completion code validation path tested end-to-end
+- [ ] Debrief text reviewed
+
 ## Materials
-- Survey UI: `study/prolific_survey.html` (static) or Flask route `/study/prolific`
-- Protocol: `PROTOCOL.md`
-- Items: `survey_items.md`
-- Arms: `?arm=honest` or `?arm=baseline` (or random if omitted)
+- Survey UI: `study/prolific_survey.html` or Flask `/study/prolific`
+- Collector: `POST /study/collect` → `study/results/responses.jsonl`
+- Status: `GET /study/status`
+- Analysis: `python scripts/analyze_study.py study/results/`
+- Arms: two Prolific studies or URL balancer with `?arm=honest` / `?arm=baseline`
+- **Do not** show arm name or researcher annotations to participants (survey already hardened)
 
 ## Suggested Prolific setup
 - **Title:** Understanding health risk displays (academic study)
 - **Device:** Desktop preferred
-- **Time:** 10 minutes
-- **Pay:** Follow Prolific fair-pay (≥ £9/hr equivalent)
-- **Sample:** N≈300 (150/arm); between-subjects
-- **Screeners:** Age 18+; English fluent; optional oversample South Asian participants
-- **Completion code:** Shown at end (`DRIFT-XXXX`); validate via downloaded JSON or hosted collector
+- **Time:** 10–12 minutes
+- **Pay:** ≥ £9/hr equivalent (≈ £1.50–2.00 for 10–12 min)
+- **Sample:** Pilot N=40 labeled pilot; then N≈600 analyzed (300/arm)
+- **Screeners:** Age 18+; English fluent; optional race quotas (≥30% Black/Hispanic/Asian combined)
+- **Attention:** built-in item; exclude failers per prereg
+- **Completion code:** `DRIFT-XXXX` shown at end; match against collector JSONL
 
-## Hosting options
-1. **Static:** Upload `prolific_survey.html` to any HTTPS host; set Prolific study URL with `?arm=honest` for half the slots and `?arm=baseline` for the other (two Prolific studies or URL balancer).
-2. **Local/lab:** `python app_v5.py` → `http://127.0.0.1:5001/study/prolific`
-3. **Collector (recommended before scale):** Add a small POST endpoint or use Qualtrics/Gorilla mirroring the same items; keep arm assignment server-side.
-
-## IRB
-Do not launch until IRB approval or exemption is on file. Vignettes are fictional; no participant health data in Drift `users.db`.
+## Hosting
+1. **Required:** `export SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_hex(32))')` — study assign refuses the default key.
+2. `python scripts/render_study_fixtures.py && python app_v5.py` (port 5001)
+3. HTTPS tunnel: `cloudflared tunnel --url http://127.0.0.1:5001`
+4. Or deploy Flask behind any HTTPS reverse proxy
+5. Static HTML alone cannot persist responses — use collector. Arms live in SQLite `study_assignments`, not the cookie.
 
 ## Analysis
-Primary: overconfidence (1–7) honest vs baseline (preregistered).  
-Secondary: comprehension (% correct on MC keys `c`/`c`), care-seeking on high-risk vignette.  
-Export: participant JSON downloads or aggregator CSV.
+Primary: calibrated overconfidence (stated − warranted) honest vs baseline.  
+Secondary: comprehension; care-seeking on v6 (TOST).  
+Export: `study/results/responses.jsonl` → `docs/facct/human_study_results.json`.

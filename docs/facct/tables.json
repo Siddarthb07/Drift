@@ -1,84 +1,35 @@
 {
-  "pce_buggy_reconstruction_pct": 100,
-  "pce_fixed_pct": 2.1,
-  "race_parity_honest": [
-    {
-      "race": "white",
-      "equation": "PREVENT",
-      "exact": 1.9,
-      "band": "<5%"
-    },
-    {
-      "race": "aa",
-      "equation": "PREVENT",
-      "exact": 1.9,
-      "band": "<5%"
-    },
-    {
-      "race": "south_asian",
-      "equation": "PREVENT",
-      "exact": 1.9,
-      "band": "<5%"
-    },
-    {
-      "race": "east_asian",
-      "equation": "PREVENT",
-      "exact": 1.9,
-      "band": "<5%"
-    },
-    {
-      "race": "hispanic",
-      "equation": "PREVENT",
-      "exact": 1.9,
-      "band": "<5%"
-    },
-    {
-      "race": "middle_eastern",
-      "equation": "PREVENT",
-      "exact": 1.9,
-      "band": "<5%"
-    },
-    {
-      "race": "indigenous",
-      "equation": "PREVENT",
-      "exact": 1.9,
-      "band": "<5%"
-    },
-    {
-      "race": "multiracial",
-      "equation": "PREVENT",
-      "exact": 1.9,
-      "band": "<5%"
-    },
-    {
-      "race": "unspecified",
-      "equation": "PREVENT",
-      "exact": 1.9,
-      "band": "<5%"
-    }
-  ],
-  "prefer_pce_routing": {
-    "white": {
-      "equation": "PCE",
-      "band": "<5%"
-    },
-    "south_asian": {
-      "equation": "PREVENT",
-      "band": "<5%"
-    }
+  "table1_pce_transcription": {
+    "buggy_white_female_pct": 100.0,
+    "corrected_white_female_pct": 2.1
   },
-  "south_asian_legacy_vs_honest": {
-    "legacy_equation": "PCE",
-    "legacy_mapped_race": "white",
-    "legacy_fallback": true,
-    "legacy_risk_pct": 1.8,
-    "honest_equation": "PREVENT",
-    "honest_band": "<5%",
-    "honest_exact": 1.9
+  "table1_prevent_golden": {
+    "female_high_risk_target_pct": 9.2,
+    "tolerance_pp": 0.35,
+    "male_base_target_pct": 2.9
   },
-  "vignette_eval": {
-    "honest_mean_pass_rate": 1.0,
-    "baseline_mean_pass_rate": 0.49999999999999994,
-    "delta": 0.5
-  }
+  "table2_nhanes": {
+    "n": 2500,
+    "seed": 42,
+    "overall_honest_show": 0.6232,
+    "misattributed_equation_count": 710,
+    "fallback_among_pce_scored_nonwhite": 1.0,
+    "by_race_misattributed_n": {
+      "white": 0,
+      "aa": 0,
+      "hispanic": 405,
+      "east_asian": 228,
+      "multiracial": 77
+    },
+    "construction_note": "Fallback among PCE-scored non-White/non-AA is 1.0 by legacy design; NHANES estimates burden counts and honest coverage."
+  },
+  "table3_vignette": {
+    "n_cases": 17,
+    "honest_mean": 1.0,
+    "baseline_mean": 0.6134,
+    "delta": 0.3866,
+    "core_delta": 0.1412,
+    "mutation_all_caught": true
+  },
+  "baseline_git_pin": "a8dcc33"
 }

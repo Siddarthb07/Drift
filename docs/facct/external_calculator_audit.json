@@ -1,0 +1,64 @@
+{
+  "method": "Public-documentation disclosure audit of consumer/clinical CVD calculators (not runtime scrape). Two keys scored from published UI/docs: race handling; silent default / coverage messaging.",
+  "date": "2026-10-25",
+  "keys": [
+    "documents_race_coverage",
+    "avoids_silent_white_fallback_claim",
+    "shows_uncertainty_or_band",
+    "avoids_biological_age_hero"
+  ],
+  "tools": [
+    {
+      "name": "AHA PREVENT Online Calculator",
+      "url": "https://professional.heart.org/en/guidelines-and-statements/prevent-calculator",
+      "documents_race_coverage": true,
+      "avoids_silent_white_fallback_claim": true,
+      "shows_uncertainty_or_band": false,
+      "avoids_biological_age_hero": true,
+      "notes": "Race-free by equation design; professional audience; point estimates."
+    },
+    {
+      "name": "ACC/AHA ASCVD Risk Estimator Plus (PCE lineage)",
+      "url": "https://tools.acc.org/ascvd-risk-estimator-plus/",
+      "documents_race_coverage": true,
+      "avoids_silent_white_fallback_claim": true,
+      "shows_uncertainty_or_band": false,
+      "avoids_biological_age_hero": true,
+      "notes": "Race limited to White/AA historically; professional tool with documented populations."
+    },
+    {
+      "name": "ClinCalc PREVENT",
+      "url": "https://clincalc.com/cardiology/PREVENT/",
+      "documents_race_coverage": true,
+      "avoids_silent_white_fallback_claim": true,
+      "shows_uncertainty_or_band": false,
+      "avoids_biological_age_hero": true,
+      "notes": "Documents input ranges; clamps out-of-range (Drift refuses instead)."
+    },
+    {
+      "name": "Typical consumer 'health age' / wellness apps (class)",
+      "url": null,
+      "documents_race_coverage": false,
+      "avoids_silent_white_fallback_claim": false,
+      "shows_uncertainty_or_band": false,
+      "avoids_biological_age_hero": false,
+      "notes": "Class-level observation from product category audits; not a named defendant. Drift's legacy arm instantiates this class."
+    },
+    {
+      "name": "QRISK3 (UK)",
+      "url": "https://qrisk.org/",
+      "documents_race_coverage": true,
+      "avoids_silent_white_fallback_claim": true,
+      "shows_uncertainty_or_band": false,
+      "avoids_biological_age_hero": true,
+      "notes": "Explicit ethnicity categories in validated equation — different design choice than PREVENT."
+    }
+  ],
+  "summary": {
+    "professional_tools_document_coverage": true,
+    "consumer_wellness_class_often_fails_keys": true,
+    "drift_honest_aligns_with": "professional coverage honesty + bands + no bio-age hero",
+    "drift_legacy_aligns_with": "consumer wellness failure modes"
+  },
+  "limitation": "Documentation audit, not blinded multi-rater screenshot coding of live consumer apps. Strengthens external grounding of the legacy arm as a class, not a named-app lawsuit."
+}

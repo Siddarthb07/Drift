@@ -1,8 +1,8 @@
 # Executable Disclosure Contracts for Consumer Health-Risk Interfaces
 
-**Working title for ACM FAccT** (focus: *System development and deployment*; *Evaluations*)  
-Artifact: Drift · Status: computational evaluation complete; human vignette study preregistered (not fielded)  
-Generated tables: `docs/facct/tables.json` · `vignette_eval.json`
+**Working title for ACM FAccT** (tracks: *System development and deployment*; *Evaluations*)  
+Artifact: **Drift** · Status: computational + NHANES coverage evaluation complete; human vignette RCT **preregistered and instrument-hardened, not yet fielded** (IRB determination pending)  
+Reproduce: `docs/facct/*.json` · `study/` · `scripts/`
 
 ---
 
@@ -10,9 +10,9 @@ Generated tables: `docs/facct/tables.json` · `vignette_eval.json`
 
 Consumer health apps turn published equations into screens. In that product path, harms often arise from **disclosure policy**—silent imputation, White-equation fallback for unsupported racial categories, and false-precision heroes—rather than from training a new model. We introduce **executable disclosure contracts**: a machine-readable claim ledger bound to runtime display policy (band / refuse / factors-only), enforced on the serving path.
 
-We implement the contract in **Drift**, an open educational tracker. The default CVD path uses race-free AHA PREVENT equations so users across racial/ethnic labels receive the same calculator without invented ethnicity multipliers; optional PCE is available only for White and African American cohorts. A pinned **legacy baseline** reconstructs prior failure modes (White fallback, silent waist/SBP/cholesterol defaults, green under-40 framing, health-age and compounded cancer-RR heroes) for controlled comparison.
+We implement the contract in **Drift**, an open educational tracker. The default CVD path uses race-free AHA PREVENT equations; optional PCE is available only for White and African American cohorts. A pinned **legacy baseline** (git `a8dcc33`) reconstructs prior failure modes for controlled comparison.
 
-**Results.** Reconstructing the prior PCE White-female transcription yields **100%** 10-year risk on a standard reference profile; the corrected equation yields **2.1%**. On identical vitals, honest-mode PREVENT returns the same estimate across nine race labels (**1.9%**), while the legacy baseline maps South Asian users onto White PCE when PCE actually runs (`legacy_white_fallback=true`). Scoring both arms on the **same** six honesty keys across 16 fixtures, mean pass rates are **1.00 (honest) vs 0.56 (legacy baseline)** (Δ=+0.44; see Table 3). Missing-eGFR refusal is uniform across race strata (coverage audit). We do not claim clinical validation or substitute computational checks for human trust studies; a preregistered vignette protocol is released for follow-on work.
+**Results.** (1) Correcting a PCE White-female transcription bug changes a reference profile from **100%** to **2.1%** 10-year risk. (2) PREVENT coefficients match published worked examples (female high-risk ASCVD **9.2%** within 0.35pp). (3) On NHANES 2017–March 2020 adults (n=2500), **by construction** every legacy PCE score for non-White/non-AA races is a White fallback; NHANES estimates the **burden**: **228 Asian** and **405 Hispanic** profiles in-sample receive a misattributed equation under legacy (0 White/AA). Honest-mode show rates are ~55–65% across strata; refusal tracks missing labs/BMI—not ethnicity remapping. (4) Shared-key fixtures: honest vs legacy **1.00 vs 0.61** (core Δ=+0.14 after excluding always-on heroes); mutation tests catch injected failures. A documentation audit of professional calculators vs consumer “health age” class situates the legacy arm externally. We do **not** claim clinical validation or fielded human trust results; a preregistered N≈600 RCT (server-side concealed assignment, engine-rendered cards) awaits IRB.
 
 ---
 
@@ -20,34 +20,37 @@ We implement the contract in **Drift**, an open educational tracker. The default
 
 Audits of clinical algorithms have examined race coefficients and miscalibration [1–3]. Risk-communication research shows that precision and biological-age metaphors drive anchoring and medicalization [4–6]. Between these literatures sits the **interface compiler**: code that maps equations to UI states. Footers and ethics markdown do not constrain that compiler.
 
-**Thesis.** Accountability for consumer health-risk UIs can be operationalized as **executable disclosure contracts**—policies that make unsupported claims mechanically un-showable—evaluated against a faithful legacy baseline.
+**Thesis.** Accountability for consumer health-risk UIs can be operationalized as **executable disclosure contracts**—policies that make unsupported claims mechanically un-showable—evaluated against a faithful legacy baseline and population coverage data.
 
 **Research questions.**
-- **RQ1.** Can disclosure rules (provenance, refusal, intervals, bands) be enforced on the runtime path with testable invariants?
-- **RQ2.** Can a race-free default equation provide usable CVD disclosure across racial/ethnic labels without White fallback or invented uplifts?
-- **RQ3.** Relative to a reconstructed legacy UI, how large is the honesty-key pass-rate gap under identical vignette fixtures?
+- **RQ1.** Can disclosure rules (provenance, refusal, intervals, bands) be enforced on the runtime path with testable invariants (including mutation tests)?
+- **RQ2.** Does a race-free default eliminate White-equation fallback on real demographic strata (NHANES), and what coverage cost does honest refusal impose by group?
+- **RQ3.** Relative to a reconstructed legacy UI, how large is the honesty-key pass-rate gap under identical fixtures? *(Human overconfidence remains preregistered, not fielded.)*
 
 **Contributions.**
-1. Disclosure-contract architecture (`claims.yaml` + `disclosure.py` + `risk_engine.py`).
-2. Race-free PREVENT default with coverage-limited PCE; explicit equation-sex; hard refuse on missing eGFR/SBP/lipids and out-of-range BMI.
-3. Pinned legacy baseline (`legacy_baseline.py`) enabling like-for-like honesty evaluation.
-4. Computational results + preregistered human protocol (not fielded here).
+1. Disclosure-contract architecture (`claims.yaml` + `disclosure.py` + `risk_engine.py`) with CI validation and mutation-tested honesty keys.
+2. Race-free PREVENT default with coverage-limited PCE; golden tests against published PREVENT worked examples.
+3. Pinned legacy baseline (`legacy_baseline.py`, behaviors present at `a8dcc33`).
+4. NHANES disclosure-disparity audit (fallback and show/refuse by race).
+5. Field-ready human protocol (OSF draft prereg, IRB exemption packet, Prolific survey without arm/annotation leakage, `/study/collect`).
 
-**Non-goals.** Clinical validation; SaMD clearance; synthetic-ML AUROC as evidence; new ethnic risk coefficients.
+**Non-goals.** Clinical validation; SaMD clearance; synthetic-ML AUROC as evidence; new ethnic risk coefficients; claiming RQ3 human endpoints without fielded data.
 
 ---
 
 ## 2. Related Work
 
-**Documentation & contracts.** Model cards and datasheets [7,8] specify intended use; FactSheets and usage cards extend documentation toward operational constraints. We push further: display policy is code on the serving path.
+**Documentation & contracts.** Model cards and datasheets [7,8] specify intended use; FactSheets and usage cards extend documentation toward operational constraints [14]. We push further: display policy is code on the serving path.
 
 **Abstention / selective prediction.** Refusing to predict under distribution shift is classical [9]; we apply abstention to *consumer disclosure*, including missingness and population coverage—not only model confidence.
 
-**Race in clinical equations.** Critiques of race correction [1] and PCE limits [2,3] motivate refusing White fallback. PREVENT’s race-free design [10] is our default deployable alternative. We do **not** treat PREVENT as globally calibrated outside its evidence base; “cross-race usability” ≠ “worldwide incidence validity.”
+**Race in clinical equations.** Critiques of race correction [1] and PCE limits [2,3] motivate refusing White fallback. PREVENT’s race-free design [10] is our default deployable alternative. Race-free is not synonymous with globally calibrated incidence; eGFR race debates [15] illustrate adjacent stakes. We do **not** treat PREVENT as worldwide-valid.
 
 **Risk communication & HCI.** Numeracy, icon arrays, and uncertainty visualization [4–6,11] motivate bands over false precision and trajectory framing over biological-age heroes.
 
 **Consumer health & regulation.** FDA SaMD / CDS guidance and EU MDR highlight labeling and intended use [12]; Drift stays educational and documents that boundary in consent UI.
+
+**Algorithmic audits & healthcare ML.** Obermeyer et al. [16] and Raji et al. [17] motivate empirical audits of deployed systems; Chen et al. [18] survey fairness in healthcare ML. We audit the *disclosure compiler*, not a learned predictor.
 
 ---
 
@@ -72,7 +75,7 @@ Each output has a `claim_id` with `evidence_class`, `validated_population`, `dis
 
 ### 3.3 Legacy baseline (comparison arm)
 
-`legacy_baseline.py` reconstructs prior **disclosure** behavior: unsupported race→White PCE *when PCE runs*; waist=94/80; SBP=120; under-40 green low-risk; health-age hero; compounded cancer RR. Missing cholesterol still refuses (as in the old product)—we do not invent 200/50. PCE *coefficients* use the corrected math; the 100% transcription bug is isolated in Table 1. This baseline is **not** the product default.
+`legacy_baseline.py` reconstructs disclosure behavior verified present in git `a8dcc33` (`docs/facct/baseline_git_pin.json`): unsupported race→White PCE *when PCE runs*; waist=94/80; SBP=120; under-40 green low-risk; health-age hero; compounded cancer RR. Missing cholesterol still refuses. PCE *coefficients* use corrected math; the 100% transcription bug is isolated in Table 1. This baseline is **not** the product default.
 
 ### 3.4 Product integrity
 
@@ -84,63 +87,70 @@ Consent before data entry; export/delete; OAuth with refresh + optional Fernet t
 
 ### 4.1 Equation fidelity (Table 1)
 
-White-female reference (age 55, TC 213, HDL 50, SBP 120 untreated, nonsmoker, nondiabetic):
+White-female PCE reference (age 55, TC 213, HDL 50, SBP 120 untreated, nonsmoker, nondiabetic):
 
 | Implementation | Risk |
 |---|---|
 | Buggy transcription (reconstructed) | **100%** |
 | Corrected Drift PCE | **2.1%** |
 
-Source: Goff et al. worked-example regime; golden tests in `tests/test_pce_reference.py`.
+PREVENT golden (Khan/CVrisk worked examples): female high-risk ASCVD target **9.2%** (Drift within 0.35pp); male base ≈**2.9%** (within 0.4pp). Source: `tests/test_prevent_golden.py`.
 
-### 4.2 Routing & fallback (Table 2)
+### 4.2 NHANES disclosure disparity (Table 2)
 
-From `tables.json`:
-- Prefer-PCE: White → PCE; South Asian → PREVENT.
-- South Asian identical vitals: legacy maps to White PCE (`legacy_white_fallback=true`, risk 1.8%); honest uses PREVENT band (&lt;5%, exact 1.9%).
+NHANES 2017–March 2020 public XPT (DEMO/BPXO/BMX/HDL/TCHOL/BIOPRO/SMQ/DIQ/BPQ); adults 30–79; seed-42 subsample n=2500.
 
-Cross-label PREVENT parity (nine races, identical vitals) is **expected by construction** (race not an input). We report it as a wiring invariant, not a fairness discovery. The substantive fairness-relevant result is **elimination of White fallback** in the legacy comparison.
+**Construction note.** For races ∉ {White, AA}, legacy White-fallback rate **among PCE-scored profiles is 1.0 by design**. NHANES’s contribution is (a) **how many people** that policy touches, and (b) **honest coverage cost** by stratum under observed missingness.
+
+| Stratum | n | Lab-complete | Honest show | Misattributed PCE count (legacy) | Fallback among PCE-scored |
+|---|---:|---:|---:|---:|---:|
+| White | 803 | 0.82 | 0.65 | 0 | 0.00 |
+| African American | 679 | 0.75 | 0.55 | 0 | 0.00 |
+| Hispanic | 562 | 0.77 | 0.65 | **405** | **1.00** |
+| Asian (RIDRETH3=6; all NHA) | 336 | 0.73 | 0.65 | **228** | **1.00** |
+| Multiracial/other | 120 | 0.78 | 0.64 | **77** | **1.00** |
+
+Honest refusal (~35–45%) is a deliberate coverage cost from missing SBP/lipids/eGFR/BMI gates. AA honest show (0.55 vs ~0.65) is only partly explained by lab-completeness (~7 of ~11pp)—we treat residual AA coverage gap as an open product risk (prompt for labs / factors-only path), not as “tracking” alone. Limitations: unweighted subsample; no mortality calibration; Asian not South/East-split; DIQ/BPQ linked with residual misclassification risk.
 
 ### 4.3 Shared-key vignette evaluation (Table 3)
 
-Sixteen fixtures (6 study vignettes + 10 race×sex complete-profile grid). Both arms scored on the **same** keys. Per-key rates (`vignette_eval.json`):
+Seventeen fixtures (study vignettes + race×sex grid + missing-SBP). Both arms scored on the same keys; mutation tests inject each failure into honest outputs and require the scorer to catch them (`all_caught=true`).
 
-| Honesty key | Honest | Legacy baseline |
-|---|---|---|
-| No White-PCE fallback | 1.00 | 0.50 |
-| No green under-40 claim | 1.00 | 0.94 |
-| No silent waist default | 1.00 | 0.94 |
-| No cancer-RR hero | 1.00 | 0.00 |
-| No health-age hero | 1.00 | 0.00 |
-| Shows estimate when inputs complete | 1.00 | 1.00 |
-| **Mean** | **1.00** | **0.56** |
-| **Δ** | | **+0.44** |
+| Honesty key | Honest | Legacy | Δ |
+|---|---:|---:|---:|
+| No White-PCE fallback | 1.00 | 0.47 | +0.53 |
+| No green under-40 | 1.00 | 0.94 | +0.06 |
+| No silent waist | 1.00 | 0.94 | +0.06 |
+| No silent SBP | 1.00 | 0.94 | +0.06 |
+| No cancer-RR hero | 1.00 | 0.00 | +1.00 |
+| No health-age hero | 1.00 | 0.00 | +1.00 |
+| Shows estimate when complete | 1.00 | 1.00 | 0.00 |
+| **Mean (all keys)** | **1.00** | **0.61** | **+0.39** |
+| **Mean (core keys\*)** | **1.00** | **0.86** | **+0.14** |
 
-The last key shows honesty does not trade away service when inputs are complete. Cancer-RR and health-age keys dominate the gap by design of the legacy arm; White-fallback remains a material intermediate gap (0.44).
+\*Core excludes cancer-RR and health-age (always-on in legacy by design). White-fallback remains the material intermediate gap. Wilson 95% CIs in `vignette_eval.json`.
 
-### 4.4 Coverage cost of eGFR refusal (Table 4)
+### 4.4 Human study (preregistered; not fielded)
 
-`scripts/coverage_audit.py` samples profiles by race × missingness. On complete inputs, honest show-rate ≈ 1.0 across races. When eGFR is missing, honest CVD refuse-rate = **1.0 for every race stratum**—a uniform coverage cost, not an ethnicity-targeted denial. We treat this as a deliberate tradeoff: inventing eGFR=90 would restore coverage by reintroducing silent defaults. Product mitigation is prompting users to enter eGFR (or a clinician-provided value), not imputation.
+Protocol: `study/PROTOCOL.md` · OSF draft: `study/osf/preregistration.json` · IRB packet: `study/IRB_EXEMPTION_REQUEST.md` · Power: d=0.25 → ≈252/arm (target 300/arm; `power_analysis.json`).
 
-### 4.5 Human study
-
-Protocol in `study/PROTOCOL.md`. **Not fielded.** RQ3’s human overconfidence endpoint remains open; computational Δ supports a systems claim about removable failure modes.
+Instrument hardened after expert walkthrough: **no arm label**, **no researcher annotations** on cards, arm-fair race item scored on the South Asian vignette, attention check, end debrief, POST `/study/collect`. Primary endpoint (calibrated overconfidence) remains **unanswered** until IRB + recruitment.
 
 ---
 
 ## 5. Discussion & limitations
 
-Executable contracts make ethics docs falsifiable. The legacy baseline answers the “self-inflicted bug” critique by pinning failure modes as an explicit experimental control.
+Executable contracts make ethics docs falsifiable. The legacy baseline answers the “self-inflicted bug” critique by pinning failure modes to a git SHA. Under that policy, fallback among PCE-scored non-White/non-AA profiles is 1.0 by construction; NHANES’s contribution is the **burden count** (710 misattributed scores in a 2500-adult subsample: 405 Hispanic, 228 Asian, 77 multiracial) and the honest arm’s coverage cost by stratum.
 
-**Limitations.** PREVENT coefficients follow an open Supplemental-Table-S12-style reimplementation (PyPREVENT lineage); production deployments should cross-check AHA distributions. FINDRISC is European-derived. Binary equation sex excludes validated non-binary specifications. No NHANES outcome linkage here. Single-developer positionality; co-design unfinished. Without fielded humans, trust/anchoring claims stay provisional.
+**Limitations.** PREVENT coeffs follow PyPREVENT / Khan S12 lineage with golden cross-checks, not a multi-site clinical validation. FINDRISC is European-derived. Binary equation sex. No NHANES mortality calibration. Single-developer positionality. Without fielded humans, trust/anchoring claims stay provisional. Expert LLM walkthrough is exploratory only.
 
-**Ethics.** Special-category data; consent; educational labeling; no diagnostic marketing.
+**Ethics.** Special-category data in the product path; study path uses fictional vignettes. Consent; educational labeling; no diagnostic marketing.
 
 ---
 
 ## 6. Conclusion
 
-Drift shows that consumer health-risk harms can be attacked at the disclosure layer: contracts, refusal, race-free defaults, and a measurable honesty gap versus a faithful legacy UI. We release the artifact for FAccT-style scrutiny and a protocol for the remaining human question.
+Drift attacks consumer health-risk harms at the disclosure layer: contracts, refusal, race-free defaults that remove White fallback by policy, NHANES burden counts under the legacy policy, and a measurable honesty-key gap versus a git-pinned legacy UI. We release the artifact and a field-ready protocol for the remaining human question.
 
 ---
 
@@ -150,28 +160,35 @@ Drift shows that consumer health-risk harms can be attacked at the disclosure la
 2. Yadlowsky S et al. Revised PCE implications. *Ann Intern Med* 2018.  
 3. Goff DC et al. 2013 ACC/AHA risk guideline. *Circulation* 2014.  
 4. Gigerenzer G et al. Helping doctors and patients make sense of health statistics. *Psychol Sci Public Interest* 2007.  
-5. Fagerlin A et al. Patient decision aids / risk communication reviews.  
-6. Ancker JS et al. Design features of graphs in health risk communication.  
+5. Fagerlin A, Zikmund-Fisher BJ, Ubel PA. Helping patients decide: ten steps to better risk communication. *JNCI* 2011.  
+6. Ancker JS et al. Design features of graphs in health risk communication: a systematic review. *JAMIA* 2006.  
 7. Mitchell M et al. Model Cards. *FAccT* 2019.  
 8. Gebru T et al. Datasheets for Datasets. *CACM* 2021.  
 9. Chow C. On optimum recognition error and reject tradeoff. *IEEE Trans IT* 1970.  
 10. Khan SS et al. AHA PREVENT equations. *Circulation* 2024.  
-11. Hullman J, Kay M et al. Uncertainty visualization / graphical inference.  
-12. FDA. Clinical Decision Support / SaMD guidance documents.  
-13. Lindström J, Tuomilehto J. FINDRISC. *Diabetes Care* 2003.
+11. Hullman J, Kay M. Uncertainty visualization / graphical inference. *IEEE TVCG* (survey line).  
+12. FDA. Clinical Decision Support Software guidance; SaMD guidance.  
+13. Lindström J, Tuomilehto J. FINDRISC. *Diabetes Care* 2003.  
+14. Arnold M et al. FactSheets / usage documentation for AI services (IBM / follow-ons).  
+15. Diao JA et al. Clinical implications of removing race from eGFR equations. *NEJM* 2021.  
+16. Obermeyer Z et al. Dissecting racial bias in an algorithm used to manage the health of populations. *Science* 2019.  
+17. Raji ID et al. Closing the AI accountability gap. *FAccT* 2020.  
+18. Chen IY et al. Ethical machine learning in healthcare. *Annu Rev Biomed Data Sci* 2021.
 
 ---
 
 ## Appendix — Reproduce
 
 ```bash
-pip install -r requirements.txt
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt pandas numpy flask pytest
 pytest -q
 python scripts/validate_claims.py
-python scripts/drift_audit.py
+python scripts/baseline_git_pin.py
 python scripts/eval_vignettes.py
-# regenerates docs/facct/vignette_eval.json; tables via interpreter snippet in CI notes
-python app_v5.py  # ?mode=honest|baseline
+# NHANES XPTs under data/nhanes/ (gitignored); then:
+python scripts/nhanes_coverage_audit.py
+python scripts/power_analysis.py
+python app_v5.py  # /study/prolific  /study/collect  ?mode=honest|baseline
 ```
 
-Artifact paths: `legacy_baseline.py`, `risk_engine.py`, `claims.yaml`, `study/`, `cards/SYSTEM_CARD.md`, `ml/QUARANTINE.md`.
+Artifact paths: `legacy_baseline.py`, `risk_engine.py`, `claims.yaml`, `study/`, `cards/SYSTEM_CARD.md`, `ml/QUARANTINE.md`, `docs/facct/`.

@@ -1,0 +1,143 @@
+{
+  "source": "NHANES 2017-March 2020 pre-pandemic public XPT",
+  "files": [
+    "P_DEMO",
+    "P_BPXO",
+    "P_BMX",
+    "P_HDL",
+    "P_TCHOL",
+    "P_BIOPRO",
+    "P_SMQ",
+    "P_DIQ",
+    "P_BPQ"
+  ],
+  "seed": 42,
+  "max_n": 2500,
+  "n_analyzed": 2500,
+  "overall": {
+    "honest_show_rate": 0.6232,
+    "legacy_white_fallback_rate_among_all": 0.284,
+    "legacy_pce_scored_n": 1736,
+    "legacy_white_fallback_rate_among_pce_scored": 0.40898617511520735,
+    "misattributed_equation_count": 710,
+    "construction_note": "For races outside {white,aa}, every legacy PCE score is a White fallback by design. NHANES estimates how many people that policy would touch and honest refuse rates by stratum."
+  },
+  "by_race": {
+    "white": {
+      "n": 803,
+      "lab_completeness": {
+        "complete_rate": 0.8244,
+        "egfr_rate": 0.8767,
+        "lipids_rate": 0.8792,
+        "sbp_rate": 0.8605
+      },
+      "honest": {
+        "show_rate": 0.6526,
+        "refuse_rate": 0.3474
+      },
+      "legacy": {
+        "show_or_green_rate": 0.9041,
+        "white_fallback_rate_among_all": 0.0,
+        "white_fallback_rate_among_pce_scored": 0.0,
+        "pce_scored_n": 589,
+        "under40_green_rate": 0.1706,
+        "misattributed_equation_count": 0
+      },
+      "note": null
+    },
+    "aa": {
+      "n": 679,
+      "lab_completeness": {
+        "complete_rate": 0.7496,
+        "egfr_rate": 0.8262,
+        "lipids_rate": 0.8306,
+        "sbp_rate": 0.838
+      },
+      "honest": {
+        "show_rate": 0.5464,
+        "refuse_rate": 0.4536
+      },
+      "legacy": {
+        "show_or_green_rate": 0.8645,
+        "white_fallback_rate_among_all": 0.0,
+        "white_fallback_rate_among_pce_scored": 0.0,
+        "pce_scored_n": 437,
+        "under40_green_rate": 0.2209,
+        "misattributed_equation_count": 0
+      },
+      "note": null
+    },
+    "hispanic": {
+      "n": 562,
+      "lab_completeness": {
+        "complete_rate": 0.7722,
+        "egfr_rate": 0.8915,
+        "lipids_rate": 0.8968,
+        "sbp_rate": 0.806
+      },
+      "honest": {
+        "show_rate": 0.6548,
+        "refuse_rate": 0.3452
+      },
+      "legacy": {
+        "show_or_green_rate": 0.9253,
+        "white_fallback_rate_among_all": 0.7206,
+        "white_fallback_rate_among_pce_scored": 1.0,
+        "pce_scored_n": 405,
+        "under40_green_rate": 0.2046,
+        "misattributed_equation_count": 405
+      },
+      "note": "Among PCE-scored non-White/non-AA profiles, White fallback is 1.0 by construction; report misattributed_equation_count as the population burden."
+    },
+    "multiracial": {
+      "n": 120,
+      "lab_completeness": {
+        "complete_rate": 0.775,
+        "egfr_rate": 0.875,
+        "lipids_rate": 0.8667,
+        "sbp_rate": 0.8333
+      },
+      "honest": {
+        "show_rate": 0.6417,
+        "refuse_rate": 0.3583
+      },
+      "legacy": {
+        "show_or_green_rate": 0.9,
+        "white_fallback_rate_among_all": 0.6417,
+        "white_fallback_rate_among_pce_scored": 1.0,
+        "pce_scored_n": 77,
+        "under40_green_rate": 0.2583,
+        "misattributed_equation_count": 77
+      },
+      "note": "Among PCE-scored non-White/non-AA profiles, White fallback is 1.0 by construction; report misattributed_equation_count as the population burden."
+    },
+    "asian_nhanes": {
+      "n": 336,
+      "lab_completeness": {
+        "complete_rate": 0.7292,
+        "egfr_rate": 0.8214,
+        "lipids_rate": 0.8333,
+        "sbp_rate": 0.7917
+      },
+      "honest": {
+        "show_rate": 0.6488,
+        "refuse_rate": 0.3512
+      },
+      "legacy": {
+        "show_or_green_rate": 0.881,
+        "white_fallback_rate_among_all": 0.6786,
+        "white_fallback_rate_among_pce_scored": 1.0,
+        "pce_scored_n": 228,
+        "under40_green_rate": 0.2024,
+        "misattributed_equation_count": 228
+      },
+      "note": "Asian stratum is RIDRETH3=6 (Non-Hispanic Asian) \u2014 NHANES does not separate South vs East Asian. Among PCE-scored non-White/non-AA profiles, White fallback is 1.0 by construction of the legacy arm; NHANES contributes the count of people affected and the honest-arm coverage cost."
+    }
+  },
+  "limitations": [
+    "Cross-sectional coverage/fallback only; no mortality linkage / calibration.",
+    "eGFR from serum creatinine via 2009 CKD-EPI approx for input completeness.",
+    "DIQ010 / BPQ050A linked when XPT present; residual misclassification possible.",
+    "Not nationally weighted point estimates (subsample + raw rates)."
+  ]
+}

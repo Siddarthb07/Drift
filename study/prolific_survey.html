@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Drift vignette study</title>
+  <title>Health risk display study</title>
   <style>
     :root { font-family: "Source Serif 4", Georgia, serif; color: #1a1a1a; background: #f7f4ef; }
     body { max-width: 720px; margin: 0 auto; padding: 24px 18px 64px; line-height: 1.5; }
@@ -13,13 +13,15 @@
     .risk { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
     .risk div { background: #f3efe7; padding: 10px; border-radius: 8px; font-size: 0.85rem; }
     .risk strong { display: block; font-size: 1.05rem; }
+    .hero { margin-top: 10px; padding: 10px; border-radius: 8px; background: #f3efe7; font-size: 0.95rem; }
+    .hero.green { background: #e5f2e8; }
+    .hero.gray { background: #ececec; }
     label { display: block; margin: 10px 0 4px; font-size: 0.95rem; }
-    input[type=range] { width: 100%; }
-    button, .btn { background: #1f4b3a; color: #fff; border: 0; border-radius: 8px; padding: 10px 14px; cursor: pointer; font: inherit; }
+    input[type=range], select { width: 100%; }
+    button { background: #1f4b3a; color: #fff; border: 0; border-radius: 8px; padding: 10px 14px; cursor: pointer; font: inherit; }
     button.secondary { background: #6b6358; }
     .hidden { display: none; }
     .banner { background: #e8f0ec; border: 1px solid #b7d0c4; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.9rem; }
-    textarea { width: 100%; min-height: 70px; font: inherit; }
     code { font-size: 0.85em; }
   </style>
 </head>
@@ -28,41 +30,51 @@
   <p class="muted">Educational vignettes only — not your personal health data. ~8–12 minutes. Prolific ID required for payment.</p>
 
   <section id="screen-consent" class="card">
-    <p>You will see fictional patient profiles and risk displays from a research tool called Drift. Answer questions about what you understand. Do not use this for medical decisions.</p>
+    <p>You will see fictional patient profiles and risk displays from a research tool. Answer questions about what you understand. Do not use this for medical decisions.</p>
     <label><input type="checkbox" id="c1" /> I am 18+ and consent to participate.</label>
     <label><input type="checkbox" id="c2" /> I understand these are fictional vignettes.</label>
     <label>Prolific ID <input id="pid" placeholder="Prolific ID" style="width:100%;padding:8px;margin-top:4px;" /></label>
     <p style="margin-top:14px;"><button id="startBtn" type="button">Start</button></p>
+    <p id="bootErr" class="muted"></p>
   </section>
 
   <section id="screen-task" class="hidden">
-    <div class="banner">Arm: <strong id="armLabel"></strong> · Vignette <span id="vigIndex"></span>/<span id="vigTotal"></span></div>
+    <div class="banner">Vignette <span id="vigIndex"></span>/<span id="vigTotal"></span></div>
     <div class="card">
       <h2 id="vigTitle" style="font-size:1.1rem;margin:0 0 8px;"></h2>
       <p class="muted" id="vigProfile"></p>
       <div class="risk" id="vigRisk"></div>
-      <p class="muted" id="vigNote" style="margin-top:10px;"></p>
+      <div class="hero" id="vigHero"></div>
+      <p class="muted" id="vigFoot" style="margin-top:10px;"></p>
     </div>
     <div class="card">
       <label>How certain are you that the display shows a precise measurement of this person’s personal risk? (<span id="q1v">4</span>)</label>
       <input type="range" id="q1" min="1" max="7" value="4" />
       <label>Would you recommend this person talk to a clinician soon? (<span id="q2v">4</span>)</label>
       <input type="range" id="q2" min="1" max="7" value="4" />
-      <label>Multiple choice: For a South Asian adult, Drift’s honest default CVD equation is…</label>
+      <label>Based on this display, which best describes how race/ethnicity was handled for heart-risk scoring?</label>
       <select id="q3">
         <option value="">Select</option>
-        <option value="a">White PCE coefficients</option>
-        <option value="b">African American PCE</option>
-        <option value="c">Race-free PREVENT</option>
-        <option value="d">An invented ethnicity multiplier</option>
+        <option value="a">It used White-group coefficients for a non-White person without saying so</option>
+        <option value="b">It used a race-free equation (or said race was not an input)</option>
+        <option value="c">It invented a custom ethnicity multiplier</option>
+        <option value="d">It is impossible to tell from the display</option>
       </select>
-      <label>Health-age style numbers in consumer apps are usually…</label>
+      <label>A “health age” or “biological age” number in a consumer app is most often…</label>
       <select id="q4">
         <option value="">Select</option>
-        <option value="a">Levine PhenoAge</option>
-        <option value="b">A validated clinical biomarker</option>
-        <option value="c">Often unpublished heuristics</option>
+        <option value="a">Levine PhenoAge from a clinical lab panel</option>
+        <option value="b">A validated clinical biomarker required by FDA</option>
+        <option value="c">An unpublished heuristic or marketing construct</option>
         <option value="d">CDC life expectancy tables</option>
+      </select>
+      <label>Attention: select “three” for this item</label>
+      <select id="qAttn">
+        <option value="">Select</option>
+        <option value="1">one</option>
+        <option value="2">two</option>
+        <option value="3">three</option>
+        <option value="4">four</option>
       </select>
       <p style="margin-top:14px;"><button id="nextBtn" type="button">Next</button></p>
     </div>
@@ -72,96 +84,118 @@
     <h2>Thank you</h2>
     <p>Copy the completion code below into Prolific:</p>
     <p><code id="codeOut">DRIFT-XXXX</code></p>
-    <p class="muted">Download your responses (for researchers running locally):</p>
-    <button class="secondary" id="dlBtn" type="button">Download JSON</button>
-    <pre id="raw" class="muted" style="white-space:pre-wrap;font-size:0.75rem;"></pre>
+    <p class="muted">Debrief: one study arm reconstructs older disclosure failures for research comparison. Displays were fictional.</p>
+    <button class="secondary" id="dlBtn" type="button">Download responses (no condition label)</button>
   </section>
 
   <script>
-    // Embedded fixtures (keep in sync with study/vignettes.json + engine outputs for demo).
-    // Live server mode: open via /study/prolific when Flask is running for computed cards.
-    const FIXTURES = [
-      {id:"v1", title:"Mid-risk adult (complete labs)", profile:"Age 52 · female equation sex · SBP 132 · TC 215 · HDL 52 · eGFR 90 · race White",
-        honest:{cvd:"PREVENT band <5%", diab:"FINDRISC band", cancer:"Lifestyle factors only", hero:"Habits 4/6 · stable", note:"Evidence class: published_equation"},
-        baseline:{cvd:"PCE 1.8%", diab:"FINDRISC 17.0%", cancer:"2.1× relative risk", hero:"Health age 55.5", note:"Clinical Algorithms badge"}},
-      {id:"v2", title:"Same vitals · South Asian", profile:"Identical labs to previous · race South Asian",
-        honest:{cvd:"PREVENT band <5% (race-free)", diab:"FINDRISC band", cancer:"Factors only", hero:"Habits trajectory", note:"No White PCE fallback"},
-        baseline:{cvd:"PCE via White coefficients", diab:"FINDRISC %", cancer:"RR product", hero:"Health age number", note:"legacy_white_fallback"}},
-      {id:"v3", title:"Age 28", profile:"Age 28 · labs present · Hispanic",
-        honest:{cvd:"Refused — age not estimated", diab:"FINDRISC if inputs allow", cancer:"Factors / refuse", hero:"Habits", note:"Not shown as green low risk"},
-        baseline:{cvd:"Under 40 — low absolute risk (green)", diab:"FINDRISC %", cancer:"RR", hero:"Health age", note:"False reassurance framing"}},
-      {id:"v6", title:"High-risk smoker", profile:"Age 60 · male · SBP 152 · smoker · diabetes · TC 240 · HDL 38",
-        honest:{cvd:"PREVENT band ≥20% + referral CTA", diab:"High FINDRISC", cancer:"Factors", hero:"Habits", note:"Care-seeking guidance shown"},
-        baseline:{cvd:"High % point estimate", diab:"High %", cancer:"Elevated RR×", hero:"Older health age", note:"Footer disclaimer only"}}
-    ];
-
-    const params = new URLSearchParams(location.search);
-    const arm = (params.get("arm") === "baseline") ? "baseline" : (params.get("arm") === "honest" ? "honest" : (Math.random() < 0.5 ? "honest" : "baseline"));
-    const state = { arm, pid: "", responses: [], i: 0, started: Date.now(), code: "DRIFT-" + Math.random().toString(36).slice(2,8).toUpperCase() };
-
     const $ = (id) => document.getElementById(id);
+    const state = {
+      token: null,
+      pid: "",
+      cards: [],
+      responses: [],
+      i: 0,
+      started: Date.now(),
+      code: "DRIFT-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
+    };
+
     $("q1").oninput = () => $("q1v").textContent = $("q1").value;
     $("q2").oninput = () => $("q2v").textContent = $("q2").value;
 
     function render() {
-      const v = FIXTURES[state.i];
-      const view = v[state.arm];
-      $("armLabel").textContent = state.arm;
+      const v = state.cards[state.i];
       $("vigIndex").textContent = state.i + 1;
-      $("vigTotal").textContent = FIXTURES.length;
+      $("vigTotal").textContent = state.cards.length;
       $("vigTitle").textContent = v.title;
       $("vigProfile").textContent = v.profile;
       $("vigRisk").innerHTML = `
-        <div><strong>CVD</strong>${view.cvd}</div>
-        <div><strong>Diabetes</strong>${view.diab}</div>
-        <div><strong>Cancer</strong>${view.cancer}</div>`;
-      $("vigNote").textContent = view.hero + " · " + view.note;
+        <div><strong>Heart risk</strong>${v.cvd || ""}</div>
+        <div><strong>Diabetes</strong>${v.diab || ""}</div>
+        <div><strong>Cancer</strong>${v.cancer || ""}</div>`;
+      $("vigHero").textContent = v.hero || "";
+      $("vigHero").className = "hero " + (v.heroClass || "");
+      $("vigFoot").textContent = v.foot || "";
       $("q1").value = 4; $("q1v").textContent = "4";
       $("q2").value = 4; $("q2v").textContent = "4";
-      $("q3").value = ""; $("q4").value = "";
+      $("q3").value = ""; $("q4").value = ""; $("qAttn").value = "";
     }
 
-    $("startBtn").onclick = () => {
+    $("startBtn").onclick = async () => {
       if (!$("c1").checked || !$("c2").checked || !$("pid").value.trim()) {
         alert("Please complete consent and Prolific ID."); return;
       }
       state.pid = $("pid").value.trim();
+      try {
+        const a = await fetch("/study/assign", { credentials: "same-origin" }).then(r => r.json());
+        if (!a.token) throw new Error("assign failed");
+        state.token = a.token;
+        const f = await fetch("/study/fixtures?token=" + encodeURIComponent(state.token), { credentials: "same-origin" }).then(r => r.json());
+        if (!f.cards || !f.cards.length) throw new Error(f.error || "no fixtures");
+        state.cards = f.cards;
+      } catch (e) {
+        $("bootErr").textContent = "Could not start study session. Researchers: run app_v5.py and scripts/render_study_fixtures.py.";
+        return;
+      }
       $("screen-consent").classList.add("hidden");
       $("screen-task").classList.remove("hidden");
       render();
     };
 
-    $("nextBtn").onclick = () => {
-      if (!$("q3").value || !$("q4").value) { alert("Please answer both multiple-choice items."); return; }
-      const v = FIXTURES[state.i];
+    $("nextBtn").onclick = async () => {
+      if (!$("q3").value || !$("q4").value || !$("qAttn").value) {
+        alert("Please answer all items."); return;
+      }
+      const v = state.cards[state.i];
       state.responses.push({
         prolific_id: state.pid,
-        arm: state.arm,
         vignette: v.id,
         overconfidence: +$("q1").value,
         care_seeking: +$("q2").value,
-        mc_south_asian_equation: $("q3").value,
+        mc_race_handling: $("q3").value,
         mc_health_age: $("q4").value,
-        mc_south_asian_correct: $("q3").value === "c",
         mc_health_age_correct: $("q4").value === "c",
+        attention_ok: $("qAttn").value === "3",
         t_ms: Date.now() - state.started,
       });
       state.i += 1;
-      if (state.i >= FIXTURES.length) {
+      if (state.i >= state.cards.length) {
         $("screen-task").classList.add("hidden");
         $("screen-done").classList.remove("hidden");
         $("codeOut").textContent = state.code;
-        const payload = { completion_code: state.code, ...state, finished: new Date().toISOString() };
-        $("raw").textContent = JSON.stringify(payload, null, 2);
-        window.__DRIFT_STUDY__ = payload;
+        const payload = {
+          completion_code: state.code,
+          token: state.token,
+          pid: state.pid,
+          prolific_id: state.pid,
+          responses: state.responses,
+          started: new Date(state.started).toISOString(),
+          finished: new Date().toISOString(),
+          consent_version: "2026-10-25c",
+          attention_ok: state.responses.every(r => r.attention_ok),
+        };
+        // Participant download: strip server token only; never include arm
+        window.__DRIFT_STUDY_DL__ = {
+          completion_code: payload.completion_code,
+          prolific_id: payload.prolific_id,
+          responses: payload.responses.map(({prolific_id, vignette, overconfidence, care_seeking, mc_race_handling, mc_health_age, attention_ok, t_ms}) =>
+            ({vignette, overconfidence, care_seeking, mc_race_handling, mc_health_age, attention_ok, t_ms})),
+          finished: payload.finished,
+        };
+        await fetch("/study/collect", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(payload),
+        }).catch(() => {});
       } else render();
     };
 
     $("dlBtn").onclick = () => {
-      const blob = new Blob([JSON.stringify(window.__DRIFT_STUDY__, null, 2)], {type:"application/json"});
+      const blob = new Blob([JSON.stringify(window.__DRIFT_STUDY_DL__, null, 2)], {type:"application/json"});
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `drift_study_${state.pid}_${state.arm}.json`;
+      a.download = `drift_study_responses.json`;
       a.click();
     };
   </script>

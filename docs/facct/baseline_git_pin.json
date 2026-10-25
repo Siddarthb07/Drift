@@ -1,0 +1,14 @@
+{
+  "pin_sha": "a8dcc33",
+  "pin_subject": "Initial project upload",
+  "behaviors_present_in_pin": {
+    "silent_waist_94_80": true,
+    "silent_sbp_120": true,
+    "under_40_green": true,
+    "health_age_call": true,
+    "race_default_white": true
+  },
+  "all_present": true,
+  "legacy_module": "legacy_baseline.py",
+  "note": "Baseline arm reconstructs these disclosure behaviors; PCE math uses corrected coeffs."
+}
