@@ -56,3 +56,9 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python scripts/simulate_study_calibration.py --reps 40
+      - name: 100-patient mixed cohort (clean/show/warn)
+        env:
+          DRIFT_AUDIT: "0"
+          STUDY_ALLOW_BASELINE: "1"
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/patient_cohort_sim.py --seed 42 --n 100

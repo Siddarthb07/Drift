@@ -1,0 +1,177 @@
+{
+  "seed": 42,
+  "n": 100,
+  "all_passed": true,
+  "pass_rate": 1.0,
+  "by_bucket": {
+    "clean": {
+      "n": 34,
+      "pass": 34,
+      "fail": 0,
+      "shown": 34,
+      "refused": 0,
+      "mean_pct_when_shown": 0.262
+    },
+    "show": {
+      "n": 33,
+      "pass": 33,
+      "fail": 0,
+      "shown": 33,
+      "refused": 0,
+      "mean_pct_when_shown": 13.688
+    },
+    "warn": {
+      "n": 33,
+      "pass": 33,
+      "fail": 0,
+      "shown": 0,
+      "refused": 33,
+      "mean_pct_when_shown": null
+    }
+  },
+  "failures": [],
+  "sample": {
+    "clean": [
+      {
+        "id": "clean_009",
+        "bucket": "clean",
+        "ok": true,
+        "reasons": [],
+        "shown": true,
+        "pct": 0.3,
+        "band": "<5%",
+        "gate": null,
+        "refused": false,
+        "equation": "PREVENT",
+        "age": 31,
+        "race": "south_asian",
+        "sex": "male"
+      },
+      {
+        "id": "clean_001",
+        "bucket": "clean",
+        "ok": true,
+        "reasons": [],
+        "shown": true,
+        "pct": 0.3,
+        "band": "<5%",
+        "gate": null,
+        "refused": false,
+        "equation": "PREVENT",
+        "age": 31,
+        "race": "aa",
+        "sex": "male"
+      },
+      {
+        "id": "clean_015",
+        "bucket": "clean",
+        "ok": true,
+        "reasons": [],
+        "shown": true,
+        "pct": 0.5,
+        "band": "<5%",
+        "gate": null,
+        "refused": false,
+        "equation": "PREVENT",
+        "age": 37,
+        "race": "south_asian",
+        "sex": "male"
+      }
+    ],
+    "show": [
+      {
+        "id": "show_008",
+        "bucket": "show",
+        "ok": true,
+        "reasons": [],
+        "shown": true,
+        "pct": 16.1,
+        "band": "7.5\u201320%",
+        "gate": null,
+        "refused": false,
+        "equation": "PREVENT",
+        "age": 63,
+        "race": "hispanic",
+        "sex": "male"
+      },
+      {
+        "id": "show_007",
+        "bucket": "show",
+        "ok": true,
+        "reasons": [],
+        "shown": true,
+        "pct": 8.9,
+        "band": "7.5\u201320%",
+        "gate": null,
+        "refused": false,
+        "equation": "PREVENT",
+        "age": 62,
+        "race": "aa",
+        "sex": "female"
+      },
+      {
+        "id": "show_031",
+        "bucket": "show",
+        "ok": true,
+        "reasons": [],
+        "shown": true,
+        "pct": 10.7,
+        "band": "7.5\u201320%",
+        "gate": null,
+        "refused": false,
+        "equation": "PREVENT",
+        "age": 66,
+        "race": "aa",
+        "sex": "female"
+      }
+    ],
+    "warn": [
+      {
+        "id": "warn_024",
+        "bucket": "warn",
+        "ok": true,
+        "reasons": [],
+        "shown": false,
+        "pct": null,
+        "band": null,
+        "gate": "age_range",
+        "refused": true,
+        "equation": "prevent_ascvd",
+        "age": 25,
+        "race": "white",
+        "sex": "male"
+      },
+      {
+        "id": "warn_003",
+        "bucket": "warn",
+        "ok": true,
+        "reasons": [],
+        "shown": false,
+        "pct": null,
+        "band": null,
+        "gate": "age_range",
+        "refused": true,
+        "equation": "prevent_ascvd",
+        "age": 25,
+        "race": "south_asian",
+        "sex": "female"
+      },
+      {
+        "id": "warn_011",
+        "bucket": "warn",
+        "ok": true,
+        "reasons": [],
+        "shown": false,
+        "pct": null,
+        "band": null,
+        "gate": "age_range",
+        "refused": true,
+        "equation": "prevent_ascvd",
+        "age": 81,
+        "race": "multiracial",
+        "sex": "female"
+      }
+    ]
+  },
+  "note": "clean=complete low-risk must show \u22645%; show=complete elevated must show; warn=missing/out-of-range must refuse (no silent number)."
+}
