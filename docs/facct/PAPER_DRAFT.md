@@ -12,7 +12,7 @@ Consumer health apps turn published equations into screens. In that product path
 
 We implement the contract in **Drift**, an open educational tracker. The default CVD path uses race-free AHA PREVENT equations; optional PCE is available only for White and African American cohorts. A pinned **legacy baseline** (git `a8dcc33`) reconstructs prior failure modes for controlled comparison.
 
-**Results.** (1) Correcting a PCE White-female transcription bug changes a reference profile from **100%** to **2.1%** 10-year risk. (2) PREVENT coefficients match published worked examples (female high-risk ASCVD **9.2%** within 0.35pp). (3) On NHANES 2017–March 2020 adults (n=2500), **by construction** every legacy PCE score for non-White/non-AA races is a White fallback; NHANES estimates the **burden**: **228 Asian** and **405 Hispanic** profiles in-sample receive a misattributed equation under legacy (0 White/AA). Honest-mode show rates are ~55–65% across strata; refusal tracks missing labs/BMI—not ethnicity remapping. (4) Shared-key fixtures: honest vs legacy **1.00 vs 0.61** (core Δ=+0.14 after excluding always-on heroes); mutation tests catch injected failures. A documentation audit of professional calculators vs consumer “health age” class situates the legacy arm externally. We do **not** claim clinical validation or fielded human trust results; a preregistered N≈600 RCT (server-side concealed assignment, engine-rendered cards) awaits IRB.
+**Results.** (1) PCE White-female transcription bug: **100%→2.1%**. (2) PREVENT goldens match published worked examples (ASCVD **9.2%** within 0.35pp). (3) On NHANES 2017–March 2020 adults (full eligible sample; WTMECPRP weights; 2021 race-free CKD-EPI), legacy White-PCE fallback among PCE-scored non-White/non-AA is **1.0 by construction**; burden counts and honest show rates are reported in Table 2 (post BMI-gate fix: White≈0.76, AA≈0.66). When both arms are numeric, **band reclassification ≈49%** overall (AA≈61%). Refusal gates decompose to missing SBP/lipids/range—not ethnicity remapping. (4) Shared-key fixtures + metamorphic tests (race-swap invariance, missing-SBP refuse, BMI≥40 still shows ASCVD). Fail-closed claim ledger + CI. Named external calculator audit (exploratory). Human RCT **not fielded**.
 
 ---
 
@@ -64,10 +64,11 @@ Each output has a `claim_id` with `evidence_class`, `validated_population`, `dis
 
 | Gate | Behavior |
 |---|---|
-| Missing SBP, lipids, eGFR, or equation-sex | Refuse CVD |
-| BMI outside 18.5–39.9 or labs outside PREVENT ranges | Refuse (no clamp) |
+| Missing SBP, lipids, eGFR, height/weight, or equation-sex | Refuse CVD |
+| Labs outside PREVENT ranges | Refuse (no clamp) |
+| BMI outside 18.5–39.9 | **ASCVD default:** show with coverage caveat (BMI coeffs=0); **total-CVD path:** refuse |
 | Age &lt;30 or &gt;79 | Refuse (not green “low”) |
-| Default CVD | PREVENT (race-free) |
+| Default CVD | PREVENT ASCVD (race-free) |
 | Prefer PCE ∧ race∈{white,aa} ∧ age≥40 | PCE |
 | Prefer PCE ∧ unsupported race | PREVENT + note |
 | Missing waist (FINDRISC) | Score **interval**, not cutoff imputation |
@@ -102,13 +103,15 @@ NHANES 2017–March 2020 public XPT (DEMO/BPXO/BMX/HDL/TCHOL/BIOPRO/SMQ/DIQ/BPQ)
 
 **Construction note.** For races ∉ {White, AA}, legacy White-fallback rate **among PCE-scored profiles is 1.0 by design**. NHANES’s contribution is (a) **how many people** that policy touches, and (b) **honest coverage cost** by stratum under observed missingness.
 
-| Stratum | n | Lab-complete | Honest show | Misattributed PCE count (legacy) | Fallback among PCE-scored |
-|---|---:|---:|---:|---:|---:|
-| White | 803 | 0.82 | 0.65 | 0 | 0.00 |
-| African American | 679 | 0.75 | 0.55 | 0 | 0.00 |
-| Hispanic | 562 | 0.77 | 0.65 | **405** | **1.00** |
-| Asian (RIDRETH3=6; all NHA) | 336 | 0.73 | 0.65 | **228** | **1.00** |
-| Multiracial/other | 120 | 0.78 | 0.64 | **77** | **1.00** |
+| Stratum | Honest show (post BMI fix) | Top refuse gates | Misattributed PCE n | Fallback among PCE-scored | Band reclass (both numeric) |
+|---|---:|---|---:|---:|---:|
+| White | ≈0.76 | missing_sbp, compute_fail | 0 | 0.00 | ≈0.47 |
+| African American | ≈0.66 | missing_sbp, lipids, compute_fail | 0 | 0.00 | ≈0.61 |
+| Hispanic | ≈0.71 | missing_sbp, compute_fail | **405*** | **1.00** | ≈0.40 |
+| Asian (RIDRETH3=6) | ≈0.68 | missing_sbp, compute_fail | **228*** | **1.00** | (see JSON) |
+| Multiracial/other | ≈0.72 | missing_sbp | **77*** | **1.00** | ≈0.53 |
+
+\*Subsample burden counts from seed-42 n=2500 run retained as order-of-magnitude; regenerate with full WTMECPRP-weighted sample via `scripts/nhanes_coverage_audit.py` before camera-ready.
 
 After removing the erroneous ASCVD BMI refuse gate (ASCVD BMI coefficients are 0.0), honest show rates rise (White ≈0.76, AA ≈0.66, Hispanic ≈0.71). Remaining AA gap is dominated by missing SBP / lipids / compute-range gates (see refuse_gates in `nhanes_coverage_audit.json`), not ethnicity remapping. When both arms produce a numeric, band reclassification rates are substantial (e.g. AA ≈0.61, White ≈0.47)—the clinical-threshold distortion of legacy disclosure, not only a count of fallbacks. eGFR uses **2021 race-free CKD-EPI**. Limitations: seed-pinned subsample with WTMEC4YR within-subsample weights; no mortality calibration; Asian not South/East-split.
 

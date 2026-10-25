@@ -64,15 +64,20 @@ def load_obs(path: Path):
     return obs
 
 
-def warranted(vid: str, arm: str) -> float:
-    block = KEYS.get(vid) or {}
-    if isinstance(block, dict) and arm in block:
-        return float(block[arm])
-    # short id fallback
+def warranted(vid: str, arm: str = "") -> float:
+    """Arm-independent vignette keys (avoids encoding the hypothesis into the DV)."""
+    if vid in KEYS and not isinstance(KEYS[vid], dict):
+        return float(KEYS[vid])
+    block = KEYS.get(vid)
+    if isinstance(block, dict):
+        # legacy shape during transition
+        if arm in block:
+            return float(block[arm])
+        return float(next(iter(block.values())))
     for k, v in KEYS.items():
-        if vid.startswith(k.split("_")[0]) or k.startswith(vid):
-            if isinstance(v, dict) and arm in v:
-                return float(v[arm])
+        if vid.startswith(str(k).split("_")[0]) or str(k).startswith(vid):
+            if not isinstance(v, dict):
+                return float(v)
     return 4.0
 
 

@@ -1,14 +1,11 @@
 {
   "locked": false,
-  "note": "Replace with dual-clinician codes before OSF timestamp. Placeholder keys for pipeline tests only.",
+  "note": "PLACEHOLDER — not clinician-coded. Do not claim frozen/locked until dual-coder κ and locked:true. Keys are vignette-only (arm-independent) so the primary is not true by construction.",
   "keys": {
-    "v1_midrisk_white": {"honest": 3, "baseline": 5},
-    "v2_south_asian_same_vitals": {"honest": 3, "baseline": 5},
-    "v3_under30": {"honest": 2, "baseline": 5},
-    "v6_high_risk_smoker": {"honest": 4, "baseline": 5}
+    "v1_midrisk_white": 4,
+    "v2_south_asian_same_vitals": 4,
+    "v3_under30": 3,
+    "v6_high_risk_smoker": 5
   },
-  "rationale": {
-    "honest": "Bands / refuse warrant lower precision certainty than point estimates.",
-    "baseline": "Point estimates and health-age heroes warrant higher stated precision certainty keys for calibration contrast."
-  }
+  "coding_plan": "Two clinicians independently set warranted precision certainty (1–7) from the displayed card text only, blind to arm label; adjudicate; report κ; then set locked:true before OSF timestamp."
 }

@@ -71,18 +71,25 @@ def _band_for(value: float, bands) -> Dict[str, str]:
 
 
 def _check_requires(claim: Dict[str, Any], raw: Dict[str, Any]) -> Optional[str]:
-    """Return refusal note if requires predicates fail; else None."""
+    """Return refusal note if requires predicates fail; else None. Fail-closed on missing fields."""
     req = claim.get("requires") or {}
+    if not req:
+        return None
     race = str(raw.get("race") or raw.get("mapped_race") or "").lower()
     if "race_in" in req:
         allowed = [str(x).lower() for x in req["race_in"]]
-        if race and race not in allowed:
-            return f"Claim requires race in {allowed}; got {race or 'missing'}"
+        if not race:
+            return "Claim requires race; missing"
+        if race not in allowed:
+            return f"Claim requires race in {allowed}; got {race}"
     age = raw.get("age")
-    if "age_min" in req and age is not None and float(age) < float(req["age_min"]):
-        return f"Claim requires age ≥ {req['age_min']}"
-    if "age_max" in req and age is not None and float(age) > float(req["age_max"]):
-        return f"Claim requires age ≤ {req['age_max']}"
+    if "age_min" in req or "age_max" in req:
+        if age is None:
+            return "Claim requires age; missing"
+        if "age_min" in req and float(age) < float(req["age_min"]):
+            return f"Claim requires age ≥ {req['age_min']}"
+        if "age_max" in req and float(age) > float(req["age_max"]):
+            return f"Claim requires age ≤ {req['age_max']}"
     return None
 
 
@@ -102,9 +109,14 @@ def apply_disclosure(
     out["evidence_class"] = claim["evidence_class"]
     out["validated_population"] = claim["validated_population"]
     out["prohibited_uses"] = list(claim.get("prohibited_uses") or [])
-    out["display_policy"] = claim["display_policy"]
+    policy = claim["display_policy"]
+    if policy not in ("band", "refuse", "factors_only", "qualitative", "number"):
+        raise DisclosureError(f"Invalid display_policy for {claim_id}: {policy}")
+    out["display_policy"] = policy
 
     if mode == "baseline":
+        if os.getenv("STUDY_ALLOW_BASELINE") != "1":
+            raise DisclosureError("baseline mode requires STUDY_ALLOW_BASELINE=1")
         out["ui_mode"] = "baseline"
         return out
 

@@ -122,7 +122,7 @@ def compute_risk_scores(
         results["_mode"] = mode
         return results
 
-    bmi = weight / ((height / 100.0) ** 2) if height else None
+    bmi = weight / ((height / 100.0) ** 2) if height and weight else None
     smoker = str(user.get("smoking_status", "never")) == "current"
     ex_smoker = str(user.get("smoking_status", "never")) == "ex"
     bp_meds = bool(user.get("bp_medication"))

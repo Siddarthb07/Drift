@@ -27,7 +27,7 @@ from risk_engine import compute_risk_scores  # noqa: E402
 NHANES = ROOT / "data" / "nhanes"
 OUT = ROOT / "docs" / "facct" / "nhanes_coverage_audit.json"
 SEED = 42
-MAX_N = 2500
+MAX_N = 4000  # full eligible ~7k; cap for CI runtime; weights are WTMECPRP
 
 RACE_MAP = {
     1: "hispanic",
@@ -103,6 +103,9 @@ def row_to_user(row):
     race = RACE_MAP[int(row["RIDRETH3"])]
     height = float(row["BMXHT"]) if row.get("BMXHT") == row.get("BMXHT") else None
     weight = float(row["BMXWT"]) if row.get("BMXWT") == row.get("BMXWT") else None
+    if height is None or weight is None:
+        # Do not invent 170/70 — leave missing; engine will refuse missing BMI
+        pass
     sbps = [row.get(c) for c in ("BPXOSY1", "BPXOSY2", "BPXOSY3") if c in row.index]
     sbps = [float(x) for x in sbps if x == x and x is not None]
     sbp = float(np.mean(sbps)) if sbps else None
@@ -128,11 +131,18 @@ def row_to_user(row):
             bp_meds = int(row["BPQ050A"]) == 1
         except (TypeError, ValueError):
             bp_meds = False
-    wt = float(row["WTMEC4YR"]) if "WTMEC4YR" in row.index and row.get("WTMEC4YR") == row.get("WTMEC4YR") else 1.0
+    # 2017–March 2020 pre-pandemic exam weight is WTMECPRP (not WTMEC4YR)
+    wt = None
+    for col in ("WTMECPRP", "WTMEC2YR", "WTMEC4YR"):
+        if col in row.index and row.get(col) == row.get(col) and float(row[col]) > 0:
+            wt = float(row[col])
+            break
+    if wt is None:
+        wt = 1.0
 
     user = {
         "age": age, "sex": sex, "sex_for_equation": sex,
-        "height": height or 170, "weight": weight or 70,
+        "height": height, "weight": weight,
         "waist_cm": float(row["BMXWAIST"]) if row.get("BMXWAIST") == row.get("BMXWAIST") else None,
         "systolic": sbp, "race": race,
         "smoking_status": "current" if smoker else "never",
@@ -182,7 +192,7 @@ def main():
     rng = np.random.default_rng(SEED)
     df = build_frame()
     full_n = len(df)
-    if len(df) > MAX_N:
+    if MAX_N is not None and len(df) > MAX_N:
         idx = rng.choice(len(df), size=MAX_N, replace=False)
         df = df.iloc[idx].copy()
 

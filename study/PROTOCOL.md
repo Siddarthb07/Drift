@@ -1,7 +1,6 @@
 # Preregistered vignette protocol (Drift claim-honesty UI)
 
-**Status:** Frozen for OSF timestamp. Do not recruit until IRB/exemption letter is on file.  
-**Aligned with:** `osf/preregistration.json`, `prolific_survey.html`, `scripts/analyze_study.py`
+**Status:** Instrument draft aligned across PROTOCOL / OSF / survey / analyzer. **Not OSF-timestamped yet** — `warranted_certainty.json` is still `"locked": false` (placeholder keys). Do not recruit until IRB/exemption letter + locked clinician keys.
 
 ## Research question
 
@@ -16,8 +15,8 @@ Does an evidence-contingent disclosure UI (bands, coverage refusal, no health-ag
 
 ## Primary outcome (single)
 
-**Calibrated overconfidence:** mean over vignettes of (stated precision certainty 1–7 − warranted certainty key for that vignette×arm display).  
-Warranted keys dual-coded by clinicians and locked in `study/warranted_certainty.json` before data collection.
+**Calibrated overconfidence:** mean over vignettes of (stated precision certainty 1–7 − warranted certainty key for that vignette).  
+Keys are **arm-independent** (set from card content without arm label). Dual-clinician coding + κ + `"locked": true` required before OSF timestamp / recruitment.
 
 ## Secondary outcomes
 
