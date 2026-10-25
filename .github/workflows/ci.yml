@@ -37,3 +37,10 @@ jobs:
         run: python scripts/eval_vignettes.py
       - name: Baseline git pin
         run: python scripts/baseline_git_pin.py
+      - name: Paper ↔ artifact number sync
+        run: python scripts/check_paper_numbers.py
+      - name: Held-out adversarial fixtures
+        env:
+          DRIFT_AUDIT: "0"
+          STUDY_ALLOW_BASELINE: "1"
+        run: python scripts/eval_adversarial.py

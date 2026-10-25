@@ -1,8 +1,8 @@
 # Executable Disclosure Contracts for Consumer Health-Risk Interfaces
 
 **Working title for ACM FAccT** (tracks: *System development and deployment*; *Evaluations*)  
-Artifact: **Drift** · Status: computational + NHANES coverage evaluation complete; human vignette RCT **preregistered and instrument-hardened, not yet fielded** (IRB determination pending)  
-Reproduce: `docs/facct/*.json` · `study/` · `scripts/`
+Artifact: **Drift** · Status: computational + full-eligible NHANES coverage evaluation complete; human vignette RCT **preregistered and instrument-hardened, not yet fielded** (IRB determination pending; warranted keys still `locked:false`)  
+Reproduce: `ARTIFACT.md` · `docs/facct/*.json` · `study/` · `scripts/`
 
 ---
 
@@ -12,7 +12,7 @@ Consumer health apps turn published equations into screens. In that product path
 
 We implement the contract in **Drift**, an open educational tracker. The default CVD path uses race-free AHA PREVENT equations; optional PCE is available only for White and African American cohorts. A pinned **legacy baseline** (git `a8dcc33`) reconstructs prior failure modes for controlled comparison.
 
-**Results.** (1) PCE White-female transcription bug: **100%→2.1%**. (2) PREVENT goldens match published worked examples (ASCVD **9.2%** within 0.35pp). (3) On NHANES 2017–March 2020 adults (n=4000/7172 eligible; WTMECPRP weights; 2021 race-free CKD-EPI), legacy White-PCE fallback among PCE-scored non-White/non-AA is **1.0 by construction**; burden counts and honest show rates are reported in Table 2 (post BMI-gate fix: White≈0.76, AA≈0.66). When both arms are numeric, **band reclassification ≈49%** overall (AA≈61%). Refusal gates decompose to missing SBP/lipids/range—not ethnicity remapping. (4) Shared-key fixtures + metamorphic tests (race-swap invariance, missing-SBP refuse, BMI≥40 still shows ASCVD). Fail-closed claim ledger + CI. Named external calculator audit (exploratory). Human RCT **not fielded**.
+**Results.** (1) PCE White-female transcription bug: **100%→2.1%**. (2) PREVENT goldens match published worked examples (ASCVD **9.2%** within 0.35pp). (3) On NHANES 2017–March 2020 adults (**n=7172** eligible; WTMECPRP weights; 2021 race-free CKD-EPI), legacy White-PCE fallback among PCE-scored non-White/non-AA is **1.0 by construction**; misattributed PCE scores total **1967** (Hispanic **1125**, Asian **619**, Multiracial **223**). Weighted honest show rates: White **0.83**, AA **0.73**, Hispanic **0.77**, Asian **0.72**. When both arms are numeric, **band reclassification 0.49** overall (AA **0.60**). Refusal gates decompose to missing SBP/lipids/range/profile—not ethnicity remapping. (4) Shared-key fixtures + metamorphic tests. Fail-closed claim ledger + CI paper↔JSON sync. Named external calculator audit (exploratory). Human RCT **not fielded**.
 
 ---
 
@@ -99,21 +99,21 @@ PREVENT golden (Khan/CVrisk worked examples): female high-risk ASCVD target **9.
 
 ### 4.2 NHANES disclosure disparity (Table 2)
 
-NHANES 2017–March 2020 public XPT (DEMO/BPXO/BMX/HDL/TCHOL/BIOPRO/SMQ/DIQ/BPQ); adults 30–79; n=4000 of 7172 eligible (seed-pinned; WTMECPRP weights).
+NHANES 2017–March 2020 public XPT (DEMO/BPXO/BMX/HDL/TCHOL/BIOPRO/SMQ/DIQ/BPQ); adults 30–79; **n=7172** full eligible (WTMECPRP exam weights; no subsample). Source JSON: `docs/facct/nhanes_coverage_audit.json` (CI-checked against this draft via `scripts/check_paper_numbers.py`).
 
 **Construction note.** For races ∉ {White, AA}, legacy White-fallback rate **among PCE-scored profiles is 1.0 by design**. NHANES’s contribution is (a) **how many people** that policy touches, and (b) **honest coverage cost** by stratum under observed missingness.
 
-| Stratum | Honest show (post BMI fix) | Top refuse gates | Misattributed PCE n | Fallback among PCE-scored | Band reclass (both numeric) |
+| Stratum | Honest show raw / weighted | Top refuse gates (counts) | Misattributed PCE n | Fallback among PCE-scored | Band reclass (both numeric) |
 |---|---:|---|---:|---:|---:|
-| White | ≈0.76 | missing_sbp, compute_fail | 0 | 0.00 | ≈0.47 |
-| African American | ≈0.66 | missing_sbp, lipids, compute_fail | 0 | 0.00 | ≈0.61 |
-| Hispanic | ≈0.71 | missing_sbp, compute_fail | **405*** | **1.00** | ≈0.40 |
-| Asian (RIDRETH3=6) | ≈0.68 | missing_sbp, compute_fail | **228*** | **1.00** | (see JSON) |
-| Multiracial/other | ≈0.72 | missing_sbp | **77*** | **1.00** | ≈0.53 |
+| White | 0.75 / 0.83 | profile=191, compute_fail=168, missing_sbp=123 | **0** | 0.00 | 0.46 |
+| African American | 0.67 / 0.73 | labs_cholesterol=174, profile=171, missing_sbp=151 | **0** | 0.00 | 0.60 |
+| Hispanic | 0.72 / 0.77 | missing_sbp=184, profile=115, compute_fail=89 | **1125** | **1.00** | 0.44 |
+| Asian (RIDRETH3=6) | 0.68 / 0.72 | missing_sbp=116, profile=70, compute_fail=52 | **619** | **1.00** | 0.41 |
+| Multiracial/other | 0.71 / 0.82 | profile=34, missing_sbp=27, compute_fail=22 | **223** | **1.00** | 0.49 |
 
-Exact counts from current JSON (n=4000): see `docs/facct/nhanes_coverage_audit.json` by_race.legacy.misattributed_equation_count and weighted_show_rate.
+Overall: raw honest show **0.71**, weighted **0.81**; misattributed PCE scores **1967**; band reclassification when both numeric **0.49**.
 
-After removing the erroneous ASCVD BMI refuse gate (ASCVD BMI coefficients are 0.0), honest show rates rise (White ≈0.76, AA ≈0.66, Hispanic ≈0.71). Remaining AA gap is dominated by missing SBP / lipids / compute-range gates (see refuse_gates in `nhanes_coverage_audit.json`), not ethnicity remapping. When both arms produce a numeric, band reclassification rates are substantial (e.g. AA ≈0.61, White ≈0.47)—the clinical-threshold distortion of legacy disclosure, not only a count of fallbacks. eGFR uses **2021 race-free CKD-EPI**. Limitations: seed-pinned subsample with WTMECPRP within-subsample weights; no mortality calibration; Asian not South/East-split.
+After removing the erroneous ASCVD BMI refuse gate (ASCVD BMI coefficients are 0.0), remaining AA vs White coverage gaps are dominated by missing SBP / lipids / compute-range / profile gates—not ethnicity remapping. Band reclassification (AA **0.60**, White **0.46**) is the clinical-threshold distortion of legacy disclosure, not only a count of fallbacks. eGFR uses **2021 race-free CKD-EPI**. Limitations: no survey-design (strata/PSU) variance CIs here; no mortality calibration; RIDRETH3=6 combines South+East Asian (we do not claim South/East-split effects).
 
 ### 4.3 Shared-key vignette evaluation (Table 3)
 
@@ -131,21 +131,21 @@ Seventeen fixtures (study vignettes + race×sex grid + missing-SBP). Both arms s
 | **Mean (all keys)** | **1.00** | **0.61** | **+0.39** |
 | **Mean (core keys\*)** | **1.00** | **0.86** | **+0.14** |
 
-\*Core excludes cancer-RR and health-age (always-on in legacy by design). White-fallback remains the material intermediate gap. Wilson 95% CIs in `vignette_eval.json`.
+\*Core excludes cancer-RR and health-age (always-on in legacy by design). White-fallback remains the material intermediate gap. Wilson 95% CIs in `vignette_eval.json`. Held-out adversarial fixtures (`adversarial_fixtures.json`, scored after ledger freeze) pass 5/5 (`adversarial_eval.json`).
 
 ### 4.4 Human study (preregistered; not fielded)
 
 Protocol: `study/PROTOCOL.md` · OSF draft: `study/osf/preregistration.json` · IRB packet: `study/IRB_EXEMPTION_REQUEST.md` · Power: d=0.25 → ≈252/arm (target 300/arm; `power_analysis.json`).
 
-Instrument frozen to PROTOCOL/OSF 1.1: server-side SQLite assignment (opaque token; arm not in cookie), engine-rendered cards, no care-seeking CTA in stimulus, server-issued completion codes, no IP logging, study DB separate from `users.db`, product UI cannot enable baseline without `STUDY_ALLOW_BASELINE=1`. Primary endpoint remains **unanswered** until IRB + recruitment — we do not substitute computational checks for human trust.
+Collector/instrument hardened to PROTOCOL/OSF 1.1 (server-side SQLite assignment; opaque token; arm not in cookie; engine-rendered cards; no care-seeking CTA in stimulus; server-issued completion codes; no IP logging; study DB separate from `users.db`; product UI cannot enable baseline without `STUDY_ALLOW_BASELINE=1`). Warranted-certainty keys remain **`locked:false` placeholders** (arm-independent vignette keys only)—dual-clinician coding + κ + OSF timestamp are required before recruitment. Primary endpoint remains **unanswered**; we do not substitute computational checks or LLM walkthroughs for human trust.
 
 ---
 
 ## 5. Discussion & limitations
 
-Executable contracts make ethics docs falsifiable. The legacy baseline answers the “self-inflicted bug” critique by pinning failure modes to a git SHA. Under that policy, fallback among PCE-scored non-White/non-AA profiles is 1.0 by construction; NHANES’s contribution is the **burden count** (710 misattributed scores in a 2500-adult subsample: 405 Hispanic, 228 Asian, 77 multiracial) and the honest arm’s coverage cost by stratum.
+Executable contracts make ethics docs falsifiable. The legacy baseline answers the “self-inflicted bug” critique by pinning failure modes to a git SHA. Under that policy, fallback among PCE-scored non-White/non-AA profiles is 1.0 by construction; NHANES’s contribution on the full eligible sample is the **burden count** (**1967** misattributed scores: **1125** Hispanic, **619** Asian, **223** multiracial) and the honest arm’s weighted coverage cost by stratum.
 
-**Limitations.** PREVENT coeffs follow PyPREVENT / Khan S12 lineage with golden cross-checks, not a multi-site clinical validation. FINDRISC is European-derived. Binary equation sex. No NHANES mortality calibration. Single-developer positionality. Without fielded humans, trust/anchoring claims stay provisional. Expert LLM walkthrough is exploratory only.
+**Limitations.** PREVENT coeffs follow PyPREVENT / Khan S12 lineage with golden cross-checks, not a multi-site clinical validation. FINDRISC is European-derived. Binary equation sex. No NHANES mortality calibration; no strata/PSU design-based CIs. RIDRETH3=6 is combined Asian. Single-developer positionality. Without fielded humans, trust/anchoring claims stay provisional. Expert LLM walkthrough is exploratory only.
 
 **Ethics.** Special-category data in the product path; study path uses fictional vignettes. Consent; educational labeling; no diagnostic marketing.
 
@@ -182,16 +182,20 @@ Drift attacks consumer health-risk harms at the disclosure layer: contracts, ref
 
 ## Appendix — Reproduce
 
+See `ARTIFACT.md` (canonical). Short form:
+
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt pandas numpy flask pytest
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+export DRIFT_AUDIT=0 STUDY_ALLOW_BASELINE=1
 pytest -q
 python scripts/validate_claims.py
-python scripts/baseline_git_pin.py
 python scripts/eval_vignettes.py
+python scripts/baseline_git_pin.py
+python scripts/check_paper_numbers.py
 # NHANES XPTs under data/nhanes/ (gitignored); then:
-python scripts/nhanes_coverage_audit.py
+python scripts/nhanes_coverage_audit.py   # writes n=7172 JSON
 python scripts/power_analysis.py
-python app_v5.py  # /study/prolific  /study/collect  ?mode=honest|baseline
+python app_v5.py  # /study/prolific  /study/collect
 ```
 
 Artifact paths: `legacy_baseline.py`, `risk_engine.py`, `claims.yaml`, `study/`, `cards/SYSTEM_CARD.md`, `ml/QUARANTINE.md`, `docs/facct/`.

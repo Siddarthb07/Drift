@@ -17,7 +17,9 @@ export DRIFT_AUDIT=0 STUDY_ALLOW_BASELINE=1
 .venv/bin/python scripts/validate_claims.py
 .venv/bin/python scripts/eval_vignettes.py
 .venv/bin/python scripts/baseline_git_pin.py
-# Optional NHANES (downloads ~10MB XPTs):
+.venv/bin/python scripts/check_paper_numbers.py
+.venv/bin/python scripts/eval_adversarial.py
+# Optional NHANES (downloads ~10MB XPTs; full eligible n=7172):
 .venv/bin/python scripts/fetch_nhanes.py
 .venv/bin/python scripts/nhanes_coverage_audit.py
 ```
@@ -26,7 +28,9 @@ export DRIFT_AUDIT=0 STUDY_ALLOW_BASELINE=1
 - 28+ pytest passes
 - `validate_claims.py` → OK
 - `eval_vignettes.py` → honest mean 1.0, mutation `all_caught`
-- NHANES JSON under `docs/facct/nhanes_coverage_audit.json`
+- `eval_adversarial.py` → all_passed
+- `check_paper_numbers.py` → ok
+- NHANES JSON under `docs/facct/nhanes_coverage_audit.json` (n=7172)
 
 ## Non-claims
 No clinical validation. Human RCT not fielded. No synthetic human results.

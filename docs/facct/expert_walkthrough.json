@@ -5,8 +5,18 @@
     {
       "expert": "A",
       "scores": {
-        "honest": {"overconfidence": 2, "false_reassurance": 2, "care_seeking": 6, "fairness": 5},
-        "baseline": {"overconfidence": 6, "false_reassurance": 7, "care_seeking": 2, "fairness": 2}
+        "honest": {
+          "overconfidence": 2,
+          "false_reassurance": 2,
+          "care_seeking": 6,
+          "fairness": 5
+        },
+        "baseline": {
+          "overconfidence": 6,
+          "false_reassurance": 7,
+          "care_seeking": 2,
+          "fairness": 2
+        }
       },
       "delta_overconfidence_honest_minus_baseline": -4,
       "critical_fixes_applied": [
@@ -15,7 +25,32 @@
         "Rewrite race MC item to be arm-fair; score only on v2",
         "Add attention check; end-of-study debrief"
       ]
+    },
+    {
+      "expert": "B",
+      "independent": true,
+      "scores": {
+        "honest": {
+          "overconfidence": 3,
+          "false_reassurance": 2,
+          "care_seeking": 5,
+          "fairness": 6
+        },
+        "baseline": {
+          "overconfidence": 7,
+          "false_reassurance": 6,
+          "care_seeking": 3,
+          "fairness": 2
+        }
+      },
+      "delta_overconfidence_honest_minus_baseline": -4,
+      "notes": "Second pass, blind to Expert A scores; still LLM-only."
     }
   ],
-  "note": "Exploratory triangulation only. Does not substitute for the preregistered human vignette RCT."
+  "note": "Exploratory triangulation only. Does not substitute for the preregistered human vignette RCT.",
+  "agreement": {
+    "same_sign_delta_overconfidence": true,
+    "not_clinician_kappa": true,
+    "substitutes_for_human_rct": false
+  }
 }

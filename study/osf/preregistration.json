@@ -28,11 +28,12 @@
   "primary_outcomes": [
     {
       "name": "calibrated_overconfidence",
-      "definition": "mean over vignettes of (stated_precision_certainty_1to7 - warranted_certainty_key[vignette][arm])",
+      "definition": "mean over vignettes of (stated_precision_certainty_1to7 - warranted_certainty_key[vignette]); keys are arm-independent (vignette-only), dual-clinician coded, locked before OSF timestamp",
       "warranted_keys_file": "study/warranted_certainty.json",
       "contrast": "honest - baseline (negative = success)"
     }
   ],
+  "status_note": "DRAFT — not OSF-timestamped. warranted_certainty.json locked:false placeholder. Do not recruit until IRB letter + locked clinician keys + OSF timestamp.",
   "secondary_outcomes": [
     "comprehension_race_v2_and_health_age_once",
     "care_seeking_v6_noninferiority_margin_0.5_likert",

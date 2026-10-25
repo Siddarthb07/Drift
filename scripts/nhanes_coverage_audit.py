@@ -3,7 +3,7 @@
 NHANES 2017–March 2020 disclosure-disparity + risk-reclassification audit.
 
 - eGFR: 2021 race-free CKD-EPI creatinine
-- Survey weights (WTMEC4YR) for weighted rates
+- Survey weights (WTMECPRP) for weighted rates
 - Refusal gate decomposition by race
 - Legacy vs honest band reclassification / misattribution burden
 
@@ -27,7 +27,7 @@ from risk_engine import compute_risk_scores  # noqa: E402
 NHANES = ROOT / "data" / "nhanes"
 OUT = ROOT / "docs" / "facct" / "nhanes_coverage_audit.json"
 SEED = 42
-MAX_N = 4000  # full eligible ~7k; cap for CI runtime; weights are WTMECPRP
+MAX_N = None  # full eligible sample; set e.g. 4000 only for quick local runs
 
 RACE_MAP = {
     1: "hispanic",
@@ -348,9 +348,9 @@ def main():
         },
         "by_race": by_race_out,
         "limitations": [
-            "Subsample of eligible adults (seed-pinned); weighted rates use WTMEC4YR within subsample.",
-            "Cross-sectional; no mortality linkage / clinical calibration.",
-            "DIQ/BPQ residual misclassification possible.",
+            "Full eligible adults 30–79 with exam weight WTMECPRP (pre-pandemic 2017–March 2020).",
+            "Cross-sectional; no mortality linkage / clinical calibration; no survey-design (strata/PSU) variance here.",
+            "RIDRETH3=6 combines South+East Asian; DIQ/BPQ residual misclassification possible.",
         ],
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)

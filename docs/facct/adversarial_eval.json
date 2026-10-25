@@ -1,0 +1,63 @@
+{
+  "n": 5,
+  "pass_rate": 1.0,
+  "all_passed": true,
+  "results": [
+    {
+      "id": "adv_missing_sex",
+      "ok": true,
+      "cvd": {
+        "refused": true,
+        "pct": null,
+        "band": null,
+        "equation": "prevent_ascvd",
+        "legacy_white_fallback": null
+      }
+    },
+    {
+      "id": "adv_bmi_40_ascvd",
+      "ok": true,
+      "cvd": {
+        "refused": null,
+        "pct": 8.4,
+        "band": "7.5\u201320%",
+        "equation": "PREVENT",
+        "legacy_white_fallback": null
+      }
+    },
+    {
+      "id": "adv_south_asian_pce_prefer",
+      "ok": true,
+      "cvd": {
+        "refused": null,
+        "pct": 2.5,
+        "band": "<5%",
+        "equation": "PREVENT",
+        "legacy_white_fallback": null
+      }
+    },
+    {
+      "id": "adv_age_29",
+      "ok": true,
+      "cvd": {
+        "refused": true,
+        "pct": null,
+        "band": null,
+        "equation": "prevent_ascvd",
+        "legacy_white_fallback": null
+      }
+    },
+    {
+      "id": "adv_missing_sbp",
+      "ok": true,
+      "cvd": {
+        "refused": true,
+        "pct": null,
+        "band": null,
+        "equation": "prevent_ascvd",
+        "legacy_white_fallback": null
+      }
+    }
+  ],
+  "note": "Held-out adversarial fixtures written after claim ledger freeze. Scored by eval_vignettes keys but not used to tune claims.yaml. Not a human study."
+}

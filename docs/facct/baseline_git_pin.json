@@ -10,5 +10,6 @@
   },
   "all_present": true,
   "legacy_module": "legacy_baseline.py",
+  "source": "git",
   "note": "Baseline arm reconstructs these disclosure behaviors; PCE math uses corrected coeffs."
 }

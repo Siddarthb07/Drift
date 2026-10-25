@@ -9,19 +9,130 @@
     "male_base_target_pct": 2.9
   },
   "table2_nhanes": {
-    "n": 2500,
+    "n": 7172,
+    "n_full_eligible": 7172,
     "seed": 42,
-    "overall_honest_show": 0.6232,
-    "misattributed_equation_count": 710,
+    "weight": "WTMECPRP",
+    "overall_honest_show": 0.7133,
+    "overall_weighted_honest_show": 0.8057,
+    "misattributed_equation_count": 1967,
+    "band_reclassification_rate_when_both_numeric": 0.4871,
     "fallback_among_pce_scored_nonwhite": 1.0,
+    "by_race": {
+      "white": {
+        "n": 2339,
+        "honest_show": 0.7542,
+        "weighted_show": 0.835,
+        "misattributed_n": 0,
+        "band_reclass": 0.4577,
+        "top_refuse_gates": [
+          [
+            "profile",
+            191
+          ],
+          [
+            "compute_fail",
+            168
+          ],
+          [
+            "missing_sbp",
+            123
+          ]
+        ]
+      },
+      "multiracial": {
+        "n": 338,
+        "honest_show": 0.7071,
+        "weighted_show": 0.8211,
+        "misattributed_n": 223,
+        "band_reclass": 0.4915,
+        "top_refuse_gates": [
+          [
+            "profile",
+            34
+          ],
+          [
+            "missing_sbp",
+            27
+          ],
+          [
+            "compute_fail",
+            22
+          ]
+        ]
+      },
+      "hispanic": {
+        "n": 1580,
+        "honest_show": 0.7228,
+        "weighted_show": 0.7708,
+        "misattributed_n": 1125,
+        "band_reclass": 0.438,
+        "top_refuse_gates": [
+          [
+            "missing_sbp",
+            184
+          ],
+          [
+            "profile",
+            115
+          ],
+          [
+            "compute_fail",
+            89
+          ]
+        ]
+      },
+      "asian_nhanes": {
+        "n": 922,
+        "honest_show": 0.6833,
+        "weighted_show": 0.7173,
+        "misattributed_n": 619,
+        "band_reclass": 0.4124,
+        "top_refuse_gates": [
+          [
+            "missing_sbp",
+            116
+          ],
+          [
+            "profile",
+            70
+          ],
+          [
+            "compute_fail",
+            52
+          ]
+        ]
+      },
+      "aa": {
+        "n": 1993,
+        "honest_show": 0.6729,
+        "weighted_show": 0.7296,
+        "misattributed_n": 0,
+        "band_reclass": 0.5984,
+        "top_refuse_gates": [
+          [
+            "labs_cholesterol",
+            174
+          ],
+          [
+            "profile",
+            171
+          ],
+          [
+            "missing_sbp",
+            151
+          ]
+        ]
+      }
+    },
     "by_race_misattributed_n": {
       "white": 0,
       "aa": 0,
-      "hispanic": 405,
-      "east_asian": 228,
-      "multiracial": 77
+      "hispanic": 1125,
+      "asian_nhanes": 619,
+      "multiracial": 223
     },
-    "construction_note": "Fallback among PCE-scored non-White/non-AA is 1.0 by legacy design; NHANES estimates burden counts and honest coverage."
+    "construction_note": "For races outside {white,aa}, every legacy PCE score is a White fallback by design. NHANES estimates burden counts, weighted show/refuse, gate decomposition, and band shifts."
   },
   "table3_vignette": {
     "n_cases": 17,

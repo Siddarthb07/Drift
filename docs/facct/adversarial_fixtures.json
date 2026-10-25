@@ -1,0 +1,96 @@
+{
+  "note": "Held-out adversarial fixtures written after claim ledger freeze. Scored by eval_vignettes keys but not used to tune claims.yaml. Not a human study.",
+  "frozen_after": "claims.yaml + disclosure.py fail-closed sprint",
+  "cases": [
+    {
+      "id": "adv_missing_sex",
+      "profile": {
+        "age": 55,
+        "race": "white",
+        "sbp": 130,
+        "total_chol": 200,
+        "hdl": 50,
+        "egfr": 90,
+        "smoker": false,
+        "diabetic": false,
+        "on_htn_meds": false,
+        "height_cm": 170,
+        "weight_kg": 70
+      },
+      "expect_honest": "refuse_or_no_sex"
+    },
+    {
+      "id": "adv_bmi_40_ascvd",
+      "profile": {
+        "age": 55,
+        "sex": "female",
+        "race": "aa",
+        "sbp": 140,
+        "total_chol": 220,
+        "hdl": 45,
+        "egfr": 80,
+        "bmi": 41,
+        "smoker": false,
+        "diabetic": true,
+        "on_htn_meds": true,
+        "height_cm": 165,
+        "weight_kg": 112
+      },
+      "expect_honest": "show_ascvd_with_caveat"
+    },
+    {
+      "id": "adv_south_asian_pce_prefer",
+      "profile": {
+        "age": 50,
+        "sex": "male",
+        "race": "south_asian",
+        "sbp": 128,
+        "total_chol": 210,
+        "hdl": 42,
+        "egfr": 95,
+        "smoker": false,
+        "diabetic": false,
+        "on_htn_meds": false,
+        "height_cm": 175,
+        "weight_kg": 80,
+        "prefer_pce": true
+      },
+      "expect_honest": "prevent_not_white_pce"
+    },
+    {
+      "id": "adv_age_29",
+      "profile": {
+        "age": 29,
+        "sex": "female",
+        "race": "hispanic",
+        "sbp": 118,
+        "total_chol": 190,
+        "hdl": 55,
+        "egfr": 100,
+        "smoker": false,
+        "diabetic": false,
+        "on_htn_meds": false,
+        "height_cm": 160,
+        "weight_kg": 60
+      },
+      "expect_honest": "refuse_not_green"
+    },
+    {
+      "id": "adv_missing_sbp",
+      "profile": {
+        "age": 60,
+        "sex": "male",
+        "race": "white",
+        "total_chol": 200,
+        "hdl": 40,
+        "egfr": 70,
+        "smoker": true,
+        "diabetic": false,
+        "on_htn_meds": true,
+        "height_cm": 178,
+        "weight_kg": 90
+      },
+      "expect_honest": "refuse"
+    }
+  ]
+}
