@@ -25,22 +25,30 @@ jobs:
         env:
           DRIFT_AUDIT: "0"
           STUDY_ALLOW_BASELINE: "1"
-        run: pytest -q
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m pytest -q
       - name: Claim ledger
         env:
           DRIFT_AUDIT: "0"
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/validate_claims.py
       - name: Vignette honesty eval
         env:
           DRIFT_AUDIT: "0"
           STUDY_ALLOW_BASELINE: "1"
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/eval_vignettes.py
       - name: Baseline git pin
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/baseline_git_pin.py
       - name: Paper ↔ artifact number sync
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/check_paper_numbers.py
       - name: Held-out adversarial fixtures
         env:
           DRIFT_AUDIT: "0"
           STUDY_ALLOW_BASELINE: "1"
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/eval_adversarial.py
