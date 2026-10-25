@@ -1,0 +1,164 @@
+{
+  "vignettes": [
+    {
+      "id": "v1_midrisk_white",
+      "label": "Mid-risk White adult, complete inputs",
+      "user": {
+        "age": 52,
+        "sex": "female",
+        "sex_for_equation": "female",
+        "height": 165,
+        "weight": 74,
+        "waist_cm": 86,
+        "systolic": 132,
+        "race": "white",
+        "smoking_status": "never",
+        "bp_medication": 0,
+        "existing_diabetes": 0,
+        "high_glucose_history": 0,
+        "family_history_diabetes": 0,
+        "family_history_cancer": 0,
+        "alcohol_per_week": 3,
+        "region": "global"
+      },
+      "labs": {
+        "total_cholesterol": 215,
+        "hdl_cholesterol": 52,
+        "egfr": 90
+      }
+    },
+    {
+      "id": "v2_south_asian_same_vitals",
+      "label": "Same vitals, South Asian \u2014 must not White-fallback",
+      "user": {
+        "age": 52,
+        "sex": "female",
+        "sex_for_equation": "female",
+        "height": 165,
+        "weight": 74,
+        "waist_cm": 86,
+        "systolic": 132,
+        "race": "south_asian",
+        "smoking_status": "never",
+        "bp_medication": 0,
+        "existing_diabetes": 0,
+        "high_glucose_history": 0,
+        "family_history_diabetes": 0,
+        "family_history_cancer": 0,
+        "alcohol_per_week": 3,
+        "region": "global"
+      },
+      "labs": {
+        "total_cholesterol": 215,
+        "hdl_cholesterol": 52,
+        "egfr": 90
+      }
+    },
+    {
+      "id": "v3_under30",
+      "label": "Age 28 \u2014 refuse, not green low-risk",
+      "user": {
+        "age": 28,
+        "sex": "male",
+        "sex_for_equation": "male",
+        "height": 178,
+        "weight": 80,
+        "waist_cm": 90,
+        "systolic": 118,
+        "race": "hispanic",
+        "smoking_status": "never",
+        "bp_medication": 0,
+        "existing_diabetes": 0,
+        "high_glucose_history": 0,
+        "family_history_diabetes": 0,
+        "family_history_cancer": 0,
+        "alcohol_per_week": 1,
+        "region": "global"
+      },
+      "labs": {
+        "total_cholesterol": 190,
+        "hdl_cholesterol": 50,
+        "egfr": 100
+      }
+    },
+    {
+      "id": "v4_missing_waist",
+      "label": "Missing waist \u2014 FINDRISC interval",
+      "user": {
+        "age": 50,
+        "sex": "male",
+        "sex_for_equation": "male",
+        "height": 175,
+        "weight": 88,
+        "waist_cm": null,
+        "systolic": 128,
+        "race": "east_asian",
+        "smoking_status": "ex",
+        "bp_medication": 0,
+        "existing_diabetes": 0,
+        "high_glucose_history": 0,
+        "family_history_diabetes": 2,
+        "family_history_cancer": 0,
+        "alcohol_per_week": 4,
+        "region": "global"
+      },
+      "labs": {
+        "total_cholesterol": 200,
+        "hdl_cholesterol": 48,
+        "egfr": 88
+      }
+    },
+    {
+      "id": "v5_missing_chol",
+      "label": "Missing cholesterol \u2014 CVD refuse",
+      "user": {
+        "age": 55,
+        "sex": "female",
+        "sex_for_equation": "female",
+        "height": 160,
+        "weight": 68,
+        "waist_cm": 82,
+        "systolic": 125,
+        "race": "aa",
+        "smoking_status": "never",
+        "bp_medication": 1,
+        "existing_diabetes": 0,
+        "high_glucose_history": 0,
+        "family_history_diabetes": 0,
+        "family_history_cancer": 0,
+        "alcohol_per_week": 0,
+        "region": "global"
+      },
+      "labs": {}
+    },
+    {
+      "id": "v6_high_risk_smoker",
+      "label": "High-risk smoker \u2014 referral should fire",
+      "user": {
+        "age": 60,
+        "sex": "male",
+        "sex_for_equation": "male",
+        "height": 172,
+        "weight": 95,
+        "waist_cm": 108,
+        "systolic": 152,
+        "race": "white",
+        "smoking_status": "current",
+        "bp_medication": 1,
+        "existing_diabetes": 1,
+        "high_glucose_history": 1,
+        "family_history_diabetes": 2,
+        "family_history_cancer": 0,
+        "alcohol_per_week": 10,
+        "region": "global",
+        "statin": 1
+      },
+      "labs": {
+        "total_cholesterol": 240,
+        "hdl_cholesterol": 38,
+        "egfr": 70,
+        "hba1c": 7.2
+      }
+    }
+  ]
+}

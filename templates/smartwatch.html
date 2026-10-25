@@ -33,13 +33,13 @@
       <div class="provider-icon">⌚</div>
       <div class="provider-name">Fitbit</div>
       <div class="provider-status">
-        {% if configured.fitbit %}
+        {% if configured.fitbit.configured %}
           <span class="tag tag-green">Server configured</span>
         {% else %}
           <span class="tag tag-gray">Needs setup</span>
         {% endif %}
       </div>
-      {% if configured.fitbit %}
+      {% if configured.fitbit.configured %}
         <a href="{{ url_for('oauth_connect', provider='fitbit') }}" class="btn">Connect Fitbit</a>
       {% else %}
         <a href="#fitbit-setup" class="btn btn-ghost">Setup guide ↓</a>
@@ -52,13 +52,13 @@
       <div class="provider-icon">🏃</div>
       <div class="provider-name">Google Fit</div>
       <div class="provider-status">
-        {% if configured.googlefit %}
+        {% if configured.googlefit.configured %}
           <span class="tag tag-green">Server configured</span>
         {% else %}
           <span class="tag tag-gray">Needs setup</span>
         {% endif %}
       </div>
-      {% if configured.googlefit %}
+      {% if configured.googlefit.configured %}
         <a href="{{ url_for('oauth_connect', provider='googlefit') }}" class="btn">Connect Google Fit</a>
       {% else %}
         <a href="#googlefit-setup" class="btn btn-ghost">Setup guide ↓</a>
@@ -71,17 +71,10 @@
       <div class="provider-icon">🏅</div>
       <div class="provider-name">Garmin</div>
       <div class="provider-status">
-        {% if configured.garmin %}
-          <span class="tag tag-green">Server configured</span>
-        {% else %}
-          <span class="tag tag-gray">Needs setup</span>
-        {% endif %}
+        <span class="tag tag-gray">OAuth1 — use CSV</span>
       </div>
-      {% if configured.garmin %}
-        <a href="{{ url_for('oauth_connect', provider='garmin') }}" class="btn">Connect Garmin</a>
-      {% else %}
-        <a href="#garmin-setup" class="btn btn-ghost">Setup guide ↓</a>
-      {% endif %}
+      <a href="#csv-import" class="btn btn-ghost">CSV import ↓</a>
+      <div style="font-size:11px;color:var(--text-3);">{{ configured.garmin.note }}</div>
       <div style="font-size:11px;color:var(--text-3);">Steps · Sleep · HR</div>
     </div>
 

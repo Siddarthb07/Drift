@@ -1,0 +1,70 @@
+# Drift claim ledger — every UI number must resolve to a claim_id.
+# CI / tests fail if a rendered claim is missing or violates display_policy.
+version: 1
+claims:
+  prevent_ascvd:
+    title: "AHA PREVENT 10-year ASCVD (race-free)"
+    evidence_class: published_equation
+    display_policy: band
+    validated_population: "US adults 30–79 without prior CVD; race-free by design"
+    prohibited_uses:
+      - diagnosis
+      - treatment_initiation_without_clinician
+      - insurance_underwriting
+    source: "Khan et al., Circulation 2024"
+    runtime: default
+
+  pce_ascvd:
+    title: "ACC/AHA 2013 Pooled Cohort Equations"
+    evidence_class: published_equation
+    display_policy: band
+    validated_population: "US White and African American adults ages 40–79"
+    prohibited_uses:
+      - apply_to_other_race_via_white_fallback
+      - diagnosis
+    source: "Goff et al., Circulation 2014"
+    runtime: optional_us_comparison
+
+  findrisc:
+    title: "FINDRISC Type 2 diabetes score"
+    evidence_class: cohort_score
+    display_policy: band
+    validated_population: "Primarily European / Finnish derivation; widely used internationally"
+    prohibited_uses:
+      - silent_waist_imputation
+    source: "Lindström & Tuomilehto, Diabetes Care 2003"
+    runtime: default
+
+  cancer_lifestyle_factors:
+    title: "WCRF/IARC lifestyle factor list"
+    evidence_class: unvalidated_product
+    display_policy: factors_only
+    suppress_numeric: true
+    validated_population: "No validated multi-cancer absolute risk score"
+    prohibited_uses:
+      - compounded_relative_risk_gauge
+      - absolute_probability_claim
+    source: "WCRF/AICR 2018; IARC monographs (factor-level only)"
+    runtime: default
+
+  health_age_heuristic:
+    title: "Heuristic health age (retired from default UI)"
+    evidence_class: heuristic
+    display_policy: refuse
+    suppress_numeric: true
+    validated_population: "none — invented point weights"
+    prohibited_uses:
+      - phenoage_citation_laundering
+      - hero_numeric_display
+    source: "Not Levine PhenoAge; unpublished if/else deltas"
+    runtime: baseline_study_arm_only
+
+  lifestyle_trajectory:
+    title: "Modifiable habit trajectory"
+    evidence_class: heuristic
+    display_policy: qualitative
+    validated_population: "local logging window only"
+    prohibited_uses:
+      - biological_age_claim
+    source: "Drift disclosure layer"
+    runtime: default

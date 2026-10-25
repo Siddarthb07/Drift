@@ -95,15 +95,35 @@
 </div>
 {% endif %}
 
-<!-- Health Age + Stats -->
+<!-- Mode + honesty banner -->
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
+  <span class="tag {% if ui_mode == 'honest' %}tag-green{% else %}tag-gray{% endif %}" style="font-size:11px;">UI: {{ ui_mode }}</span>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('dashboard', mode='honest') }}">Honest</a>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('dashboard', mode='baseline') }}">Baseline (study)</a>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('model_cards') }}">Calculator cards</a>
+</div>
+
+{% if risk._referral and risk._referral.recommended %}
+<div class="alert alert-warning" style="margin-bottom:14px;">
+  <span>🩺</span>
+  <div>
+    <strong>Consider clinical follow-up.</strong> {{ risk._referral.message }}
+    <ul style="margin:6px 0 0 16px;font-size:12px;">
+      {% for r in risk._referral.reasons %}<li>{{ r }}</li>{% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}
+
+<!-- Trajectory (honest) or Health Age (baseline) + Stats -->
 <div class="grid-2" style="margin-bottom:14px;">
 
-  {% if risk._health_age and risk._health_age.health_age %}
+  {% if ui_mode == 'baseline' and risk._health_age and risk._health_age.health_age %}
   {% set ha = risk._health_age %}
   <div class="health-age-card">
     <div>
       <div class="ha-number" style="color:var(--{{ ha.color }});">{{ ha.health_age }}</div>
-      <div style="font-size:12px;color:var(--text-3);margin-top:2px;">Health Age (est.)</div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:2px;">Health Age (baseline arm)</div>
     </div>
     <div class="ha-detail">
       <div class="ha-delta" style="color:var(--{{ ha.color }});">
@@ -112,13 +132,21 @@
         {% else %}On par with chronological age{% endif %}
       </div>
       <div class="ha-verdict muted">{{ ha.verdict }}</div>
-      <div style="font-size:11px;color:var(--text-3);margin-top:4px;">{{ ha.note }}</div>
+      <div style="font-size:11px;color:var(--amber);margin-top:4px;">Heuristic only — not PhenoAge / not validated.</div>
     </div>
   </div>
   {% else %}
+  {% set tr = risk._trajectory or {} %}
   <div class="health-age-card">
-    <div class="ha-number" style="color:var(--text-3);">—</div>
-    <div class="ha-detail muted">Complete your profile to see estimated Health Age</div>
+    <div>
+      <div class="ha-number" style="color:var(--{{ tr.color or 'gray' }});font-size:28px;">{{ tr.habits_active or 0 }}/{{ tr.habits_total or 6 }}</div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:2px;">Protective habits</div>
+    </div>
+    <div class="ha-detail">
+      <div class="ha-verdict" style="color:var(--{{ tr.color or 'gray' }});">{{ tr.label or 'Trajectory' }}</div>
+      <div class="muted" style="font-size:12px;margin-top:4px;">{{ tr.detail or '' }}</div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:4px;">{{ tr.note or 'Not a biological age.' }}</div>
+    </div>
   </div>
   {% endif %}
 
@@ -161,14 +189,10 @@
 <!-- Risk Scores -->
 <div class="card" style="margin-bottom:14px;">
   <div class="card-head">
-    <h3>Evidence-Based Risk Scores</h3>
+    <h3>{% if ui_mode == 'honest' %}Claim-tagged risk disclosure{% else %}Evidence-Based Risk Scores{% endif %}</h3>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="tag tag-teal" style="font-size:11px;">Clinical Algorithms</span>
-      {% if daily_count >= 7 %}
-        <span class="tag tag-green" style="font-size:11px;">✓ {{ daily_count }} days</span>
-      {% else %}
-        <span class="tag tag-gray" style="font-size:11px;">{{ daily_count }}/7 days</span>
-      {% endif %}
+      <span class="tag tag-teal" style="font-size:11px;">{% if ui_mode == 'honest' %}Provenance on{% else %}Clinical Algorithms{% endif %}</span>
+      <span class="tag tag-gray" style="font-size:11px;">{{ daily_count }} days logged</span>
     </div>
   </div>
 
@@ -177,40 +201,50 @@
   {% if not name.startswith('_') %}
 
   <div class="risk-card color-{{ data.color or 'gray' }}">
-    <div class="risk-name">{{ name }}</div>
+    <div class="risk-name">{{ name }}
+      {% if data.evidence_class %}
+      <div style="font-size:10px;font-weight:500;color:var(--text-3);margin-top:2px;">{{ data.evidence_class }} · {{ data.equation or data.claim_id or '' }}</div>
+      {% endif %}
+    </div>
 
+    {% set has_band = data.risk_band_label is defined and data.risk_band_label %}
     {% set has_score = (data.risk_pct is not none and data.risk_pct != None) or
-                       (data.relative_risk is not none and data.relative_risk != None) %}
+                       (data.relative_risk is not none and data.relative_risk != None) or has_band or
+                       (data.score_range is defined and data.score_range) or
+                       (name == 'Cancer' and data.modifiable_factors) %}
 
-    {% if has_score %}
-      <!-- Score available -->
-      {% if data.relative_risk is defined and data.relative_risk != None and name == 'Cancer' %}
-        <div class="risk-pct" style="color:var(--{{ data.color }});">{{ data.relative_risk }}×</div>
-        <div class="risk-gauge">
-          <div class="risk-gauge-fill" style="width:0%"
-               data-target="{{ [100, (data.relative_risk / 3 * 100)|int]|min }}"></div>
-        </div>
+    {% if has_score and not data.refused %}
+      {% if name == 'Cancer' and (data.relative_risk is none or data.relative_risk == None) %}
+        <div class="risk-pct" style="color:var(--{{ data.color }});font-size:18px;margin:8px 0;">Factors</div>
         <div class="risk-category">{{ data.risk_category }}</div>
-        <div style="font-size:11px;color:var(--text-3);margin-top:2px;">relative to avg. lifestyle</div>
-        {% if data.lifestyle_score is defined %}
+        {% if data.lifestyle_score is defined and data.lifestyle_score != None %}
         <div style="margin-top:8px;">
           <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-bottom:3px;">
-            <span>Lifestyle score</span><span>{{ data.lifestyle_score }}/100</span>
+            <span>Protective habits met</span><span>{{ data.lifestyle_score }}/100</span>
           </div>
           <div class="prog-wrap">
             <div class="prog-fill" style="width:0%;background:var(--{{ data.color }});" data-target="{{ data.lifestyle_score }}"></div>
           </div>
         </div>
         {% endif %}
+      {% elif data.relative_risk is defined and data.relative_risk != None and name == 'Cancer' %}
+        <div class="risk-pct" style="color:var(--{{ data.color }});">{{ data.relative_risk }}×</div>
+        <div class="risk-category">{{ data.risk_category }}</div>
+        <div style="font-size:11px;color:var(--amber);margin-top:2px;">baseline arm only</div>
+      {% elif has_band %}
+        <div class="risk-pct" style="color:var(--{{ data.color }});">{{ data.risk_band_label }}</div>
+        <div class="risk-category">{{ data.risk_category }}</div>
+        {% if name == 'Diabetes' and data.score is defined and data.score != None %}
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px;">FINDRISC {{ data.score }}/26</div>
+        {% endif %}
+        {% if data.score_range is defined and data.score_range %}
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Score interval {{ data.score_range[0] }}–{{ data.score_range[1] }}/26</div>
+        {% endif %}
+      {% elif data.score_range is defined and data.score_range %}
+        <div class="risk-pct" style="color:var(--{{ data.color }});font-size:22px;">{{ data.score_range[0] }}–{{ data.score_range[1] }}</div>
+        <div class="risk-category">{{ data.risk_category }}</div>
       {% else %}
         <div class="risk-pct" style="color:var(--{{ data.color }});">{{ data.risk_pct }}%</div>
-        <div class="risk-gauge">
-          {% if name == 'Diabetes' %}
-            <div class="risk-gauge-fill" style="width:0%" data-target="{{ [100, (data.risk_pct / 50 * 100)|int]|min }}"></div>
-          {% else %}
-            <div class="risk-gauge-fill" style="width:0%" data-target="{{ [100, (data.risk_pct / 30 * 100)|int]|min }}"></div>
-          {% endif %}
-        </div>
         <div class="risk-category">{{ data.risk_category }}</div>
         {% if name == 'Diabetes' and data.score is defined %}
           <div style="font-size:11px;color:var(--text-3);margin-top:2px;">FINDRISC {{ data.score }}/26</div>
@@ -220,9 +254,15 @@
       {% if data.note %}
         <div style="font-size:11px;color:var(--amber);margin-top:6px;line-height:1.4;">{{ data.note }}</div>
       {% endif %}
+      {% if data.source %}
+        <div style="font-size:10px;color:var(--text-3);margin-top:6px;line-height:1.3;">{{ data.source }}</div>
+      {% endif %}
+      {% if data.comparison_pce %}
+        <div style="font-size:10px;color:var(--text-3);margin-top:6px;">PCE comparison: {{ data.comparison_pce.risk_pct }}% ({{ data.comparison_pce.risk_category }})</div>
+      {% endif %}
 
     {% else %}
-      <!-- Gated -->
+      <!-- Refused / gated -->
       <div class="risk-pct" style="color:var(--text-3);font-size:22px;margin:8px 0;">—</div>
       <div style="font-size:13px;font-weight:500;color:var(--text-2);">{{ data.risk_category }}</div>
       {% if data.note %}
@@ -230,12 +270,8 @@
       {% endif %}
       {% if data.gate == 'labs' or data.gate == 'labs_cholesterol' %}
         <a href="{{ url_for('labs') }}" class="btn btn-ghost btn-sm" style="margin-top:10px;font-size:12px;display:inline-flex;">Add labs →</a>
-      {% elif data.gate == 'daily_log' %}
-        <div style="margin-top:8px;">
-          <div class="prog-wrap"><div class="prog-fill prog-teal" style="width:0%" data-target="{{ (daily_count / 7 * 100)|int }}"></div></div>
-        </div>
-      {% elif data.gate == 'profile' %}
-        <a href="{{ url_for('profile') }}" class="btn btn-ghost btn-sm" style="margin-top:10px;font-size:12px;display:inline-flex;">Complete profile →</a>
+      {% elif data.gate == 'profile' or data.gate == 'sex_equation' or data.gate == 'missing_sbp' %}
+        <a href="{{ url_for('profile') }}" class="btn btn-ghost btn-sm" style="margin-top:10px;font-size:12px;display:inline-flex;">Update profile →</a>
       {% endif %}
     {% endif %}
 

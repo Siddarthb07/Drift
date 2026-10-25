@@ -1,0 +1,491 @@
+{
+  "n_cases": 16,
+  "keys": [
+    "no_white_pce_fallback",
+    "no_green_under30",
+    "no_silent_waist",
+    "no_cancer_rr_hero",
+    "no_health_age_hero",
+    "shows_estimate_when_complete"
+  ],
+  "per_key": {
+    "no_white_pce_fallback": {
+      "honest": 1.0,
+      "baseline": 0.5
+    },
+    "no_green_under30": {
+      "honest": 1.0,
+      "baseline": 0.9375
+    },
+    "no_silent_waist": {
+      "honest": 1.0,
+      "baseline": 0.9375
+    },
+    "no_cancer_rr_hero": {
+      "honest": 1.0,
+      "baseline": 0.0
+    },
+    "no_health_age_hero": {
+      "honest": 1.0,
+      "baseline": 0.0
+    },
+    "shows_estimate_when_complete": {
+      "honest": 1.0,
+      "baseline": 1.0
+    }
+  },
+  "honest_mean_pass_rate": 1.0,
+  "baseline_mean_pass_rate": 0.5625,
+  "delta_honest_minus_baseline": 0.4375,
+  "honest_all_pass": true,
+  "rows": [
+    {
+      "id": "v1_midrisk_white",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "v1_midrisk_white",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.6666666666666666,
+      "all_pass": false
+    },
+    {
+      "id": "v2_south_asian_same_vitals",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "v2_south_asian_same_vitals",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": false,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.5,
+      "all_pass": false
+    },
+    {
+      "id": "v3_under30",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "v3_under30",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": false,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.5,
+      "all_pass": false
+    },
+    {
+      "id": "v4_missing_waist",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "v4_missing_waist",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": false,
+        "no_green_under30": true,
+        "no_silent_waist": false,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.3333333333333333,
+      "all_pass": false
+    },
+    {
+      "id": "v5_missing_chol",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "v5_missing_chol",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.6666666666666666,
+      "all_pass": false
+    },
+    {
+      "id": "v6_high_risk_smoker",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "v6_high_risk_smoker",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.6666666666666666,
+      "all_pass": false
+    },
+    {
+      "id": "grid_white_female",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "grid_white_female",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.6666666666666666,
+      "all_pass": false
+    },
+    {
+      "id": "grid_white_male",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "grid_white_male",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.6666666666666666,
+      "all_pass": false
+    },
+    {
+      "id": "grid_aa_female",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "grid_aa_female",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.6666666666666666,
+      "all_pass": false
+    },
+    {
+      "id": "grid_aa_male",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "grid_aa_male",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.6666666666666666,
+      "all_pass": false
+    },
+    {
+      "id": "grid_south_asian_female",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "grid_south_asian_female",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": false,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.5,
+      "all_pass": false
+    },
+    {
+      "id": "grid_south_asian_male",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "grid_south_asian_male",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": false,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.5,
+      "all_pass": false
+    },
+    {
+      "id": "grid_hispanic_female",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "grid_hispanic_female",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": false,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.5,
+      "all_pass": false
+    },
+    {
+      "id": "grid_hispanic_male",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "grid_hispanic_male",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": false,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.5,
+      "all_pass": false
+    },
+    {
+      "id": "grid_east_asian_female",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "grid_east_asian_female",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": false,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.5,
+      "all_pass": false
+    },
+    {
+      "id": "grid_east_asian_male",
+      "mode": "honest",
+      "checks": {
+        "no_white_pce_fallback": true,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": true,
+        "no_health_age_hero": true,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 1.0,
+      "all_pass": true
+    },
+    {
+      "id": "grid_east_asian_male",
+      "mode": "baseline",
+      "checks": {
+        "no_white_pce_fallback": false,
+        "no_green_under30": true,
+        "no_silent_waist": true,
+        "no_cancer_rr_hero": false,
+        "no_health_age_hero": false,
+        "shows_estimate_when_complete": true
+      },
+      "pass_rate": 0.5,
+      "all_pass": false
+    }
+  ]
+}

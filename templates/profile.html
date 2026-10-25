@@ -30,7 +30,7 @@
         <input name="age" type="number" min="1" max="120" value="{{ user.age or '' }}" placeholder="e.g. 34">
       </div>
       <div>
-        <label>Biological Sex</label>
+        <label>Gender identity (optional)</label>
         <select name="sex">
           <option value="">Select</option>
           <option value="male"   {% if user.sex=='male'   %}selected{% endif %}>Male</option>
@@ -39,12 +39,45 @@
         </select>
       </div>
       <div>
-        <label>Race / Ethnicity <span style="font-size:11px;color:var(--text-3);">(affects CVD equation)</span></label>
-        <select name="race">
-          <option value="white"   {% if (user.race or 'white')=='white' %}selected{% endif %}>White / Default</option>
-          <option value="aa"      {% if user.race=='aa'     %}selected{% endif %}>African American</option>
-          <option value="other"   {% if user.race=='other'  %}selected{% endif %}>Other</option>
+        <label>Sex for equations <span style="font-size:11px;color:var(--text-3);">required for PREVENT/FINDRISC</span></label>
+        <select name="sex_for_equation">
+          <option value="">Not set (we refuse a number)</option>
+          <option value="male"   {% if user.sex_for_equation=='male'   %}selected{% endif %}>Male</option>
+          <option value="female" {% if user.sex_for_equation=='female' %}selected{% endif %}>Female</option>
         </select>
+      </div>
+    </div>
+    <div class="form-grid-3">
+      <div>
+        <label>Race / Ethnicity <span style="font-size:11px;color:var(--text-3);">optional · PREVENT is race-free</span></label>
+        <select name="race">
+          <option value="">Prefer not to say</option>
+          <option value="white"        {% if user.race=='white' %}selected{% endif %}>White</option>
+          <option value="aa"           {% if user.race=='aa' %}selected{% endif %}>Black / African American</option>
+          <option value="south_asian"  {% if user.race=='south_asian' %}selected{% endif %}>South Asian</option>
+          <option value="east_asian"   {% if user.race=='east_asian' %}selected{% endif %}>East Asian</option>
+          <option value="hispanic"     {% if user.race=='hispanic' %}selected{% endif %}>Hispanic / Latino</option>
+          <option value="middle_eastern" {% if user.race=='middle_eastern' %}selected{% endif %}>Middle Eastern / North African</option>
+          <option value="indigenous"   {% if user.race=='indigenous' %}selected{% endif %}>Indigenous</option>
+          <option value="multiracial"  {% if user.race=='multiracial' %}selected{% endif %}>Multiracial / Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Region / equation preference</label>
+        <select name="region">
+          <option value="global" {% if (user.region or 'global')=='global' %}selected{% endif %}>Global — PREVENT (race-free, default)</option>
+          <option value="us_pce" {% if user.region=='us_pce' %}selected{% endif %}>US — prefer PCE if White/AA</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end;">
+        <label class="checkbox-label">
+          <input type="checkbox" name="prefer_pce" {% if user.prefer_pce %}checked{% endif %}>
+          Prefer PCE when eligible (White/AA, age 40+)
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" name="statin" {% if user.statin %}checked{% endif %}>
+          Currently on a statin
+        </label>
       </div>
     </div>
 
@@ -164,6 +197,17 @@
       <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">Back to Dashboard</a>
     </div>
   </form>
+</div>
+
+<div class="card" style="margin-top:14px;">
+  <div class="section-label">Your data</div>
+  <p class="muted" style="font-size:13px;margin-bottom:12px;">Export a JSON copy or permanently delete this account and all health records.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('api_export') }}">Export JSON</a>
+    <form method="post" action="{{ url_for('api_delete_account') }}" onsubmit="return confirm('Delete all your Drift data permanently?');">
+      <button class="btn btn-ghost btn-sm" type="submit" style="color:var(--red);">Delete account</button>
+    </form>
+  </div>
 </div>
 
 {% if user.age and user.height and user.weight %}

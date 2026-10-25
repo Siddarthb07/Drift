@@ -1,137 +1,86 @@
 # Drift
 
-**Keywords:** clinical risk scoring · ACC/AHA · FINDRISC · biomarkers · health tracker · wearables OAuth · Flask · explainable ML
+**Keywords:** claim-honest risk disclosure · AHA PREVENT (race-free) · ACC/AHA PCE · FINDRISC · FAccT artifact · wearables OAuth · Flask
 
-**Drift** (repo formerly branded Health-AI) is a Flask-based personal health tracking platform that combines daily lifestyle logging, 17-biomarker lab trend tracking, smartwatch OAuth ingestion, and evidence-based clinical risk estimation (ACC/AHA Pooled Cohort + FINDRISC).
+**Drift** is a Flask personal health tracker that combines lifestyle logging, lab trends, wearable OAuth, and **evidence-contingent risk disclosure**. The research contribution is not a black-box predictor — it is making every on-screen health claim accountable: provenance, coverage limits, refusal instead of silent defaults, and a race-free default CVD equation usable across racial and ethnic groups.
 
-## What This Repo Actually Does
+> Educational decision-support only. **Not a medical device.** Not a diagnosis.
 
-- User auth with local SQLite + bcrypt password hashing
-- Guided onboarding for demographics, vitals, and history
-- Daily logs for sleep, steps, stress, hydration, food quality, and notes
-- Lab entry and historical lab timeline for 17 biomarkers
-- Risk scoring with hard gating rules before any risk is shown
-- OAuth smartwatch sync (Fitbit and Google Fit implemented)
-- CSV import path for Apple Health style exports
-- JSON API endpoints for daily history and risk summary
+FAccT draft: [`docs/facct/PAPER_DRAFT.md`](docs/facct/PAPER_DRAFT.md)
 
-The app runs from `app_v5.py` and defaults to port `5001`.
+## What works in this build
 
-## Risk Engine In This Version
+- Auth (SQLite + bcrypt), consent gate before onboarding, export / delete APIs
+- Daily logs, 17-biomarker labs, dashboard with **honest** (default) and **baseline** (study) UI modes
+- **CVD default: AHA PREVENT** (race-free, ages 30–79). Optional PCE only for White / African American when preferred
+- FINDRISC with **waist intervals** when waist is missing (no silent 94/80 cm default)
+- Cancer: lifestyle **factors only** in honest mode (no compounded RR hero)
+- Habit trajectory replaces fictional health-age hero in honest mode
+- Fitbit + Google Fit OAuth with token refresh (`oauth_watch.py`); Garmin → CSV
+- Claim ledger (`claims.yaml`), calculator cards (`/model-cards`), display audit log
+- Tests + disclosure audit CLI + vignette study kit (`study/`)
 
-The current runtime risk pipeline is rule-based and transparent, not a black-box classifier:
-
-- CVD: ACC/AHA Pooled Cohort Equations
-- Diabetes: FINDRISC score
-- Cancer: lifestyle relative-risk model (not absolute incidence probability)
-- Health Age: heuristic estimator based on lifestyle and labs
-
-Implementation is in `risk_calculators.py` and called through `compute_risk_scores()` in `app_v5.py`.
-
-### Gating Rules Before Risk Is Displayed
-
-`compute_risk_scores()` enforces:
-
-1. Profile must include age, sex, height, weight
-2. At least 7 daily logs must exist
-3. At least one lab panel entry must exist
-4. CVD additionally requires total cholesterol and HDL, and age 40+
-
-If these conditions are not met, the UI returns explicit gated messages instead of fake numbers.
-
-## Data Model
-
-SQLite DB: `users.db`
-
-Tables created at startup:
-
-- `users`
-- `daily_log`
-- `lab_results`
-- `surveys`
-
-Notable tracked fields include BP medication status, smoking status, alcohol/week, race, family history flags, wearable provider/token, and health goals.
-
-## Smartwatch and Import Flows
-
-### OAuth Providers Configured
-
-`OAUTH_CFG` supports config keys for:
-
-- `fitbit`
-- `googlefit`
-- `garmin` (configured in env map, but sync logic currently handles Fitbit and Google Fit)
-
-### Sync Endpoint
-
-- `GET /api/sync_watch`
-
-Behavior:
-
-- Pulls current-day steps/active/sleep via provider APIs
-- Upserts into `daily_log` with `source='watch'`
-
-### CSV Import Endpoint
-
-- `POST /import_csv`
-
-Expected columns include:
-
-- `date`
-- `sleep`
-- `steps`
-- `active_minutes`
-
-Imported rows are upserted into `daily_log` with `source='csv_import'`.
-
-## ML Folder Note (`ml/`)
-
-This repo also contains an advanced experimental ML stack under `ml/` (`predictor.py`, `train_model.py`, `safety.py`, etc.).
-
-Design notes and phase plan: [`ml/AUDIT_AND_DESIGN.md`](ml/AUDIT_AND_DESIGN.md).
-
-Important: the primary runtime in `app_v5.py` currently uses the rule-based calculator path from `risk_calculators.py`, not the `ml/` predictor as the default serving path.
-
-## Local Setup
+## Quick start
 
 ```bash
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# macOS/Linux
-# source venv/bin/activate
-
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 python app_v5.py
 ```
 
-Open: `http://127.0.0.1:5001`
+Open `http://127.0.0.1:5001` → register → consent → onboarding.
 
-## Optional Environment Variables
+```bash
+pytest -q
+python scripts/drift_audit.py
+```
 
-- `SECRET_KEY`
-- `FITBIT_CLIENT_ID`
-- `FITBIT_CLIENT_SECRET`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `GARMIN_CLIENT_ID`
-- `GARMIN_CLIENT_SECRET`
+Dashboard modes: `/?mode=honest` (default) or `/?mode=baseline` (legacy study arm).
 
-## Core Routes
+## Risk engine (honest)
 
-- `/` home
-- `/register`, `/login`, `/logout`
-- `/onboarding/<step>`
-- `/dashboard`
-- `/labs`
-- `/profile`
-- `/smartwatch`
-- `/connect/<provider>` and `/oauth/callback/<provider>`
-- `/survey`
-- `/api/daily_history`
-- `/api/risk_summary`
+Implemented in `risk_engine.py` (not the old engagement gate in `app_v5`):
 
-## Safety and Scope
+| Score | Equation | Display |
+|---|---|---|
+| CVD | PREVENT (default); PCE optional if race ∈ {white, aa} | Risk **band** + provenance |
+| Diabetes | FINDRISC | Band / score; waist missing → interval |
+| Cancer | WCRF/IARC factor list | Factors only |
+| Hero | Habit trajectory | Qualitative |
 
-This project is educational and decision-support only. It is not a medical device and is not a diagnostic substitute for clinician review.
+Missing SBP, lipids, or equation-sex → **refuse** (we do not invent 120 mmHg or median cholesterol). Age &lt; 30 → refuse CVD, not green “low risk”.
 
+## OAuth setup
+
+Set env vars, then register redirect URIs exactly:
+
+`http://127.0.0.1:5001/oauth/callback/fitbit`  
+`http://127.0.0.1:5001/oauth/callback/googlefit`
+
+```bash
+export FITBIT_CLIENT_ID=...
+export FITBIT_CLIENT_SECRET=...
+export GOOGLE_CLIENT_ID=...
+export GOOGLE_CLIENT_SECRET=...
+export SECRET_KEY=...   # required in production
+```
+
+Fitbit uses HTTP Basic client authentication on token exchange; Google requests offline refresh tokens. See `oauth_watch.py`.
+
+## ML folder
+
+`ml/` is **quarantined** — synthetic training labels, not served. See [`ml/QUARANTINE.md`](ml/QUARANTINE.md).
+
+## FAccT / research paths
+
+| Piece | Path |
+|---|---|
+| Paper draft | `docs/facct/PAPER_DRAFT.md` |
+| Audit results | `docs/facct/audit_results.json` |
+| Claim ledger | `claims.yaml` |
+| System card | `cards/SYSTEM_CARD.md` |
+| Study protocol | `study/PROTOCOL.md` |
+
+## Safety
+
+Not for clinical decisions. Disclaimers are in consent + UI, not only the footer.

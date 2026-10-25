@@ -1,0 +1,84 @@
+{
+  "pce_buggy_reconstruction_pct": 100,
+  "pce_fixed_pct": 2.1,
+  "race_parity_honest": [
+    {
+      "race": "white",
+      "equation": "PREVENT",
+      "exact": 1.9,
+      "band": "<5%"
+    },
+    {
+      "race": "aa",
+      "equation": "PREVENT",
+      "exact": 1.9,
+      "band": "<5%"
+    },
+    {
+      "race": "south_asian",
+      "equation": "PREVENT",
+      "exact": 1.9,
+      "band": "<5%"
+    },
+    {
+      "race": "east_asian",
+      "equation": "PREVENT",
+      "exact": 1.9,
+      "band": "<5%"
+    },
+    {
+      "race": "hispanic",
+      "equation": "PREVENT",
+      "exact": 1.9,
+      "band": "<5%"
+    },
+    {
+      "race": "middle_eastern",
+      "equation": "PREVENT",
+      "exact": 1.9,
+      "band": "<5%"
+    },
+    {
+      "race": "indigenous",
+      "equation": "PREVENT",
+      "exact": 1.9,
+      "band": "<5%"
+    },
+    {
+      "race": "multiracial",
+      "equation": "PREVENT",
+      "exact": 1.9,
+      "band": "<5%"
+    },
+    {
+      "race": "unspecified",
+      "equation": "PREVENT",
+      "exact": 1.9,
+      "band": "<5%"
+    }
+  ],
+  "prefer_pce_routing": {
+    "white": {
+      "equation": "PCE",
+      "band": "<5%"
+    },
+    "south_asian": {
+      "equation": "PREVENT",
+      "band": "<5%"
+    }
+  },
+  "south_asian_legacy_vs_honest": {
+    "legacy_equation": "PCE",
+    "legacy_mapped_race": "white",
+    "legacy_fallback": true,
+    "legacy_risk_pct": 1.8,
+    "honest_equation": "PREVENT",
+    "honest_band": "<5%",
+    "honest_exact": 1.9
+  },
+  "vignette_eval": {
+    "honest_mean_pass_rate": 1.0,
+    "baseline_mean_pass_rate": 0.49999999999999994,
+    "delta": 0.5
+  }
+}

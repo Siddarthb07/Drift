@@ -1,5 +1,9 @@
+venv/
 __pycache__/
-*.py[cod]
-*.db
-*.sqlite3
+*.pyc
+.pytest_cache/
+users.db
+audit_display.jsonl
+.env
+*.pkl
 .DS_Store

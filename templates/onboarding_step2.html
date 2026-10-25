@@ -19,12 +19,41 @@
           <input name="age" type="number" min="1" max="120" value="{{ user.age or '' }}" required placeholder="e.g. 34">
         </div>
         <div>
-          <label>Biological Sex</label>
-          <select name="sex" required>
+          <label>Gender identity</label>
+          <select name="sex">
             <option value="">Select</option>
             <option value="male"   {% if user.sex=='male'   %}selected{% endif %}>Male</option>
             <option value="female" {% if user.sex=='female' %}selected{% endif %}>Female</option>
             <option value="other"  {% if user.sex=='other'  %}selected{% endif %}>Other</option>
+          </select>
+        </div>
+        <div>
+          <label>Sex for equations</label>
+          <select name="sex_for_equation" required>
+            <option value="">Required for PREVENT/FINDRISC</option>
+            <option value="male"   {% if user.sex_for_equation=='male' %}selected{% endif %}>Male</option>
+            <option value="female" {% if user.sex_for_equation=='female' %}selected{% endif %}>Female</option>
+          </select>
+        </div>
+        <div>
+          <label>Race / ethnicity (optional)</label>
+          <select name="race">
+            <option value="">Prefer not to say — PREVENT is race-free</option>
+            <option value="white">White</option>
+            <option value="aa">Black / African American</option>
+            <option value="south_asian">South Asian</option>
+            <option value="east_asian">East Asian</option>
+            <option value="hispanic">Hispanic / Latino</option>
+            <option value="middle_eastern">Middle Eastern / N. African</option>
+            <option value="indigenous">Indigenous</option>
+            <option value="multiracial">Multiracial / Other</option>
+          </select>
+        </div>
+        <div>
+          <label>Region</label>
+          <select name="region">
+            <option value="global">Global — PREVENT default</option>
+            <option value="us_pce">US — PCE if White/AA</option>
           </select>
         </div>
         <div>

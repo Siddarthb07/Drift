@@ -1,45 +1,17 @@
 """
-HealthTracker v5 — Main Flask Application
+Drift — Flask application (claim-honest risk disclosure + wearables).
 """
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import sqlite3, os, numpy as np, datetime, bcrypt, json, io, csv
-from risk_calculators import (
-    pooled_cohort_cvd_10yr, findrisc_diabetes, cancer_lifestyle_risk,
-    estimate_health_age, classify_lab, LAB_REFS
-)
-from requests_oauthlib import OAuth2Session
+from risk_calculators import classify_lab, LAB_REFS
+from risk_engine import compute_risk_scores
+import oauth_watch
+from token_vault import seal as seal_token, open_token
 
 DB = "users.db"
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-me-in-production-32chars+")
-
-# ─── OAuth config ────────────────────────────────────────────
-OAUTH_CFG = {
-    "fitbit": {
-        "client_id":     os.getenv("FITBIT_CLIENT_ID"),
-        "client_secret": os.getenv("FITBIT_CLIENT_SECRET"),
-        "auth_uri":  "https://www.fitbit.com/oauth2/authorize",
-        "token_uri": "https://api.fitbit.com/oauth2/token",
-        "scope": ["profile","activity","heartrate","sleep","weight"],
-    },
-    "googlefit": {
-        "client_id":     os.getenv("GOOGLE_CLIENT_ID"),
-        "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-        "auth_uri":  "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "scope": ["openid","profile","email",
-                  "https://www.googleapis.com/auth/fitness.activity.read",
-                  "https://www.googleapis.com/auth/fitness.heart_rate.read",
-                  "https://www.googleapis.com/auth/fitness.sleep.read"],
-    },
-    "garmin": {
-        "client_id":     os.getenv("GARMIN_CLIENT_ID"),
-        "client_secret": os.getenv("GARMIN_CLIENT_SECRET"),
-        "auth_uri":  "https://connect.garmin.com/oauthConfirm",
-        "token_uri": "https://connectapi.garmin.com/oauth-service/oauth/token",
-        "scope": [],
-    },
-}
+OAUTH_CFG = oauth_watch.oauth_config()
 
 # ─── DB init ─────────────────────────────────────────────────
 def init_db():
@@ -57,7 +29,13 @@ def init_db():
         bp_medication INTEGER DEFAULT 0,
         smoking_status TEXT DEFAULT 'never',
         alcohol_per_week REAL DEFAULT 0,
-        race TEXT DEFAULT 'white',
+        race TEXT,
+        sex_for_equation TEXT,
+        region TEXT DEFAULT 'global',
+        prefer_pce INTEGER DEFAULT 0,
+        statin INTEGER DEFAULT 0,
+        consent_version TEXT,
+        consent_at TEXT,
         existing_diabetes INTEGER DEFAULT 0,
         existing_cvd INTEGER DEFAULT 0,
         existing_cancer INTEGER DEFAULT 0,
@@ -114,8 +92,36 @@ def init_db():
     )""")
 
     conn.commit(); conn.close()
+    _migrate_db()
+
+
+def _migrate_db():
+    """Add columns introduced for global / consent / equation sex."""
+    cols = {
+        "sex_for_equation": "TEXT",
+        "region": "TEXT DEFAULT 'global'",
+        "prefer_pce": "INTEGER DEFAULT 0",
+        "statin": "INTEGER DEFAULT 0",
+        "consent_version": "TEXT",
+        "consent_at": "TEXT",
+    }
+    with sqlite3.connect(DB) as conn:
+        existing = {r[1] for r in conn.execute("PRAGMA table_info(users)").fetchall()}
+        for name, decl in cols.items():
+            if name not in existing:
+                conn.execute(f"ALTER TABLE users ADD COLUMN {name} {decl}")
+        # Drop silent default: if race was 'white' from old DEFAULT and never set intentionally,
+        # leave as-is; new users get NULL race until chosen.
 
 init_db()
+
+
+def ui_mode() -> str:
+    m = (request.args.get("mode") or session.get("ui_mode") or "honest").lower()
+    if m in ("honest", "baseline"):
+        session["ui_mode"] = m
+        return m
+    return "honest"
 
 # ─── Helpers ─────────────────────────────────────────────────
 def hash_pw(pw):  return bcrypt.hashpw(pw.encode(), bcrypt.gensalt())
@@ -175,185 +181,31 @@ def compute_daily_stats(rows):
         "stress_score": max(0,100-int(((mean(stress) or 5)/10)*100)) if mean(stress) else 0,
     }
 
-def compute_risk_scores(user, daily_rows, labs):
-    """
-    Compute evidence-based risk scores.
-
-    GATING RULES (all three must be met before any score is shown):
-      1. Profile: age, sex, height, weight filled
-      2. Daily log: at least 7 entries
-      3. Labs: at least one lab entry exists
-
-    CVD additionally requires: total_cholesterol + hdl_cholesterol in labs.
-    """
-    results = {}
-
-    # ── Gate 1: basic profile ────────────────────────────────
-    if not all(user.get(f) for f in ["age", "sex", "height", "weight"]):
-        for name in ["CVD", "Diabetes", "Cancer"]:
-            results[name] = {
-                "risk_pct": None, "relative_risk": None,
-                "risk_category": "Profile incomplete",
-                "color": "gray",
-                "gate": "profile",
-                "note": "Complete your profile (age, sex, height, weight) to unlock this score.",
-                "source": "", "modifiable_factors": []
-            }
-        return results
-
-    # ── Gate 2: minimum 7 days of daily log ──────────────────
-    daily_count = len(daily_rows)
-    if daily_count < 7:
-        days_needed = 7 - daily_count
-        for name in ["CVD", "Diabetes", "Cancer"]:
-            results[name] = {
-                "risk_pct": None, "relative_risk": None,
-                "risk_category": f"Need {days_needed} more day{'s' if days_needed != 1 else ''} of logging",
-                "color": "gray",
-                "gate": "daily_log",
-                "note": f"Log your daily health data for at least 7 days to enable predictions. ({daily_count}/7 days logged)",
-                "source": "", "modifiable_factors": []
-            }
-        return results
-
-    # ── Gate 3: at least one lab entry ───────────────────────
-    has_any_lab = any(
-        labs.get(k) not in (None, "", 0)
-        for k in ["total_cholesterol", "ldl_cholesterol", "hdl_cholesterol",
-                  "fasting_glucose", "hba1c", "hs_crp", "egfr"]
-    )
-    if not has_any_lab:
-        for name in ["CVD", "Diabetes", "Cancer"]:
-            results[name] = {
-                "risk_pct": None, "relative_risk": None,
-                "risk_category": "Lab results required",
-                "color": "gray",
-                "gate": "labs",
-                "note": "Enter at least one set of lab results (cholesterol, glucose, etc.) to enable predictions.",
-                "source": "", "modifiable_factors": []
-            }
-        return results
-
-    # ── All gates passed — compute scores ────────────────────
-    age    = float(user.get("age", 45))
-    sex    = str(user.get("sex", "male")).lower()
-    hm     = float(user.get("height") or 170) / 100
-    weight = float(user.get("weight") or 70)
-    bmi    = weight / (hm ** 2) if hm > 0 else 24
-    waist  = float(user.get("waist_cm") or (94 if sex == "male" else 80))
-    sbp    = float(user.get("systolic") or 120)
-    smoker    = str(user.get("smoking_status", "never")) == "current"
-    ex_smoker = str(user.get("smoking_status", "never")) == "ex"
-    bp_meds   = bool(user.get("bp_medication"))
-    diabetes  = bool(user.get("existing_diabetes"))
-    has_glucose_hx = bool(user.get("high_glucose_history"))
-    family_diab   = int(user.get("family_history_diabetes") or 0)
-    family_cancer = bool(user.get("family_history_cancer"))
-    alc   = float(user.get("alcohol_per_week") or 0)
-    race  = str(user.get("race", "white")).lower()
-
-    stats      = compute_daily_stats(daily_rows)
-    avg_steps  = float(stats.get("avg_steps") or 3000)
-    avg_sleep  = float(stats.get("avg_sleep") or 7)
-    avg_stress = float(stats.get("avg_stress") or 5)
-
-    def mean_col(col, default=0):
-        vals = [r.get(col) for r in daily_rows if r.get(col) is not None]
-        return float(np.mean(vals)) if vals else default
-
-    active     = avg_steps >= 7500 or mean_col("active_minutes", 0) >= (150 / 7)
-    red_meat   = mean_col("red_meat_servings", 2)
-    processed  = mean_col("processed_meat", 0) > 0
-    veg_daily  = mean_col("veg_servings", 0) >= 2 and mean_col("fruit_servings", 0) >= 1
-
-    def safe_float(v):
-        try:
-            f = float(v)
-            return f if f > 0 else None
-        except (TypeError, ValueError):
-            return None
-
-    total_chol = safe_float(labs.get("total_cholesterol"))
-    hdl_chol   = safe_float(labs.get("hdl_cholesterol"))
-    fasting_gl = safe_float(labs.get("fasting_glucose"))
-    hba1c      = safe_float(labs.get("hba1c"))
-
-    # ── CVD: requires cholesterol labs ───────────────────────
-    if total_chol and hdl_chol and age >= 40:
-        cvd = pooled_cohort_cvd_10yr(
-            age, sex, total_chol, hdl_chol, sbp,
-            bp_meds, smoker, diabetes, race
-        )
-        if cvd:
-            results["CVD"] = cvd
-        else:
-            results["CVD"] = {
-                "risk_pct": None, "risk_category": "Age out of range (valid 40–79)",
-                "color": "gray", "note": "PCE valid for ages 40–79 only.",
-                "source": "ACC/AHA Pooled Cohort Equations", "modifiable_factors": []
-            }
-    elif not total_chol or not hdl_chol:
-        results["CVD"] = {
-            "risk_pct": None,
-            "risk_category": "Cholesterol labs needed",
-            "color": "gray",
-            "gate": "labs_cholesterol",
-            "note": "Enter Total Cholesterol and HDL Cholesterol in Lab Results to calculate your 10-year CVD risk.",
-            "source": "ACC/AHA Pooled Cohort Equations (Goff et al., Circulation 2014)",
-            "modifiable_factors": []
-        }
-    elif age < 40:
-        results["CVD"] = {
-            "risk_pct": None,
-            "risk_category": "Under 40 — low absolute risk",
-            "color": "green",
-            "note": "ACC/AHA PCE is validated for ages 40–79. Focus on lifestyle factors.",
-            "source": "ACC/AHA Pooled Cohort Equations", "modifiable_factors": []
-        }
-
-    # ── Diabetes: FINDRISC (no labs required beyond profile) ─
-    diab = findrisc_diabetes(
-        age, bmi, waist, sex, active, veg_daily,
-        bp_meds, has_glucose_hx, family_diab
-    )
-    # Enhance with glucose labs if available
-    if fasting_gl and fasting_gl >= 100:
-        diab["note"] = (
-            diab.get("note", "") +
-            f" ⚠ Fasting glucose {fasting_gl} mg/dL is in the pre-diabetes range — consult your doctor."
-        )
-        if diab["color"] in ("green", "yellow"):
-            diab["color"] = "orange"
-    elif hba1c and hba1c >= 5.7:
-        diab["note"] = (
-            diab.get("note", "") +
-            f" ⚠ HbA1c {hba1c}% is in the pre-diabetes range — consult your doctor."
-        )
-        if diab["color"] in ("green", "yellow"):
-            diab["color"] = "orange"
-    results["Diabetes"] = diab
-
-    # ── Cancer: lifestyle relative risk ──────────────────────
-    canc = cancer_lifestyle_risk(
-        age, bmi, sex, smoker, ex_smoker, alc,
-        active, red_meat, processed, veg_daily, family_cancer
-    )
-    results["Cancer"] = canc
-
-    # ── Health Age ────────────────────────────────────────────
-    ha = estimate_health_age(
-        age, bmi, sbp, smoker, avg_sleep, avg_steps, avg_stress,
-        total_chol, fasting_gl, hba1c
-    )
-    results["_health_age"] = ha
-    results["_daily_count"] = daily_count
-
-    return results
+# compute_risk_scores imported from risk_engine (claim-honest default).
 
 # ─── Auth ────────────────────────────────────────────────────
 @app.route("/")
 def home():
     return render_template("home.html")
+
+
+@app.route("/consent", methods=["GET", "POST"])
+def consent():
+    """Pre-onboarding epistemic + privacy consent (P11)."""
+    if "username" not in session:
+        return redirect(url_for("login"))
+    if request.method == "POST":
+        if not request.form.get("accept_limits") or not request.form.get("accept_data"):
+            flash("Please acknowledge both statements to continue.", "error")
+            return redirect(url_for("consent"))
+        with sqlite3.connect(DB) as conn:
+            conn.execute(
+                "UPDATE users SET consent_version=?, consent_at=? WHERE username=?",
+                ("v1-facct", datetime.datetime.utcnow().isoformat(), session["username"]),
+            )
+        flash("Consent recorded. You can export or delete your data anytime from Profile.", "success")
+        return redirect(url_for("onboarding", step=2))
+    return render_template("consent.html")
 
 @app.route("/register", methods=["GET","POST"])
 def register():
@@ -365,7 +217,7 @@ def register():
         try:
             with sqlite3.connect(DB) as conn:
                 conn.execute("INSERT INTO users (username,password) VALUES (?,?)", (un, hash_pw(pw)))
-            flash("Account created — please log in.","success")
+            flash("Account created — log in, then review consent before health data entry.","success")
             return redirect(url_for("login"))
         except sqlite3.IntegrityError:
             flash("Username already exists.","error")
@@ -381,6 +233,8 @@ def login():
         if row and check_pw(pw, row[0]):
             session["username"] = un
             user = get_user(un)
+            if not user.get("consent_version"):
+                return redirect(url_for("consent"))
             if profile_pct(user) < 60:
                 return redirect(url_for("onboarding", step=2))
             return redirect(url_for("dashboard"))
@@ -397,14 +251,23 @@ def onboarding(step):
     if "username" not in session: return redirect(url_for("login"))
     un = session["username"]
     user = get_user(un)
+    if not user.get("consent_version"):
+        return redirect(url_for("consent"))
     if request.method == "POST":
         with sqlite3.connect(DB) as conn:
             if step == 2:
+                sex = request.form.get("sex")
+                sex_eq = request.form.get("sex_for_equation") or (
+                    sex if sex in ("male", "female") else ""
+                )
                 conn.execute(
-                    "UPDATE users SET age=?,sex=?,height=?,weight=?,waist_cm=? WHERE username=?",
-                    (request.form.get("age"), request.form.get("sex"),
+                    "UPDATE users SET age=?,sex=?,sex_for_equation=?,height=?,weight=?,waist_cm=?,race=?,region=? WHERE username=?",
+                    (request.form.get("age"), sex, sex_eq or None,
                      request.form.get("height"), request.form.get("weight"),
-                     request.form.get("waist_cm"), un))
+                     request.form.get("waist_cm") or None,
+                     request.form.get("race") or None,
+                     request.form.get("region") or "global",
+                     un))
             elif step == 3:
                 conn.execute(
                     "UPDATE users SET systolic=?,diastolic=?,resting_hr=?,bp_medication=?,smoking_status=?,alcohol_per_week=? WHERE username=?",
@@ -491,8 +354,8 @@ def dashboard():
         "sleep": float(user.get("goal_sleep") or 8.0),
     }
 
-    # Always compute — gating is handled inside compute_risk_scores
-    risk = compute_risk_scores(user, daily, labs)
+    mode = ui_mode()
+    risk = compute_risk_scores(user, daily, labs, mode=mode, username=un)
 
     # Only classify labs that have a real positive numeric value
     lab_status = {}
@@ -515,7 +378,8 @@ def dashboard():
         risk=risk, labs=labs, lab_status=lab_status,
         goals=goals, profile_pct=profile_pct(user),
         daily_count=daily_count,
-        today=datetime.date.today().isoformat()
+        today=datetime.date.today().isoformat(),
+        ui_mode=mode,
     )
 
 # ─── Lab Results ─────────────────────────────────────────────
@@ -582,14 +446,15 @@ def profile():
     if "username" not in session: return redirect(url_for("login"))
     un = session["username"]
     if request.method == "POST":
-        fields = ["age","sex","height","weight","waist_cm","systolic","diastolic",
-                  "resting_hr","bp_medication","smoking_status","alcohol_per_week","race",
+        fields = ["age","sex","sex_for_equation","height","weight","waist_cm","systolic","diastolic",
+                  "resting_hr","bp_medication","smoking_status","alcohol_per_week","race","region",
+                  "prefer_pce","statin",
                   "existing_diabetes","existing_cvd","existing_cancer","existing_asthma",
                   "existing_hypertension","high_glucose_history",
                   "family_history_diabetes","family_history_cvd","family_history_cancer",
                   "goal_weight","goal_steps","goal_sleep"]
         vals = []
-        bool_fields = {"bp_medication","existing_diabetes","existing_cvd","existing_cancer",
+        bool_fields = {"bp_medication","prefer_pce","statin","existing_diabetes","existing_cvd","existing_cancer",
                        "existing_asthma","existing_hypertension","high_glucose_history",
                        "family_history_diabetes","family_history_cvd","family_history_cancer"}
         for f in fields:
@@ -619,123 +484,76 @@ def smartwatch():
         flash("Watch settings saved.","success")
         return redirect(url_for("smartwatch"))
 
-    # Check which env vars are configured
-    configured = {p: bool(cfg.get("client_id")) for p,cfg in OAUTH_CFG.items()}
-    return render_template("smartwatch.html", user=user, configured=configured)
+    return render_template(
+        "smartwatch.html",
+        user=user,
+        configured=oauth_watch.provider_status(),
+        redirect_hint=request.url_root.rstrip("/") + "/oauth/callback/<provider>",
+    )
 
 @app.route("/connect/<provider>")
 def oauth_connect(provider):
     if "username" not in session: return redirect(url_for("login"))
-    cfg = OAUTH_CFG.get(provider,{})
-    if not cfg.get("client_id"):
-        flash(f"'{provider}' OAuth is not configured on this server. See README for setup steps.","error")
+    auth_url, err = oauth_watch.begin_auth(provider)
+    if err:
+        flash(err, "error")
         return redirect(url_for("smartwatch"))
-    cb = request.url_root.rstrip("/") + url_for("oauth_callback", provider=provider)
-    oauth = OAuth2Session(cfg["client_id"], redirect_uri=cb, scope=cfg.get("scope",[]))
-    auth_url, state = oauth.authorization_url(cfg["auth_uri"])
-    session[f"oauth_state_{provider}"] = state
     return redirect(auth_url)
 
 @app.route("/oauth/callback/<provider>")
 def oauth_callback(provider):
     if "username" not in session: return redirect(url_for("login"))
-    cfg = OAUTH_CFG.get(provider,{})
-    if not cfg:
-        flash("Unknown provider.","error"); return redirect(url_for("smartwatch"))
-    cb = request.url_root.rstrip("/") + url_for("oauth_callback", provider=provider)
-    oauth = OAuth2Session(cfg["client_id"], state=session.get(f"oauth_state_{provider}"), redirect_uri=cb)
-    try:
-        token = oauth.fetch_token(cfg["token_uri"], client_secret=cfg["client_secret"], authorization_response=request.url)
-        with sqlite3.connect(DB) as conn:
-            conn.execute("UPDATE users SET watch_token=?,smartwatch=? WHERE username=?",
-                         (json.dumps(token), provider, session["username"]))
-        flash(f"{provider.capitalize()} connected successfully!","success")
-    except Exception as e:
-        flash(f"OAuth failed: {e}. Ensure redirect URI is registered in the provider's developer console.","error")
+    token, err = oauth_watch.finish_auth(provider)
+    if err:
+        flash(err, "error")
+        return redirect(url_for("smartwatch"))
+    with sqlite3.connect(DB) as conn:
+        conn.execute(
+            "UPDATE users SET watch_token=?,smartwatch=? WHERE username=?",
+            (seal_token(json.dumps(token)), provider, session["username"]),
+        )
+    flash(f"{provider} connected successfully.", "success")
     return redirect(url_for("smartwatch"))
 
 @app.route("/api/sync_watch")
 def sync_watch():
-    """
-    Real watch sync endpoint.
-    Currently supports Fitbit (when credentials are set).
-    Returns JSON with synced data and saves to daily_log.
-    """
     if "username" not in session:
-        return jsonify({"error":"Not logged in"}), 401
+        return jsonify({"error": "Not logged in"}), 401
     un = session["username"]
     user = get_user(un)
-    provider = user.get("smartwatch","")
-    token_raw = user.get("watch_token","")
-
+    provider = user.get("smartwatch", "")
+    token_raw = user.get("watch_token", "")
     if not provider or not token_raw:
-        return jsonify({"error":"No watch connected","tip":"Connect a watch in the Smartwatch page first."}), 400
-
+        return jsonify({"error": "No watch connected", "tip": "Connect Fitbit or Google Fit first."}), 400
     try:
-        token = json.loads(token_raw)
-    except:
-        return jsonify({"error":"Invalid token stored. Please re-connect your watch."}), 400
+        token = json.loads(open_token(token_raw))
+    except Exception:
+        return jsonify({"error": "Invalid token stored. Please re-connect your watch."}), 400
 
-    cfg = OAUTH_CFG.get(provider,{})
-    if not cfg.get("client_id"):
-        return jsonify({"error":f"{provider} credentials not configured on server."}), 400
-
-    try:
-        oauth = OAuth2Session(cfg["client_id"], token=token)
-        today = datetime.date.today().isoformat()
-        synced = {}
-
-        if provider == "fitbit":
-            # Fitbit REST API v1
-            r_act = oauth.get(f"https://api.fitbit.com/1/user/-/activities/date/{today}.json")
-            r_slp = oauth.get(f"https://api.fitbit.com/1.2/user/-/sleep/date/{today}.json")
-            if r_act.status_code == 200:
-                act = r_act.json()
-                synced["steps"] = act.get("summary",{}).get("steps")
-                synced["active_minutes"] = act.get("summary",{}).get("veryActiveMinutes",0) + act.get("summary",{}).get("fairlyActiveMinutes",0)
-            if r_slp.status_code == 200:
-                slp = r_slp.json()
-                mins = slp.get("summary",{}).get("totalMinutesAsleep",0)
-                synced["sleep"] = round(mins/60, 1) if mins else None
-
-        elif provider == "googlefit":
-            # Google Fit REST API — summary for today
-            now_ms = int(datetime.datetime.now().timestamp() * 1000)
-            start_ms = int(datetime.datetime.combine(datetime.date.today(), datetime.time.min).timestamp() * 1000)
-            body = {
-                "aggregateBy": [{"dataTypeName":"com.google.step_count.delta"},
-                                 {"dataTypeName":"com.google.active_minutes"}],
-                "bucketByTime": {"durationMillis": 86400000},
-                "startTimeMillis": start_ms,
-                "endTimeMillis": now_ms
-            }
-            r = oauth.post("https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate", json=body)
-            if r.status_code == 200:
-                for bucket in r.json().get("bucket",[]):
-                    for ds in bucket.get("dataset",[]):
-                        for pt in ds.get("point",[]):
-                            for val in pt.get("value",[]):
-                                if "step_count" in ds.get("dataSourceId",""):
-                                    synced["steps"] = synced.get("steps",0) + val.get("intVal",0)
-                                elif "active_minutes" in ds.get("dataSourceId",""):
-                                    synced["active_minutes"] = synced.get("active_minutes",0) + val.get("intVal",0)
-
-        if synced:
-            with sqlite3.connect(DB) as conn:
-                conn.execute("""
-                    INSERT INTO daily_log (username,date,steps,sleep,active_minutes,source)
-                    VALUES (?,?,?,?,?,?)
-                    ON CONFLICT(username,date) DO UPDATE SET
-                        steps=COALESCE(excluded.steps, steps),
-                        sleep=COALESCE(excluded.sleep, sleep),
-                        active_minutes=COALESCE(excluded.active_minutes, active_minutes),
-                        source='watch'
-                """, (un, today, synced.get("steps"), synced.get("sleep"), synced.get("active_minutes"), provider))
-            return jsonify({"ok": True, "synced": synced, "date": today})
-        return jsonify({"ok": False, "note":"No data returned from provider for today."})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    synced, updated_token, err = oauth_watch.sync_provider(provider, token)
+    if updated_token:
+        with sqlite3.connect(DB) as conn:
+            conn.execute(
+                "UPDATE users SET watch_token=? WHERE username=?",
+                (seal_token(json.dumps(updated_token)), un),
+            )
+    if err:
+        return jsonify({"error": err}), 400
+    today = datetime.date.today().isoformat()
+    if synced:
+        with sqlite3.connect(DB) as conn:
+            conn.execute("""
+                INSERT INTO daily_log (username,date,steps,sleep,active_minutes,source)
+                VALUES (?,?,?,?,?,?)
+                ON CONFLICT(username,date) DO UPDATE SET
+                    steps=COALESCE(excluded.steps, steps),
+                    sleep=COALESCE(excluded.sleep, sleep),
+                    active_minutes=COALESCE(excluded.active_minutes, active_minutes),
+                    source='watch'
+            """, (un, today, synced.get("steps"), synced.get("sleep"),
+                  synced.get("active_minutes"), provider))
+        return jsonify({"ok": True, "synced": synced, "date": today})
+    return jsonify({"ok": False, "note": "No data returned from provider for today."})
 
 @app.route("/import_csv", methods=["POST"])
 def import_csv():
@@ -795,8 +613,55 @@ def api_risk_summary():
     user = get_user(un)
     daily = get_daily_data(un)
     labs  = get_latest_labs(un)
-    risk  = compute_risk_scores(user, daily, labs)
+    risk  = compute_risk_scores(user, daily, labs, mode=ui_mode(), username=un)
     return jsonify(risk)
+
+
+@app.route("/api/export")
+def api_export():
+    if "username" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    un = session["username"]
+    user = get_user(un)
+    # Strip secrets
+    user = {k: v for k, v in user.items() if k not in ("password", "watch_token")}
+    payload = {
+        "user": user,
+        "daily_log": get_daily_data(un, 3650),
+        "labs": get_all_labs(un),
+        "exported_at": datetime.datetime.utcnow().isoformat() + "Z",
+    }
+    return jsonify(payload)
+
+
+@app.route("/api/delete_account", methods=["POST"])
+def api_delete_account():
+    if "username" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    un = session["username"]
+    with sqlite3.connect(DB) as conn:
+        conn.execute("DELETE FROM daily_log WHERE username=?", (un,))
+        conn.execute("DELETE FROM lab_results WHERE username=?", (un,))
+        conn.execute("DELETE FROM surveys WHERE username=?", (un,))
+        conn.execute("DELETE FROM users WHERE username=?", (un,))
+    session.clear()
+    flash("Account and health data deleted.", "info")
+    return redirect(url_for("home"))
+
+
+@app.route("/model-cards")
+def model_cards():
+    from disclosure import load_claims
+    return render_template("model_cards.html", claims=load_claims().get("claims", {}))
+
+
+@app.route("/study/prolific")
+def study_prolific():
+    """Prolific vignette survey (static HTML; arm via ?arm=honest|baseline)."""
+    path = os.path.join(os.path.dirname(__file__), "study", "prolific_survey.html")
+    with open(path, encoding="utf-8") as f:
+        return f.read()
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

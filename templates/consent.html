@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block title %}Consent{% endblock %}
+{% block content %}
+<div style="max-width:640px;margin:40px auto;">
+  <div class="card">
+    <h1 style="font-size:22px;font-weight:700;margin-bottom:8px;">Before we collect health data</h1>
+    <p class="muted" style="font-size:14px;line-height:1.5;margin-bottom:18px;">
+      Drift is an educational risk-disclosure tool. It is <strong>not</strong> a medical device,
+      diagnosis, or substitute for clinician judgment. Read this before entering labs or history.
+    </p>
+
+    <div class="alert alert-warning" style="margin-bottom:14px;">
+      <span>⚠</span>
+      <div style="font-size:13px;line-height:1.45;">
+        <strong>What the scores are.</strong> CVD uses the race-free AHA PREVENT equations by default
+        (usable across racial groups). Optional US PCE is only for White / African American cohorts —
+        we never silently apply White coefficients to other groups. Diabetes uses FINDRISC.
+        Cancer shows lifestyle factors only — no invented multi-cancer probability.
+      </div>
+    </div>
+
+    <ul style="font-size:13px;line-height:1.55;color:var(--text-2);margin:0 0 18px 18px;">
+      <li>Missing inputs cause a refusal or interval — not invented defaults (no fake waist = 94 cm).</li>
+      <li>Data stays in a local SQLite file on this machine unless you export it.</li>
+      <li>You can export or permanently delete your data from Profile at any time.</li>
+      <li>Wearable OAuth tokens are stored so we can sync steps/sleep; disconnect anytime.</li>
+    </ul>
+
+    <form method="post">
+      <label class="checkbox-label" style="margin-bottom:10px;">
+        <input type="checkbox" name="accept_limits" required>
+        I understand these are educational estimates with known population limits, not clinical diagnoses.
+      </label>
+      <label class="checkbox-label" style="margin-bottom:18px;">
+        <input type="checkbox" name="accept_data" required>
+        I consent to storing the health data I enter, and I know I can export or delete it.
+      </label>
+      <button class="btn" type="submit" style="width:100%;justify-content:center;">Continue to setup →</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

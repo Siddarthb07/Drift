@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}Calculator cards{% endblock %}
+{% block content %}
+<div class="dash-header">
+  <div>
+    <h1 style="font-size:22px;font-weight:700;">Calculator &amp; claim cards</h1>
+    <p class="muted" style="font-size:14px;margin-top:4px;">Mitchell-style transparency for every Drift output (from <code>claims.yaml</code>).</p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('dashboard') }}">← Dashboard</a>
+</div>
+
+{% for id, c in claims.items() %}
+<div class="card" style="margin-bottom:14px;">
+  <div class="card-head">
+    <h3>{{ c.title }}</h3>
+    <span class="tag tag-teal" style="font-size:11px;">{{ c.evidence_class }}</span>
+  </div>
+  <div style="font-size:13px;line-height:1.5;color:var(--text-2);">
+    <p><strong>Claim id:</strong> <code>{{ id }}</code></p>
+    <p><strong>Display policy:</strong> {{ c.display_policy }}{% if c.suppress_numeric %} (numeric suppressed){% endif %}</p>
+    <p><strong>Validated population:</strong> {{ c.validated_population }}</p>
+    <p><strong>Source:</strong> {{ c.source }}</p>
+    <p><strong>Runtime:</strong> {{ c.runtime }}</p>
+    {% if c.prohibited_uses %}
+    <p><strong>Prohibited uses:</strong> {{ c.prohibited_uses|join(', ') }}</p>
+    {% endif %}
+  </div>
+</div>
+{% else %}
+<div class="alert alert-warning">No claims loaded — install PyYAML and ensure <code>claims.yaml</code> exists.</div>
+{% endfor %}
+{% endblock %}

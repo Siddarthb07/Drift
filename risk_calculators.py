@@ -30,6 +30,11 @@ from typing import Optional
 # CVD — Pooled Cohort Equations (ACC/AHA 2013)
 # ─────────────────────────────────────────────────────────────
 
+# PCE is ONLY valid for race in {white, aa}. Callers must not silently map
+# other groups onto the White equation — use PREVENT (race-free) instead.
+PCE_VALID_RACES = frozenset({"white", "aa"})
+
+
 def pooled_cohort_cvd_10yr(
     age: float,
     sex: str,             # 'male' or 'female'
@@ -39,60 +44,90 @@ def pooled_cohort_cvd_10yr(
     bp_treated: bool,     # currently on BP medication
     current_smoker: bool,
     diabetes: bool,
-    race: str = "white"   # 'white' or 'aa' (African American)
+    race: str = "white"   # MUST be 'white' or 'aa' — no silent default for other groups
 ) -> Optional[dict]:
     """
-    10-year ASCVD risk. Valid for ages 40-79.
-    Returns None if inputs are out of valid range.
+    10-year ASCVD risk via ACC/AHA 2013 Pooled Cohort Equations.
+    Valid for ages 40–79 and race in {white, aa} only.
+    Returns None if inputs are out of valid range or race unsupported.
+    Coefficients: Goff et al., Circulation 2014 (corrected transcription).
     """
     if not (40 <= age <= 79):
         return None
     if total_chol <= 0 or hdl_chol <= 0 or sbp <= 0:
         return None
+    sex_l = sex.lower()
+    if sex_l not in ("male", "female"):
+        return None
+    race_l = (race or "").lower()
+    if race_l not in PCE_VALID_RACES:
+        return None
 
     try:
-        ln_age  = math.log(age)
-        ln_tc   = math.log(total_chol)
-        ln_hdl  = math.log(hdl_chol)
-        ln_sbp_t  = math.log(sbp) if bp_treated  else 0.0
-        ln_sbp_u  = math.log(sbp) if not bp_treated else 0.0
-        smoke   = 1.0 if current_smoker else 0.0
-        diab    = 1.0 if diabetes else 0.0
+        ln_age = math.log(age)
+        ln_age_sq = ln_age * ln_age
+        ln_tc = math.log(total_chol)
+        ln_hdl = math.log(hdl_chol)
+        ln_sbp = math.log(sbp)
+        smoke = 1.0 if current_smoker else 0.0
+        diab = 1.0 if diabetes else 0.0
 
-        if sex.lower() == "female":
-            if race == "aa":
-                l = (17.1141 * ln_age + 0.9396 * ln_tc
-                     - 18.9196 * ln_hdl + 4.4748 * ln_age * ln_hdl
-                     + 29.2907 * ln_sbp_t - 6.4321 * ln_age * ln_sbp_t
-                     + 27.8197 * ln_sbp_u - 6.0873 * ln_age * ln_sbp_u
-                     + 0.8738 * smoke + 0.8738 * diab)
-                baseline, mean_l = 0.9533, 86.6081
-            else:   # white / default
-                l = (-29.799 + 4.884 * ln_age
-                     + 13.540 * ln_tc  - 3.114  * ln_hdl
-                     + 2.019  * ln_sbp_t + 1.957 * ln_sbp_u
-                     + 7.574  * smoke   + 0.661  * diab)
-                baseline, mean_l = 0.9665, 26.1931
-        else:   # male
-            if race == "aa":
-                l = (2.469  * ln_age + 0.302  * ln_tc
-                     - 0.307 * ln_hdl
-                     + 1.916 * ln_sbp_t + 1.809 * ln_sbp_u
-                     + 0.549 * smoke    + 0.645 * diab)
-                baseline, mean_l = 0.8954, 19.5425
-            else:   # white / default
-                l = (12.344 * ln_age + 11.853 * ln_tc
-                     - 2.664 * ln_age * ln_tc
-                     - 7.990 * ln_hdl  + 1.769 * ln_age * ln_hdl
-                     + 1.764 * ln_sbp_t + 1.797 * ln_sbp_u
-                     + 7.837 * smoke    - 1.795 * ln_age * smoke
-                     + 0.658 * diab)
-                baseline, mean_l = 0.9144, 61.1816
+        # Goff et al. 2014 Appendix — sex × race specific
+        if sex_l == "female" and race_l == "aa":
+            # African American women
+            l = (
+                17.1141 * ln_age
+                + 0.9396 * ln_tc
+                - 18.9196 * ln_hdl
+                + 4.4748 * ln_age * ln_hdl
+                + (29.291 * ln_sbp if bp_treated else 27.820 * ln_sbp)
+                + (-6.432 * ln_age * ln_sbp if bp_treated else -6.087 * ln_age * ln_sbp)
+                + 0.691 * smoke
+                + 0.874 * diab
+            )
+            baseline, mean_l = 0.9533, 86.61
+        elif sex_l == "female":  # white
+            l = (
+                -29.799 * ln_age
+                + 4.884 * ln_age_sq
+                + 13.540 * ln_tc
+                - 3.114 * ln_age * ln_tc
+                - 13.578 * ln_hdl
+                + 3.149 * ln_age * ln_hdl
+                + (2.019 * ln_sbp if bp_treated else 1.957 * ln_sbp)
+                + 7.574 * smoke
+                - 1.665 * ln_age * smoke
+                + 0.661 * diab
+            )
+            baseline, mean_l = 0.9665, -29.18
+        elif sex_l == "male" and race_l == "aa":
+            l = (
+                2.469 * ln_age
+                + 0.302 * ln_tc
+                - 0.307 * ln_hdl
+                + (1.916 * ln_sbp if bp_treated else 1.809 * ln_sbp)
+                + 0.549 * smoke
+                + 0.645 * diab
+            )
+            baseline, mean_l = 0.8954, 19.54
+        else:  # white male
+            # Treated SBP coeff 1.797; untreated 1.764 (Goff Table A)
+            l = (
+                12.344 * ln_age
+                + 11.853 * ln_tc
+                - 2.664 * ln_age * ln_tc
+                - 7.990 * ln_hdl
+                + 1.769 * ln_age * ln_hdl
+                + (1.797 * ln_sbp if bp_treated else 1.764 * ln_sbp)
+                + 7.837 * smoke
+                - 1.795 * ln_age * smoke
+                + 0.658 * diab
+            )
+            baseline, mean_l = 0.9144, 61.18
 
         risk = 1.0 - baseline ** math.exp(l - mean_l)
         risk = max(0.0, min(1.0, risk))
 
-        # Risk category (ACC/AHA thresholds)
         if risk < 0.05:
             category, color = "Low (<5%)", "green"
         elif risk < 0.075:
@@ -102,14 +137,21 @@ def pooled_cohort_cvd_10yr(
         else:
             category, color = "High (≥20%)", "red"
 
-        missing_labs = []
         return {
             "risk_pct": round(risk * 100, 1),
             "risk_category": category,
             "color": color,
+            "equation": "PCE",
+            "race_free": False,
+            "pce_race": race_l,
             "source": "ACC/AHA Pooled Cohort Equations (Goff et al., Circulation 2014)",
-            "note": "10-year risk of first atherosclerotic cardiovascular event",
-            "modifiable_factors": _cvd_modifiable(current_smoker, total_chol, hdl_chol, sbp, bp_treated, diabetes)
+            "note": (
+                "10-year risk of first atherosclerotic CVD event. "
+                "Validated on US White and African American cohorts only."
+            ),
+            "modifiable_factors": _cvd_modifiable(
+                current_smoker, total_chol, hdl_chol, sbp, bp_treated, diabetes
+            ),
         }
     except (ValueError, ZeroDivisionError):
         return None
@@ -469,11 +511,9 @@ def estimate_health_age(
     """
     Lifestyle-based Health Age estimator.
 
-    Uses well-established associations between modifiable risk factors
-    and mortality/morbidity to produce an approximate 'biological age'.
-    Based on methodology similar to:
-      - Khaw KT et al. PLoS Med 2008 (four healthy behaviours)
-      - Levine ME et al. Aging (Albany NY) 2018 (PhenoAge concept)
+    Unpublished heuristic point weights (baseline study arm only).
+    This is NOT a validated biological-age biomarker and must not be
+    described as PhenoAge or any peer-reviewed clock.
 
     This is an ESTIMATE. It is not a validated clinical tool.
     """
