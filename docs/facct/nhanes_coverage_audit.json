@@ -242,7 +242,7 @@
     }
   },
   "limitations": [
-    "Subsample of eligible adults (seed-pinned); weighted rates use WTMEC4YR within subsample.",
+    "Subsample of eligible adults (seed-pinned MAX_N); weighted rates use WTMECPRP within subsample.",
     "Cross-sectional; no mortality linkage / clinical calibration.",
     "DIQ/BPQ residual misclassification possible."
   ]

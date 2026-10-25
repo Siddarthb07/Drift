@@ -12,7 +12,7 @@
 ## Reproduce
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-export DRIFT_AUDIT=0
+export DRIFT_AUDIT=0 STUDY_ALLOW_BASELINE=1
 .venv/bin/pytest -q
 .venv/bin/python scripts/validate_claims.py
 .venv/bin/python scripts/eval_vignettes.py
