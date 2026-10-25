@@ -2,11 +2,11 @@
 Evidence-contingent disclosure engine.
 
 Maps calculator outputs + claim ledger rules → display policy:
-  number | band | qualitative | refuse
+  number | band | qualitative | refuse | factors_only
 
-Honest mode (default): bands, provenance, no silent defaults, no fictional
-health-age hero, cancer as factor list not compounded RR.
-Baseline mode: legacy score-first UI for the FAccT vignette study.
+Fail-closed: missing YAML, missing PyYAML, or unknown claim_id raises.
+Honest mode: bands, provenance, no silent defaults, no health-age hero.
+Baseline mode: legacy score-first UI for the FAccT vignette study only.
 """
 from __future__ import annotations
 
@@ -43,15 +43,23 @@ DIAB_BANDS = [
 _CLAIMS_CACHE: Optional[Dict[str, Any]] = None
 
 
-def load_claims() -> Dict[str, Any]:
+class DisclosureError(RuntimeError):
+    """Fail-closed contract violation."""
+
+
+def load_claims(*, refresh: bool = False) -> Dict[str, Any]:
     global _CLAIMS_CACHE
-    if _CLAIMS_CACHE is not None:
+    if _CLAIMS_CACHE is not None and not refresh:
         return _CLAIMS_CACHE
-    if not CLAIMS_PATH.exists() or yaml is None:
-        _CLAIMS_CACHE = {"claims": {}}
-        return _CLAIMS_CACHE
+    if yaml is None:
+        raise DisclosureError("PyYAML is required for claim-ledger enforcement")
+    if not CLAIMS_PATH.exists():
+        raise DisclosureError(f"Missing claim ledger: {CLAIMS_PATH}")
     with open(CLAIMS_PATH, encoding="utf-8") as f:
-        _CLAIMS_CACHE = yaml.safe_load(f) or {"claims": {}}
+        data = yaml.safe_load(f) or {}
+    if not isinstance(data.get("claims"), dict) or not data["claims"]:
+        raise DisclosureError("claims.yaml has no claims map")
+    _CLAIMS_CACHE = data
     return _CLAIMS_CACHE
 
 
@@ -62,40 +70,72 @@ def _band_for(value: float, bands) -> Dict[str, str]:
     return {"label": "Unknown", "category": "Unknown"}
 
 
+def _check_requires(claim: Dict[str, Any], raw: Dict[str, Any]) -> Optional[str]:
+    """Return refusal note if requires predicates fail; else None."""
+    req = claim.get("requires") or {}
+    race = str(raw.get("race") or raw.get("mapped_race") or "").lower()
+    if "race_in" in req:
+        allowed = [str(x).lower() for x in req["race_in"]]
+        if race and race not in allowed:
+            return f"Claim requires race in {allowed}; got {race or 'missing'}"
+    age = raw.get("age")
+    if "age_min" in req and age is not None and float(age) < float(req["age_min"]):
+        return f"Claim requires age ≥ {req['age_min']}"
+    if "age_max" in req and age is not None and float(age) > float(req["age_max"]):
+        return f"Claim requires age ≤ {req['age_max']}"
+    return None
+
+
 def apply_disclosure(
     raw: Dict[str, Any],
     *,
     mode: str = "honest",
     claim_id: str,
 ) -> Dict[str, Any]:
-    """Attach claim metadata and enforce display policy."""
+    """Attach claim metadata and enforce display policy. Fail-closed on unknown claim_id."""
     claims = load_claims().get("claims", {})
-    claim = claims.get(claim_id, {})
+    if claim_id not in claims:
+        raise DisclosureError(f"Unknown claim_id: {claim_id}")
+    claim = claims[claim_id]
     out = dict(raw)
     out["claim_id"] = claim_id
-    out["evidence_class"] = claim.get("evidence_class", "unknown")
-    out["validated_population"] = claim.get("validated_population", "unspecified")
-    out["prohibited_uses"] = claim.get("prohibited_uses", [])
-    out["display_policy"] = claim.get("display_policy", "band")
+    out["evidence_class"] = claim["evidence_class"]
+    out["validated_population"] = claim["validated_population"]
+    out["prohibited_uses"] = list(claim.get("prohibited_uses") or [])
+    out["display_policy"] = claim["display_policy"]
 
     if mode == "baseline":
-        # Legacy path: keep point estimates if present.
         out["ui_mode"] = "baseline"
         return out
 
     out["ui_mode"] = "honest"
+    # Predicate checks (e.g. PCE race coverage)
+    pred_fail = _check_requires(claim, out)
+    if pred_fail and not out.get("refused"):
+        out["refused"] = True
+        out["gate"] = out.get("gate") or "claim_requires"
+        out["note"] = pred_fail
+        out["risk_pct"] = None
+        out["relative_risk"] = None
+        out["display_policy"] = "refuse"
+        return out
+
     policy = out["display_policy"]
 
     if out.get("refused") or out.get("gate"):
         out["display_policy"] = "refuse"
         out.pop("risk_pct", None)
         out.pop("relative_risk", None)
+        out.pop("risk_pct_exact", None)
         return out
 
     if policy == "refuse" or claim.get("suppress_numeric"):
         out["risk_pct"] = None
         out["relative_risk"] = None
-        out["display_policy"] = "refuse"
+        out.pop("risk_pct_exact", None)
+        out["display_policy"] = "refuse" if policy == "refuse" else policy
+        if claim.get("suppress_numeric"):
+            out["shown_as"] = "factors" if policy == "factors_only" else "suppressed"
         return out
 
     if policy == "band" and out.get("risk_pct") is not None:
@@ -104,7 +144,7 @@ def apply_disclosure(
         b = _band_for(pct, bands)
         out["risk_band_label"] = b["label"]
         out["risk_category"] = out.get("risk_category") or b["category"]
-        # Hide false-precision point estimate in honest mode
+        # Keep exact only for audit/tests — templates must not render risk_pct_exact
         out["risk_pct_exact"] = pct
         out["risk_pct"] = None
         out["shown_as"] = "band"
@@ -112,6 +152,7 @@ def apply_disclosure(
     if policy == "factors_only":
         out["relative_risk"] = None
         out["risk_pct"] = None
+        out.pop("risk_pct_exact", None)
         out["shown_as"] = "factors"
         out.setdefault(
             "note",
@@ -121,6 +162,7 @@ def apply_disclosure(
     if policy == "qualitative":
         out["risk_pct"] = None
         out["health_age"] = None
+        out.pop("risk_pct_exact", None)
         out["shown_as"] = "qualitative"
 
     return out
@@ -189,7 +231,6 @@ def lifestyle_trajectory(daily_rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         avg_active is not None and avg_active >= 20,
     ]
     active = sum(1 for c in checks if c)
-    # crude trend: last 7 vs prior 7 steps
     trend = "stable"
     if n >= 10 and avg_steps:
         recent = [r.get("steps") for r in daily_rows[:7] if r.get("steps") is not None]

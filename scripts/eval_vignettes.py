@@ -178,12 +178,6 @@ def main() -> int:
     for c in cases:
         for mode in ("honest", "baseline"):
             risk = compute_risk_scores(c["user"], DAILY, c["labs"], mode=mode)
-            # Mark silent SBP on baseline when user lacked SBP
-            if mode == "baseline" and c["user"].get("systolic") in (None, "", 0):
-                risk = dict(risk)
-                cvd = dict(risk.get("CVD") or {})
-                cvd["silent_sbp_default"] = True
-                risk["CVD"] = cvd
             vec = honesty_vector(c["id"], risk, c["complete"], c["user"])
             for k in KEYS:
                 per_key[k][mode].append(1.0 if vec[k] else 0.0)

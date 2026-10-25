@@ -110,7 +110,7 @@ NHANES 2017–March 2020 public XPT (DEMO/BPXO/BMX/HDL/TCHOL/BIOPRO/SMQ/DIQ/BPQ)
 | Asian (RIDRETH3=6; all NHA) | 336 | 0.73 | 0.65 | **228** | **1.00** |
 | Multiracial/other | 120 | 0.78 | 0.64 | **77** | **1.00** |
 
-Honest refusal (~35–45%) is a deliberate coverage cost from missing SBP/lipids/eGFR/BMI gates. AA honest show (0.55 vs ~0.65) is only partly explained by lab-completeness (~7 of ~11pp)—we treat residual AA coverage gap as an open product risk (prompt for labs / factors-only path), not as “tracking” alone. Limitations: unweighted subsample; no mortality calibration; Asian not South/East-split; DIQ/BPQ linked with residual misclassification risk.
+After removing the erroneous ASCVD BMI refuse gate (ASCVD BMI coefficients are 0.0), honest show rates rise (White ≈0.76, AA ≈0.66, Hispanic ≈0.71). Remaining AA gap is dominated by missing SBP / lipids / compute-range gates (see refuse_gates in `nhanes_coverage_audit.json`), not ethnicity remapping. When both arms produce a numeric, band reclassification rates are substantial (e.g. AA ≈0.61, White ≈0.47)—the clinical-threshold distortion of legacy disclosure, not only a count of fallbacks. eGFR uses **2021 race-free CKD-EPI**. Limitations: seed-pinned subsample with WTMEC4YR within-subsample weights; no mortality calibration; Asian not South/East-split.
 
 ### 4.3 Shared-key vignette evaluation (Table 3)
 
@@ -134,7 +134,7 @@ Seventeen fixtures (study vignettes + race×sex grid + missing-SBP). Both arms s
 
 Protocol: `study/PROTOCOL.md` · OSF draft: `study/osf/preregistration.json` · IRB packet: `study/IRB_EXEMPTION_REQUEST.md` · Power: d=0.25 → ≈252/arm (target 300/arm; `power_analysis.json`).
 
-Instrument hardened after expert walkthrough: **no arm label**, **no researcher annotations** on cards, arm-fair race item scored on the South Asian vignette, attention check, end debrief, POST `/study/collect`. Primary endpoint (calibrated overconfidence) remains **unanswered** until IRB + recruitment.
+Instrument frozen to PROTOCOL/OSF 1.1: server-side SQLite assignment (opaque token; arm not in cookie), engine-rendered cards, no care-seeking CTA in stimulus, server-issued completion codes, no IP logging, study DB separate from `users.db`, product UI cannot enable baseline without `STUDY_ALLOW_BASELINE=1`. Primary endpoint remains **unanswered** until IRB + recruitment — we do not substitute computational checks for human trust.
 
 ---
 

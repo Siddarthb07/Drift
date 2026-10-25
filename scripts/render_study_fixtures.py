@@ -17,7 +17,7 @@ DAILY = [{
 }] * 14
 
 
-def card(mode: str, risk: dict) -> dict:
+def card(mode: str, risk: dict, *, vignette_id: str = "") -> dict:
     cvd, diab, canc = risk.get("CVD") or {}, risk.get("Diabetes") or {}, risk.get("Cancer") or {}
     ha = risk.get("_health_age") or {}
     if mode == "honest":
@@ -32,13 +32,14 @@ def card(mode: str, risk: dict) -> dict:
         if diab.get("refused"):
             diab_txt = "Diabetes score not estimated"
         canc_txt = "Lifestyle factors listed (no combined risk %)" if canc.get("relative_risk") is None else f"Cancer RR {canc.get('relative_risk')}"
+        # Do not put care-seeking CTA into the stimulus (confounds secondary DV)
         hero = "Habit trajectory" if risk.get("_trajectory") is not None else "Habit tracking available"
-        if (risk.get("_referral") or {}).get("recommended"):
-            hero = "Consider talking with a clinician soon"
-        foot = (cvd.get("note") or "")[:160] or "Educational estimate only"
-        # Neutral foot: strip research jargon for study display
-        if "PREVENT" in str(cvd.get("equation") or cvd.get("source") or ""):
-            foot = "Published equation · educational only · not a diagnosis"
+        if cvd.get("refused"):
+            foot = "Educational tool · estimate not shown"
+        elif "south_asian" in vignette_id:
+            foot = "This heart-risk equation does not use race/ethnicity as an input · educational only"
+        else:
+            foot = "Educational estimate only · not a diagnosis"
         return {"cvd": cvd_txt, "diab": diab_txt, "cancer": canc_txt, "hero": hero, "foot": foot, "heroClass": "gray" if cvd.get("refused") else ""}
     # baseline — show what legacy would show, without researcher labels
     cvd_txt = cvd.get("risk_category") or ""
@@ -69,14 +70,20 @@ def main():
         u = v["user"]
         profile = (
             f"Age {u.get('age')} · {u.get('sex_for_equation') or u.get('sex')} · "
-            f"race/ethnicity: {u.get('race')} · SBP {u.get('systolic')} · labs as seeded"
+            f"race/ethnicity: {u.get('race')} · SBP {u.get('systolic')}"
         )
+        title = {
+            "v1_midrisk_white": "Adult with complete labs",
+            "v2_south_asian_same_vitals": "Adult with complete labs",
+            "v3_under30": "Younger adult with labs on file",
+            "v6_high_risk_smoker": "Adult with several risk factors",
+        }.get(vid, v.get("label") or vid)
         out.append({
             "id": vid,
-            "title": v.get("title") or vid,
+            "title": title,
             "profile": profile,
-            "honest": card("honest", honest),
-            "baseline": card("baseline", baseline),
+            "honest": card("honest", honest, vignette_id=vid),
+            "baseline": card("baseline", baseline, vignette_id=vid),
             "engine_meta": {
                 "honest_equation": (honest.get("CVD") or {}).get("equation"),
                 "baseline_fallback": (baseline.get("CVD") or {}).get("legacy_white_fallback"),

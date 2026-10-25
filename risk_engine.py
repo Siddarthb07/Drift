@@ -191,11 +191,11 @@ def compute_risk_scores(
             "missing_egfr",
             cvd_source,
         )
-    elif bmi is None or not (18.5 <= bmi <= 39.9):
+    elif bmi is None or bmi <= 0:
         cvd = _refuse(
-            "BMI out of PREVENT range",
-            "PREVENT input range for BMI is 18.5–39.9. We refuse rather than clamp.",
-            "bmi_range",
+            "Height/weight required",
+            "BMI could not be computed. Enter height and weight.",
+            "missing_bmi",
             cvd_source,
         )
     elif age < 30:
@@ -252,7 +252,16 @@ def compute_risk_scores(
             )
             claim_id = "prevent_ascvd"
         else:
-            cvd = raw
+            cvd = dict(raw)
+            cvd["race"] = race
+            cvd["age"] = age
+            if bmi is not None and not (18.5 <= bmi <= 39.9):
+                cvd["bmi_out_of_published_range"] = True
+                cvd["note"] = (
+                    (cvd.get("note") or "")
+                    + " BMI is outside the published PREVENT calculator range (18.5–39.9); "
+                    "ASCVD base-model BMI coefficients are zero — estimate shown with coverage caveat."
+                ).strip()
             if claim_id == "prevent_ascvd" and race in PCE_VALID_RACES and age >= 40:
                 pce = pooled_cohort_cvd_10yr(
                     age, sex_eq, total_chol, hdl_chol, sbp, bp_meds, smoker, diabetes, race
@@ -263,6 +272,11 @@ def compute_risk_scores(
                         "risk_category": pce["risk_category"],
                         "note": "Optional PCE comparison (race-stratified, US White/AA only).",
                     }
+
+    # Ensure refused path also carries race/age for claim predicates
+    if isinstance(cvd, dict):
+        cvd.setdefault("race", race)
+        cvd.setdefault("age", age)
 
     results["CVD"] = apply_disclosure(cvd, mode=mode, claim_id=claim_id)
     append_audit(

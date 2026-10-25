@@ -9,6 +9,9 @@ audit_display.jsonl
 *.pkl
 .DS_Store
 data/nhanes/*.xpt
+data/nhanes/MANIFEST.sha256.json
 study/results/*.json
 study/results/*.jsonl
+study/results/*.db
 !study/results/.gitkeep
+ml/**/*.pkl

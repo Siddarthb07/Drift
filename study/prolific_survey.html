@@ -164,30 +164,37 @@
         $("screen-done").classList.remove("hidden");
         $("codeOut").textContent = state.code;
         const payload = {
-          completion_code: state.code,
           token: state.token,
           pid: state.pid,
           prolific_id: state.pid,
           responses: state.responses,
           started: new Date(state.started).toISOString(),
           finished: new Date().toISOString(),
-          consent_version: "2026-10-25c",
-          attention_ok: state.responses.every(r => r.attention_ok),
+          consent_version: "2026-10-25d",
         };
-        // Participant download: strip server token only; never include arm
+        let code = state.code;
+        try {
+          const res = await fetch("/study/collect", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload),
+          });
+          const body = await res.json();
+          if (body && body.completion_code) code = body.completion_code;
+          if (!body || !body.ok) throw new Error("store_failed");
+        } catch (e) {
+          $("codeOut").textContent = "ERROR — contact researcher (response not stored)";
+          return;
+        }
+        $("codeOut").textContent = code;
         window.__DRIFT_STUDY_DL__ = {
-          completion_code: payload.completion_code,
-          prolific_id: payload.prolific_id,
-          responses: payload.responses.map(({prolific_id, vignette, overconfidence, care_seeking, mc_race_handling, mc_health_age, attention_ok, t_ms}) =>
+          completion_code: code,
+          prolific_id: state.pid,
+          responses: state.responses.map(({vignette, overconfidence, care_seeking, mc_race_handling, mc_health_age, attention_ok, t_ms}) =>
             ({vignette, overconfidence, care_seeking, mc_race_handling, mc_health_age, attention_ok, t_ms})),
           finished: payload.finished,
         };
-        await fetch("/study/collect", {
-          method: "POST",
-          credentials: "same-origin",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify(payload),
-        }).catch(() => {});
       } else render();
     };
 

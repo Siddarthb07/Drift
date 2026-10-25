@@ -98,8 +98,7 @@
 <!-- Mode + honesty banner -->
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
   <span class="tag {% if ui_mode == 'honest' %}tag-green{% else %}tag-gray{% endif %}" style="font-size:11px;">UI: {{ ui_mode }}</span>
-  <a class="btn btn-ghost btn-sm" href="{{ url_for('dashboard', mode='honest') }}">Honest</a>
-  <a class="btn btn-ghost btn-sm" href="{{ url_for('dashboard', mode='baseline') }}">Baseline (study)</a>
+  <span class="btn btn-ghost btn-sm" style="pointer-events:none;opacity:.85">Disclosure: honest</span>
   <a class="btn btn-ghost btn-sm" href="{{ url_for('model_cards') }}">Calculator cards</a>
 </div>
 

@@ -170,7 +170,11 @@ def prevent_10yr(
         return None
     if not (90.0 <= sbp_v <= 200.0):
         return None
-    if not (18.5 <= bmi_v <= 39.9):
+    # ASCVD base-model BMI coefficients are 0.0 (Khan/PyPREVENT); do not refuse on BMI alone.
+    # Total-CVD / HF forms use BMI — keep published range there.
+    if outcome != "ascvd" and not (18.5 <= bmi_v <= 39.9):
+        return None
+    if bmi_v <= 0:
         return None
     if not (15.0 <= egfr_v <= 140.0):
         return None

@@ -11,37 +11,101 @@
     "P_DIQ",
     "P_BPQ"
   ],
+  "egfr_equation": "CKD-EPI 2021 creatinine race-free",
   "seed": 42,
   "max_n": 2500,
+  "n_full_eligible": 7172,
   "n_analyzed": 2500,
   "overall": {
-    "honest_show_rate": 0.6232,
+    "honest_show_rate": 0.7076,
+    "weighted_honest_show_rate": 0.7076,
     "legacy_white_fallback_rate_among_all": 0.284,
     "legacy_pce_scored_n": 1736,
-    "legacy_white_fallback_rate_among_pce_scored": 0.40898617511520735,
+    "legacy_white_fallback_rate_among_pce_scored": 0.409,
     "misattributed_equation_count": 710,
-    "construction_note": "For races outside {white,aa}, every legacy PCE score is a White fallback by design. NHANES estimates how many people that policy would touch and honest refuse rates by stratum."
+    "band_reclassification_rate_when_both_numeric": 0.4887,
+    "construction_note": "For races outside {white,aa}, every legacy PCE score is a White fallback by design. NHANES estimates burden counts, weighted show/refuse, gate decomposition, and band shifts."
   },
   "by_race": {
+    "asian_nhanes": {
+      "n": 336,
+      "lab_completeness": {
+        "complete_rate": 0.7292,
+        "egfr_rate": 0.8214,
+        "lipids_rate": 0.8333,
+        "sbp_rate": 0.7917,
+        "bmi_ge_40_rate": 0.0119
+      },
+      "honest": {
+        "show_rate": 0.6756,
+        "refuse_rate": 0.3244,
+        "weighted_show_rate": 0.6756,
+        "weighted_refuse_rate": 0.3244,
+        "refuse_gates": {
+          "compute_fail": 18,
+          "labs_cholesterol": 19,
+          "missing_egfr": 2,
+          "missing_sbp": 70
+        },
+        "refuse_gates_weighted_share": {
+          "compute_fail": 0.1651,
+          "labs_cholesterol": 0.1743,
+          "missing_egfr": 0.0183,
+          "missing_sbp": 0.6422
+        }
+      },
+      "legacy": {
+        "white_fallback_rate_among_all": 0.6786,
+        "white_fallback_rate_among_pce_scored": 1.0,
+        "pce_scored_n": 228,
+        "under40_green_rate": 0.2024,
+        "misattributed_equation_count": 228
+      },
+      "reclassification_when_both_numeric": {
+        "n": 181,
+        "band_disagree_rate": 0.4475,
+        "mean_abs_delta_pp": 4.7503
+      },
+      "note": "RIDRETH3=6 Non-Hispanic Asian (South+East combined). Fallback among PCE-scored non-White/non-AA is 1.0 by legacy construction."
+    },
     "white": {
       "n": 803,
       "lab_completeness": {
         "complete_rate": 0.8244,
         "egfr_rate": 0.8767,
         "lipids_rate": 0.8792,
-        "sbp_rate": 0.8605
+        "sbp_rate": 0.8605,
+        "bmi_ge_40_rate": 0.1108
       },
       "honest": {
-        "show_rate": 0.6526,
-        "refuse_rate": 0.3474
+        "show_rate": 0.7572,
+        "refuse_rate": 0.2428,
+        "weighted_show_rate": 0.7572,
+        "weighted_refuse_rate": 0.2428,
+        "refuse_gates": {
+          "compute_fail": 54,
+          "labs_cholesterol": 27,
+          "missing_egfr": 2,
+          "missing_sbp": 112
+        },
+        "refuse_gates_weighted_share": {
+          "compute_fail": 0.2769,
+          "labs_cholesterol": 0.1385,
+          "missing_egfr": 0.0103,
+          "missing_sbp": 0.5744
+        }
       },
       "legacy": {
-        "show_or_green_rate": 0.9041,
         "white_fallback_rate_among_all": 0.0,
         "white_fallback_rate_among_pce_scored": 0.0,
         "pce_scored_n": 589,
         "under40_green_rate": 0.1706,
         "misattributed_equation_count": 0
+      },
+      "reclassification_when_both_numeric": {
+        "n": 508,
+        "band_disagree_rate": 0.4724,
+        "mean_abs_delta_pp": 6.1557
       },
       "note": null
     },
@@ -51,19 +115,38 @@
         "complete_rate": 0.7496,
         "egfr_rate": 0.8262,
         "lipids_rate": 0.8306,
-        "sbp_rate": 0.838
+        "sbp_rate": 0.838,
+        "bmi_ge_40_rate": 0.1399
       },
       "honest": {
-        "show_rate": 0.5464,
-        "refuse_rate": 0.4536
+        "show_rate": 0.6598,
+        "refuse_rate": 0.3402,
+        "weighted_show_rate": 0.6598,
+        "weighted_refuse_rate": 0.3402,
+        "refuse_gates": {
+          "compute_fail": 61,
+          "labs_cholesterol": 57,
+          "missing_egfr": 3,
+          "missing_sbp": 110
+        },
+        "refuse_gates_weighted_share": {
+          "compute_fail": 0.2641,
+          "labs_cholesterol": 0.2468,
+          "missing_egfr": 0.013,
+          "missing_sbp": 0.4762
+        }
       },
       "legacy": {
-        "show_or_green_rate": 0.8645,
         "white_fallback_rate_among_all": 0.0,
         "white_fallback_rate_among_pce_scored": 0.0,
         "pce_scored_n": 437,
         "under40_green_rate": 0.2209,
         "misattributed_equation_count": 0
+      },
+      "reclassification_when_both_numeric": {
+        "n": 350,
+        "band_disagree_rate": 0.6057,
+        "mean_abs_delta_pp": 7.3837
       },
       "note": null
     },
@@ -73,21 +156,40 @@
         "complete_rate": 0.7722,
         "egfr_rate": 0.8915,
         "lipids_rate": 0.8968,
-        "sbp_rate": 0.806
+        "sbp_rate": 0.806,
+        "bmi_ge_40_rate": 0.0712
       },
       "honest": {
-        "show_rate": 0.6548,
-        "refuse_rate": 0.3452
+        "show_rate": 0.7117,
+        "refuse_rate": 0.2883,
+        "weighted_show_rate": 0.7117,
+        "weighted_refuse_rate": 0.2883,
+        "refuse_gates": {
+          "compute_fail": 34,
+          "labs_cholesterol": 16,
+          "missing_egfr": 3,
+          "missing_sbp": 109
+        },
+        "refuse_gates_weighted_share": {
+          "compute_fail": 0.2099,
+          "labs_cholesterol": 0.0988,
+          "missing_egfr": 0.0185,
+          "missing_sbp": 0.6728
+        }
       },
       "legacy": {
-        "show_or_green_rate": 0.9253,
         "white_fallback_rate_among_all": 0.7206,
         "white_fallback_rate_among_pce_scored": 1.0,
         "pce_scored_n": 405,
         "under40_green_rate": 0.2046,
         "misattributed_equation_count": 405
       },
-      "note": "Among PCE-scored non-White/non-AA profiles, White fallback is 1.0 by construction; report misattributed_equation_count as the population burden."
+      "reclassification_when_both_numeric": {
+        "n": 319,
+        "band_disagree_rate": 0.4013,
+        "mean_abs_delta_pp": 4.5524
+      },
+      "note": "Fallback among PCE-scored non-White/non-AA is 1.0 by construction."
     },
     "multiracial": {
       "n": 120,
@@ -95,49 +197,43 @@
         "complete_rate": 0.775,
         "egfr_rate": 0.875,
         "lipids_rate": 0.8667,
-        "sbp_rate": 0.8333
+        "sbp_rate": 0.8333,
+        "bmi_ge_40_rate": 0.1083
       },
       "honest": {
-        "show_rate": 0.6417,
-        "refuse_rate": 0.3583
+        "show_rate": 0.7167,
+        "refuse_rate": 0.2833,
+        "weighted_show_rate": 0.7167,
+        "weighted_refuse_rate": 0.2833,
+        "refuse_gates": {
+          "compute_fail": 7,
+          "labs_cholesterol": 7,
+          "missing_sbp": 20
+        },
+        "refuse_gates_weighted_share": {
+          "compute_fail": 0.2059,
+          "labs_cholesterol": 0.2059,
+          "missing_sbp": 0.5882
+        }
       },
       "legacy": {
-        "show_or_green_rate": 0.9,
         "white_fallback_rate_among_all": 0.6417,
         "white_fallback_rate_among_pce_scored": 1.0,
         "pce_scored_n": 77,
         "under40_green_rate": 0.2583,
         "misattributed_equation_count": 77
       },
-      "note": "Among PCE-scored non-White/non-AA profiles, White fallback is 1.0 by construction; report misattributed_equation_count as the population burden."
-    },
-    "asian_nhanes": {
-      "n": 336,
-      "lab_completeness": {
-        "complete_rate": 0.7292,
-        "egfr_rate": 0.8214,
-        "lipids_rate": 0.8333,
-        "sbp_rate": 0.7917
+      "reclassification_when_both_numeric": {
+        "n": 64,
+        "band_disagree_rate": 0.5312,
+        "mean_abs_delta_pp": 4.9422
       },
-      "honest": {
-        "show_rate": 0.6488,
-        "refuse_rate": 0.3512
-      },
-      "legacy": {
-        "show_or_green_rate": 0.881,
-        "white_fallback_rate_among_all": 0.6786,
-        "white_fallback_rate_among_pce_scored": 1.0,
-        "pce_scored_n": 228,
-        "under40_green_rate": 0.2024,
-        "misattributed_equation_count": 228
-      },
-      "note": "Asian stratum is RIDRETH3=6 (Non-Hispanic Asian) \u2014 NHANES does not separate South vs East Asian. Among PCE-scored non-White/non-AA profiles, White fallback is 1.0 by construction of the legacy arm; NHANES contributes the count of people affected and the honest-arm coverage cost."
+      "note": "Fallback among PCE-scored non-White/non-AA is 1.0 by construction."
     }
   },
   "limitations": [
-    "Cross-sectional coverage/fallback only; no mortality linkage / calibration.",
-    "eGFR from serum creatinine via 2009 CKD-EPI approx for input completeness.",
-    "DIQ010 / BPQ050A linked when XPT present; residual misclassification possible.",
-    "Not nationally weighted point estimates (subsample + raw rates)."
+    "Subsample of eligible adults (seed-pinned); weighted rates use WTMEC4YR within subsample.",
+    "Cross-sectional; no mortality linkage / clinical calibration.",
+    "DIQ/BPQ residual misclassification possible."
   ]
 }

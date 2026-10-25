@@ -1,5 +1,5 @@
 # Drift claim ledger — every UI number must resolve to a claim_id.
-# CI / tests fail if a rendered claim is missing or violates display_policy.
+# Fail-closed: unknown claim_id raises; CI validates emitted IDs vs this file.
 version: 1
 claims:
   prevent_ascvd:
@@ -13,6 +13,9 @@ claims:
       - insurance_underwriting
     source: "Khan et al., Circulation 2024"
     runtime: default
+    requires:
+      age_min: 30
+      age_max: 79
 
   pce_ascvd:
     title: "ACC/AHA 2013 Pooled Cohort Equations"
@@ -24,6 +27,10 @@ claims:
       - diagnosis
     source: "Goff et al., Circulation 2014"
     runtime: optional_us_comparison
+    requires:
+      race_in: [white, aa]
+      age_min: 40
+      age_max: 79
 
   findrisc:
     title: "FINDRISC Type 2 diabetes score"
@@ -68,3 +75,14 @@ claims:
       - biological_age_claim
     source: "Drift disclosure layer"
     runtime: default
+
+  legacy_baseline:
+    title: "Pinned legacy disclosure arm (study only)"
+    evidence_class: heuristic
+    display_policy: band
+    validated_population: "not a clinical claim — experimental control reconstructing git a8dcc33 disclosure failures"
+    prohibited_uses:
+      - product_default
+      - clinical_use
+    source: "legacy_baseline.py pinned to a8dcc33 behaviors"
+    runtime: baseline_study_arm_only

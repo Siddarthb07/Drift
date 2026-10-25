@@ -1,0 +1,14 @@
+{
+  "locked": false,
+  "note": "Replace with dual-clinician codes before OSF timestamp. Placeholder keys for pipeline tests only.",
+  "keys": {
+    "v1_midrisk_white": {"honest": 3, "baseline": 5},
+    "v2_south_asian_same_vitals": {"honest": 3, "baseline": 5},
+    "v3_under30": {"honest": 2, "baseline": 5},
+    "v6_high_risk_smoker": {"honest": 4, "baseline": 5}
+  },
+  "rationale": {
+    "honest": "Bands / refuse warrant lower precision certainty than point estimates.",
+    "baseline": "Point estimates and health-age heroes warrant higher stated precision certainty keys for calibration contrast."
+  }
+}

@@ -119,10 +119,12 @@ init_db()
 
 
 def ui_mode() -> str:
+    """Product UI is always honest. Baseline only when STUDY_ALLOW_BASELINE=1 (fixture gen / lab)."""
     m = (request.args.get("mode") or session.get("ui_mode") or "honest").lower()
-    if m in ("honest", "baseline"):
-        session["ui_mode"] = m
-        return m
+    if m == "baseline" and os.getenv("STUDY_ALLOW_BASELINE") == "1":
+        session["ui_mode"] = "baseline"
+        return "baseline"
+    session["ui_mode"] = "honest"
     return "honest"
 
 # ─── Helpers ─────────────────────────────────────────────────
@@ -665,13 +667,18 @@ def study_prolific():
         return f.read()
 
 
+STUDY_DB = os.path.join(os.path.dirname(__file__), "study", "results", "study.db")
+
+
 def _study_db_init():
-    with sqlite3.connect(DB) as conn:
+    os.makedirs(os.path.dirname(STUDY_DB), exist_ok=True)
+    with sqlite3.connect(STUDY_DB) as conn:
         conn.execute(
             """CREATE TABLE IF NOT EXISTS study_assignments (
                 token TEXT PRIMARY KEY,
                 arm TEXT NOT NULL,
                 prolific_id TEXT,
+                completion_code TEXT,
                 created_at TEXT NOT NULL
             )"""
         )
@@ -679,7 +686,7 @@ def _study_db_init():
 
 @app.route("/study/assign", methods=["GET"])
 def study_assign():
-    """Server-side assignment stored in SQLite (opaque token only to client)."""
+    """Server-side assignment in study.db (opaque token only to client)."""
     import random
     if STUDY_INSECURE:
         return jsonify({
@@ -689,20 +696,28 @@ def study_assign():
     _study_db_init()
     token = session.get("study_token")
     if token:
-        with sqlite3.connect(DB) as conn:
+        with sqlite3.connect(STUDY_DB) as conn:
             row = conn.execute(
                 "SELECT arm FROM study_assignments WHERE token=?", (token,)
             ).fetchone()
         if row:
             return jsonify({"token": token, "fixtures_url": "/study/fixtures"})
-    # Balance on assignments (not only completions)
-    with sqlite3.connect(DB) as conn:
+    with sqlite3.connect(STUDY_DB) as conn:
         n_h = conn.execute(
             "SELECT COUNT(*) FROM study_assignments WHERE arm='honest'"
         ).fetchone()[0]
         n_b = conn.execute(
             "SELECT COUNT(*) FROM study_assignments WHERE arm='baseline'"
         ).fetchone()[0]
+        # Reject re-assignment for known prolific_id query param
+        pid = (request.args.get("prolific_id") or "").strip()
+        if pid:
+            prior = conn.execute(
+                "SELECT token, arm FROM study_assignments WHERE prolific_id=?", (pid,)
+            ).fetchone()
+            if prior:
+                session["study_token"] = prior[0]
+                return jsonify({"token": prior[0], "fixtures_url": "/study/fixtures"})
     if n_h < n_b:
         arm = "honest"
     elif n_b < n_h:
@@ -710,13 +725,12 @@ def study_assign():
     else:
         arm = random.choice(["honest", "baseline"])
     token = os.urandom(16).hex()
-    with sqlite3.connect(DB) as conn:
+    with sqlite3.connect(STUDY_DB) as conn:
         conn.execute(
             "INSERT INTO study_assignments(token, arm, created_at) VALUES (?,?,?)",
             (token, arm, datetime.datetime.utcnow().isoformat() + "Z"),
         )
     session["study_token"] = token
-    # Do NOT put arm in the session cookie
     return jsonify({"token": token, "fixtures_url": "/study/fixtures"})
 
 
@@ -724,7 +738,7 @@ def _arm_for_token(token: str):
     if not token:
         return None
     _study_db_init()
-    with sqlite3.connect(DB) as conn:
+    with sqlite3.connect(STUDY_DB) as conn:
         row = conn.execute(
             "SELECT arm FROM study_assignments WHERE token=?", (token,)
         ).fetchone()
@@ -769,7 +783,7 @@ def study_fixtures():
 
 @app.route("/study/collect", methods=["POST"])
 def study_collect():
-    """Append-only collector for vignette study JSON (no PHI; Prolific ID only)."""
+    """Append-only collector. No IP. Arm stamped on each trial. Server completion code."""
     try:
         payload = request.get_json(force=True, silent=False)
     except Exception:
@@ -780,33 +794,56 @@ def study_collect():
     arm = _arm_for_token(token)
     if arm not in ("honest", "baseline"):
         return jsonify({"ok": False, "error": "no_assignment"}), 400
-    allowed = {
-        "completion_code", "pid", "prolific_id", "responses",
-        "started", "finished", "consent_version", "attention_ok", "token",
+    pid = (payload.get("prolific_id") or payload.get("pid") or "").strip()
+    responses = payload.get("responses") or []
+    if not isinstance(responses, list) or not responses:
+        return jsonify({"ok": False, "error": "no_responses"}), 400
+    stamped = []
+    for r in responses:
+        if not isinstance(r, dict):
+            continue
+        row = dict(r)
+        row["arm"] = arm
+        row["prolific_id"] = pid
+        stamped.append(row)
+    code = "DRIFT-" + os.urandom(3).hex().upper()
+    clean = {
+        "arm": arm,
+        "token": token,
+        "prolific_id": pid,
+        "pid": pid,
+        "responses": stamped,
+        "started": payload.get("started"),
+        "finished": payload.get("finished") or datetime.datetime.utcnow().isoformat() + "Z",
+        "consent_version": payload.get("consent_version"),
+        "attention_ok": all(bool(r.get("attention_ok")) for r in stamped),
+        "completion_code": code,
+        "received_at": datetime.datetime.utcnow().isoformat() + "Z",
     }
-    clean = {k: payload[k] for k in payload if k in allowed}
-    clean["arm"] = arm  # server truth from SQLite
-    clean["received_at"] = datetime.datetime.utcnow().isoformat() + "Z"
-    clean["remote"] = (request.headers.get("X-Forwarded-For") or request.remote_addr or "")[:64]
-    # Bind prolific_id on first completion; reject arm re-roll via new token for same pid later (soft)
-    pid = clean.get("prolific_id") or clean.get("pid")
-    if pid:
-        _study_db_init()
-        with sqlite3.connect(DB) as conn:
+    _study_db_init()
+    with sqlite3.connect(STUDY_DB) as conn:
+        if pid:
             conn.execute(
-                "UPDATE study_assignments SET prolific_id=? WHERE token=? AND (prolific_id IS NULL OR prolific_id='')",
-                (pid, token),
+                "UPDATE study_assignments SET prolific_id=?, completion_code=? WHERE token=?",
+                (pid, code, token),
+            )
+        else:
+            conn.execute(
+                "UPDATE study_assignments SET completion_code=? WHERE token=?",
+                (code, token),
             )
     out_dir = os.path.join(os.path.dirname(__file__), "study", "results")
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "responses.jsonl")
     with open(path, "a", encoding="utf-8") as f:
         f.write(json.dumps(clean, ensure_ascii=False) + "\n")
-    return jsonify({"ok": True, "stored": True})
+    return jsonify({"ok": True, "stored": True, "completion_code": code})
 
 
 @app.route("/study/status")
 def study_status():
+    if os.getenv("STUDY_STATUS_TOKEN") and request.args.get("token") != os.getenv("STUDY_STATUS_TOKEN"):
+        return jsonify({"error": "unauthorized"}), 401
     path = os.path.join(os.path.dirname(__file__), "study", "results", "responses.jsonl")
     n = n_h = n_b = 0
     if os.path.exists(path):

@@ -2,14 +2,14 @@
   "fixtures": [
     {
       "id": "v1_midrisk_white",
-      "title": "v1_midrisk_white",
-      "profile": "Age 52 \u00b7 female \u00b7 race/ethnicity: white \u00b7 SBP 132 \u00b7 labs as seeded",
+      "title": "Adult with complete labs",
+      "profile": "Age 52 \u00b7 female \u00b7 race/ethnicity: white \u00b7 SBP 132",
       "honest": {
         "cvd": "10-year heart risk band: <5%",
         "diab": "Diabetes score: <5%",
         "cancer": "Lifestyle factors listed (no combined risk %)",
         "hero": "Habit trajectory",
-        "foot": "Published equation \u00b7 educational only \u00b7 not a diagnosis",
+        "foot": "Educational estimate only \u00b7 not a diagnosis",
         "heroClass": ""
       },
       "baseline": {
@@ -27,14 +27,14 @@
     },
     {
       "id": "v2_south_asian_same_vitals",
-      "title": "v2_south_asian_same_vitals",
-      "profile": "Age 52 \u00b7 female \u00b7 race/ethnicity: south_asian \u00b7 SBP 132 \u00b7 labs as seeded",
+      "title": "Adult with complete labs",
+      "profile": "Age 52 \u00b7 female \u00b7 race/ethnicity: south_asian \u00b7 SBP 132",
       "honest": {
         "cvd": "10-year heart risk band: <5%",
         "diab": "Diabetes score: <5%",
         "cancer": "Lifestyle factors listed (no combined risk %)",
         "hero": "Habit trajectory",
-        "foot": "Published equation \u00b7 educational only \u00b7 not a diagnosis",
+        "foot": "This heart-risk equation does not use race/ethnicity as an input \u00b7 educational only",
         "heroClass": ""
       },
       "baseline": {
@@ -52,14 +52,14 @@
     },
     {
       "id": "v3_under30",
-      "title": "v3_under30",
-      "profile": "Age 28 \u00b7 male \u00b7 race/ethnicity: hispanic \u00b7 SBP 118 \u00b7 labs as seeded",
+      "title": "Younger adult with labs on file",
+      "profile": "Age 28 \u00b7 male \u00b7 race/ethnicity: hispanic \u00b7 SBP 118",
       "honest": {
         "cvd": "Heart-risk % not estimated \u2014 PREVENT is validated for ages 30\u201379. Under-30 is not shown as 'low risk'.",
         "diab": "Diabetes score: <5%",
         "cancer": "Lifestyle factors listed (no combined risk %)",
         "hero": "Habit trajectory",
-        "foot": "Published equation \u00b7 educational only \u00b7 not a diagnosis",
+        "foot": "Educational tool \u00b7 estimate not shown",
         "heroClass": "gray"
       },
       "baseline": {
@@ -77,14 +77,14 @@
     },
     {
       "id": "v6_high_risk_smoker",
-      "title": "v6_high_risk_smoker",
-      "profile": "Age 60 \u00b7 male \u00b7 race/ethnicity: white \u00b7 SBP 152 \u00b7 labs as seeded",
+      "title": "Adult with several risk factors",
+      "profile": "Age 60 \u00b7 male \u00b7 race/ethnicity: white \u00b7 SBP 152",
       "honest": {
         "cvd": "10-year heart risk band: \u226520%",
         "diab": "Diabetes score: >50%",
         "cancer": "Lifestyle factors listed (no combined risk %)",
-        "hero": "Consider talking with a clinician soon",
-        "foot": "Published equation \u00b7 educational only \u00b7 not a diagnosis",
+        "hero": "Habit trajectory",
+        "foot": "Educational estimate only \u00b7 not a diagnosis",
         "heroClass": ""
       },
       "baseline": {
