@@ -65,6 +65,20 @@ def main() -> int:
         if str(count) not in paper:
             fail(f"PAPER_DRAFT.md missing misattributed count {count} for {label}")
 
+    # Top-3 weighted refuse shares (3 decimals) must appear for each stratum
+    for race in ("white", "aa", "hispanic", "asian_nhanes", "multiracial"):
+        shares = sorted(
+            nh["by_race"][race]["honest"]["refuse_gates_weighted_share"].items(),
+            key=lambda x: -x[1],
+        )[:3]
+        for _gate, share in shares:
+            token = f"{share:.3f}"
+            if token not in paper:
+                fail(f"PAPER_DRAFT.md missing weighted gate share {token} for {race}")
+
+    if re.search(r"Field-ready", paper):
+        fail("PAPER_DRAFT.md still contains 'Field-ready' while study is not locked/timestamped")
+
     if wc.get("locked") is False:
         if re.search(r"Instrument frozen", paper) and "not locked" not in paper.lower() and "locked:false" not in paper.replace(" ", ""):
             fail("PAPER claims Instrument frozen while warranted_certainty.json locked:false without clarifying")

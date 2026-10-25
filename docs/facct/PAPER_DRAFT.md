@@ -32,7 +32,7 @@ Audits of clinical algorithms have examined race coefficients and miscalibration
 2. Race-free PREVENT default with coverage-limited PCE; golden tests against published PREVENT worked examples.
 3. Pinned legacy baseline (`legacy_baseline.py`, behaviors present at `a8dcc33`).
 4. NHANES disclosure-disparity audit (fallback and show/refuse by race).
-5. Field-ready human protocol (OSF draft prereg, IRB exemption packet, Prolific survey without arm/annotation leakage, `/study/collect`).
+5. Draft human protocol (OSF draft prereg, IRB exemption packet, Prolific survey without arm/annotation leakage, `/study/collect`); keys still `locked:false` — not recruitment-ready.
 
 **Non-goals.** Clinical validation; SaMD clearance; synthetic-ML AUROC as evidence; new ethnic risk coefficients; claiming RQ3 human endpoints without fielded data.
 
@@ -105,11 +105,11 @@ NHANES 2017–March 2020 public XPT (DEMO/BPXO/BMX/HDL/TCHOL/BIOPRO/SMQ/DIQ/BPQ)
 
 | Stratum | Honest show raw / wt | Legacy show raw / wt | Top refuse gates (weighted share) | Misattributed PCE n | Fallback among PCE-scored | Band reclass |
 |---|---:|---:|---|---:|---:|---:|
-| White | 0.754 / 0.835 | 0.720 / 0.764 | compute_fail 0.41, missing_sbp 0.30, lipids 0.23 | **0** | 0.00 | 0.458 |
-| African American | 0.673 / 0.730 | 0.676 / 0.673 | lipids 0.33, missing_sbp 0.31, compute_fail 0.27 | **0** | 0.00 | 0.598 |
-| Hispanic | 0.723 / 0.771 | 0.712 / 0.664 | missing_sbp 0.56, compute_fail 0.20, lipids 0.14 | **1125** | **1.00** | 0.438 |
-| Asian (RIDRETH3=6) | 0.683 / 0.717 | 0.671 / 0.666 | missing_sbp 0.52, compute_fail 0.22, lipids 0.22 | **619** | **1.00** | 0.412 |
-| Multiracial/other | 0.707 / 0.821 | 0.660 / 0.685 | compute_fail 0.35, missing_sbp 0.29, lipids 0.26 | **223** | **1.00** | 0.492 |
+| White | 0.754 / 0.835 | 0.720 / 0.764 | compute_fail 0.413, missing_sbp 0.302, labs_cholesterol 0.232 | **0** | 0.00 | 0.458 |
+| African American | 0.673 / 0.730 | 0.676 / 0.673 | labs_cholesterol 0.320, missing_sbp 0.313, compute_fail 0.271 | **0** | 0.00 | 0.598 |
+| Hispanic | 0.723 / 0.771 | 0.712 / 0.664 | missing_sbp 0.524, compute_fail 0.236, labs_cholesterol 0.128 | **1125** | **1.00** | 0.438 |
+| Asian (RIDRETH3=6) | 0.683 / 0.717 | 0.671 / 0.666 | missing_sbp 0.509, compute_fail 0.232, labs_cholesterol 0.219 | **619** | **1.00** | 0.412 |
+| Multiracial/other | 0.707 / 0.821 | 0.660 / 0.685 | missing_sbp 0.341, compute_fail 0.317, labs_cholesterol 0.202 | **223** | **1.00** | 0.491 |
 
 Overall: honest show raw/wt **0.713 / 0.806**; legacy **0.697 / 0.729**; misattributed PCE **1967**; band reclass when both numeric **0.487**. Restricting to White/AA (no White-fallback by construction) isolates PREVENT-vs-PCE band shift: **0.519** disagree. Fallback=1.0 among PCE-scored non-White/non-AA remains a **construction** fact; NHANES’s contribution is burden counts + coverage cost.
 
