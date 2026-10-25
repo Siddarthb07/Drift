@@ -15,6 +15,9 @@
     "weight": "WTMECPRP",
     "overall_honest_show": 0.7133,
     "overall_weighted_honest_show": 0.8057,
+    "overall_legacy_show": 0.697,
+    "overall_weighted_legacy_show": 0.729,
+    "band_reclass_no_fallback_white_aa": 0.519,
     "misattributed_equation_count": 1967,
     "band_reclassification_rate_when_both_numeric": 0.4871,
     "fallback_among_pce_scored_nonwhite": 1.0,
@@ -23,20 +26,23 @@
         "n": 2339,
         "honest_show": 0.7542,
         "weighted_show": 0.835,
+        "legacy_show": 0.72,
+        "legacy_weighted_show": 0.7636,
         "misattributed_n": 0,
         "band_reclass": 0.4577,
-        "top_refuse_gates": [
-          [
-            "profile",
-            191
-          ],
+        "no_fallback_band_reclass": 0.4577,
+        "top_refuse_gates_weighted_share": [
           [
             "compute_fail",
-            168
+            0.4135
           ],
           [
             "missing_sbp",
-            123
+            0.3022
+          ],
+          [
+            "labs_cholesterol",
+            0.2317
           ]
         ]
       },
@@ -44,20 +50,23 @@
         "n": 338,
         "honest_show": 0.7071,
         "weighted_show": 0.8211,
+        "legacy_show": 0.6598,
+        "legacy_weighted_show": 0.6849,
         "misattributed_n": 223,
         "band_reclass": 0.4915,
-        "top_refuse_gates": [
-          [
-            "profile",
-            34
-          ],
+        "no_fallback_band_reclass": null,
+        "top_refuse_gates_weighted_share": [
           [
             "missing_sbp",
-            27
+            0.3405
           ],
           [
             "compute_fail",
-            22
+            0.3173
+          ],
+          [
+            "labs_cholesterol",
+            0.2021
           ]
         ]
       },
@@ -65,20 +74,23 @@
         "n": 1580,
         "honest_show": 0.7228,
         "weighted_show": 0.7708,
+        "legacy_show": 0.712,
+        "legacy_weighted_show": 0.6642,
         "misattributed_n": 1125,
         "band_reclass": 0.438,
-        "top_refuse_gates": [
+        "no_fallback_band_reclass": null,
+        "top_refuse_gates_weighted_share": [
           [
             "missing_sbp",
-            184
-          ],
-          [
-            "profile",
-            115
+            0.5242
           ],
           [
             "compute_fail",
-            89
+            0.2361
+          ],
+          [
+            "labs_cholesterol",
+            0.1283
           ]
         ]
       },
@@ -86,20 +98,23 @@
         "n": 922,
         "honest_show": 0.6833,
         "weighted_show": 0.7173,
+        "legacy_show": 0.6714,
+        "legacy_weighted_show": 0.6665,
         "misattributed_n": 619,
         "band_reclass": 0.4124,
-        "top_refuse_gates": [
+        "no_fallback_band_reclass": null,
+        "top_refuse_gates_weighted_share": [
           [
             "missing_sbp",
-            116
-          ],
-          [
-            "profile",
-            70
+            0.5091
           ],
           [
             "compute_fail",
-            52
+            0.2316
+          ],
+          [
+            "labs_cholesterol",
+            0.219
           ]
         ]
       },
@@ -107,20 +122,23 @@
         "n": 1993,
         "honest_show": 0.6729,
         "weighted_show": 0.7296,
+        "legacy_show": 0.6764,
+        "legacy_weighted_show": 0.6727,
         "misattributed_n": 0,
         "band_reclass": 0.5984,
-        "top_refuse_gates": [
+        "no_fallback_band_reclass": 0.5984,
+        "top_refuse_gates_weighted_share": [
           [
             "labs_cholesterol",
-            174
-          ],
-          [
-            "profile",
-            171
+            0.3198
           ],
           [
             "missing_sbp",
-            151
+            0.3134
+          ],
+          [
+            "compute_fail",
+            0.2712
           ]
         ]
       }

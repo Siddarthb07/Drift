@@ -205,13 +205,17 @@ def main():
         "n": 0, "wt": 0.0, "complete": 0, "has_egfr": 0, "has_lipids": 0, "has_sbp": 0,
         "honest_show": 0, "honest_refuse": 0, "wt_honest_show": 0.0, "wt_honest_refuse": 0.0,
         "legacy_fallback": 0, "legacy_pce_scored": 0, "legacy_under40_green": 0,
+        "legacy_show": 0, "wt_legacy_show": 0.0,
         "gates": defaultdict(float), "gates_wt": defaultdict(float),
         "reclass_diff_band": 0, "reclass_n": 0, "abs_delta_sum": 0.0,
+        "reclass_no_fallback_n": 0, "reclass_no_fallback_diff": 0,
         "bmi_ge_40": 0,
     })
     overall = {
         "n": 0, "wt": 0.0, "honest_show": 0, "legacy_fallback": 0, "legacy_pce_scored": 0,
+        "legacy_show": 0, "wt_legacy_show": 0.0,
         "wt_honest_show": 0.0, "reclass_diff_band": 0, "reclass_n": 0,
+        "reclass_no_fallback_n": 0, "reclass_no_fallback_diff": 0,
     }
 
     for _, row in df.iterrows():
@@ -258,6 +262,11 @@ def main():
             overall["legacy_fallback"] += 1
         if "Under 40" in str(lc.get("risk_category") or ""):
             b["legacy_under40_green"] += 1
+        if _honest_shows(lc):  # legacy uses same display predicate
+            b["legacy_show"] += 1
+            b["wt_legacy_show"] += wt
+            overall["legacy_show"] += 1
+            overall["wt_legacy_show"] += wt
 
         # Reclassification when both produce a numeric (honest exact vs legacy pct)
         hp = _exact_pct(hc)
@@ -266,9 +275,17 @@ def main():
             b["reclass_n"] += 1
             overall["reclass_n"] += 1
             b["abs_delta_sum"] += abs(hp - lp)
-            if _band(hp) != _band(lp):
+            disagree = _band(hp) != _band(lp)
+            if disagree:
                 b["reclass_diff_band"] += 1
                 overall["reclass_diff_band"] += 1
+            # White/AA stratum: no White-fallback by construction — isolates PREVENT vs PCE band shift
+            if race in ("white", "aa") and not lc.get("legacy_white_fallback"):
+                b["reclass_no_fallback_n"] += 1
+                overall["reclass_no_fallback_n"] += 1
+                if disagree:
+                    b["reclass_no_fallback_diff"] += 1
+                    overall["reclass_no_fallback_diff"] += 1
 
     by_race_out = {}
     for race, b in by_race.items():
@@ -295,6 +312,8 @@ def main():
                 },
             },
             "legacy": {
+                "show_rate": round(b["legacy_show"] / n, 4),
+                "weighted_show_rate": round(b["wt_legacy_show"] / wt, 4),
                 "white_fallback_rate_among_all": round(b["legacy_fallback"] / n, 4),
                 "white_fallback_rate_among_pce_scored": (
                     round(b["legacy_fallback"] / b["legacy_pce_scored"], 4)
@@ -308,6 +327,10 @@ def main():
                 "n": b["reclass_n"],
                 "band_disagree_rate": round(b["reclass_diff_band"] / max(b["reclass_n"], 1), 4),
                 "mean_abs_delta_pp": round(b["abs_delta_sum"] / max(b["reclass_n"], 1), 4),
+                "no_fallback_stratum_n": b["reclass_no_fallback_n"],
+                "no_fallback_band_disagree_rate": round(
+                    b["reclass_no_fallback_diff"] / max(b["reclass_no_fallback_n"], 1), 4
+                ) if b["reclass_no_fallback_n"] else None,
             },
             "note": (
                 "RIDRETH3=6 Non-Hispanic Asian (South+East combined). "
@@ -331,6 +354,11 @@ def main():
         "overall": {
             "honest_show_rate": round(overall["honest_show"] / max(overall["n"], 1), 4),
             "weighted_honest_show_rate": round(overall["wt_honest_show"] / max(overall["wt"], 1e-9), 4),
+            "legacy_show_rate": round(overall["legacy_show"] / max(overall["n"], 1), 4),
+            "weighted_legacy_show_rate": round(overall["wt_legacy_show"] / max(overall["wt"], 1e-9), 4),
+            "band_reclass_no_fallback_white_aa": round(
+                overall["reclass_no_fallback_diff"] / max(overall["reclass_no_fallback_n"], 1), 4
+            ) if overall["reclass_no_fallback_n"] else None,
             "legacy_white_fallback_rate_among_all": round(overall["legacy_fallback"] / max(overall["n"], 1), 4),
             "legacy_pce_scored_n": overall["legacy_pce_scored"],
             "legacy_white_fallback_rate_among_pce_scored": (

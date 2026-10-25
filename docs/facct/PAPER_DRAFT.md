@@ -12,7 +12,7 @@ Consumer health apps turn published equations into screens. In that product path
 
 We implement the contract in **Drift**, an open educational tracker. The default CVD path uses race-free AHA PREVENT equations; optional PCE is available only for White and African American cohorts. A pinned **legacy baseline** (git `a8dcc33`) reconstructs prior failure modes for controlled comparison.
 
-**Results.** (1) PCE White-female transcription bug: **100%→2.1%**. (2) PREVENT goldens match published worked examples (ASCVD **9.2%** within 0.35pp). (3) On NHANES 2017–March 2020 adults (**n=7172** eligible; WTMECPRP weights; 2021 race-free CKD-EPI), legacy White-PCE fallback among PCE-scored non-White/non-AA is **1.0 by construction**; misattributed PCE scores total **1967** (Hispanic **1125**, Asian **619**, Multiracial **223**). Weighted honest show rates: White **0.83**, AA **0.73**, Hispanic **0.77**, Asian **0.72**. When both arms are numeric, **band reclassification 0.49** overall (AA **0.60**). Refusal gates decompose to missing SBP/lipids/range/profile—not ethnicity remapping. (4) Shared-key fixtures + metamorphic tests. Fail-closed claim ledger + CI paper↔JSON sync. Named external calculator audit (exploratory). Human RCT **not fielded**.
+**Results.** (1) PCE White-female transcription bug: **100%→2.1%**. (2) PREVENT goldens match published worked examples (ASCVD **9.2%** within 0.35pp). (3) On NHANES 2017–March 2020 adults (**n=7172** eligible; WTMECPRP; 2021 race-free CKD-EPI), legacy White-PCE fallback among PCE-scored non-White/non-AA is **1.0 by construction**; misattributed PCE scores **1967** (Hispanic **1125**, Asian **619**, Multiracial **223**). Weighted honest vs legacy show: White **0.835/0.764**, AA **0.730/0.673**. When both numeric, band reclassification **0.487** overall; among White/AA only (no fallback by construction; PREVENT vs PCE) **0.519**. Weighted refuse mass is compute-fail / missing SBP / lipids—not ethnicity remapping. (4) Shared-key fixtures + metamorphic + held-out adversarial 5/5. Fail-closed ledger + CI paper↔JSON sync. Human RCT **not fielded**.
 
 ---
 
@@ -103,35 +103,35 @@ NHANES 2017–March 2020 public XPT (DEMO/BPXO/BMX/HDL/TCHOL/BIOPRO/SMQ/DIQ/BPQ)
 
 **Construction note.** For races ∉ {White, AA}, legacy White-fallback rate **among PCE-scored profiles is 1.0 by design**. NHANES’s contribution is (a) **how many people** that policy touches, and (b) **honest coverage cost** by stratum under observed missingness.
 
-| Stratum | Honest show raw / weighted | Top refuse gates (counts) | Misattributed PCE n | Fallback among PCE-scored | Band reclass (both numeric) |
-|---|---:|---|---:|---:|---:|
-| White | 0.75 / 0.83 | profile=191, compute_fail=168, missing_sbp=123 | **0** | 0.00 | 0.46 |
-| African American | 0.67 / 0.73 | labs_cholesterol=174, profile=171, missing_sbp=151 | **0** | 0.00 | 0.60 |
-| Hispanic | 0.72 / 0.77 | missing_sbp=184, profile=115, compute_fail=89 | **1125** | **1.00** | 0.44 |
-| Asian (RIDRETH3=6) | 0.68 / 0.72 | missing_sbp=116, profile=70, compute_fail=52 | **619** | **1.00** | 0.41 |
-| Multiracial/other | 0.71 / 0.82 | profile=34, missing_sbp=27, compute_fail=22 | **223** | **1.00** | 0.49 |
+| Stratum | Honest show raw / wt | Legacy show raw / wt | Top refuse gates (weighted share) | Misattributed PCE n | Fallback among PCE-scored | Band reclass |
+|---|---:|---:|---|---:|---:|---:|
+| White | 0.754 / 0.835 | 0.720 / 0.764 | compute_fail 0.41, missing_sbp 0.30, lipids 0.23 | **0** | 0.00 | 0.458 |
+| African American | 0.673 / 0.730 | 0.676 / 0.673 | lipids 0.33, missing_sbp 0.31, compute_fail 0.27 | **0** | 0.00 | 0.598 |
+| Hispanic | 0.723 / 0.771 | 0.712 / 0.664 | missing_sbp 0.56, compute_fail 0.20, lipids 0.14 | **1125** | **1.00** | 0.438 |
+| Asian (RIDRETH3=6) | 0.683 / 0.717 | 0.671 / 0.666 | missing_sbp 0.52, compute_fail 0.22, lipids 0.22 | **619** | **1.00** | 0.412 |
+| Multiracial/other | 0.707 / 0.821 | 0.660 / 0.685 | compute_fail 0.35, missing_sbp 0.29, lipids 0.26 | **223** | **1.00** | 0.492 |
 
-Overall: raw honest show **0.71**, weighted **0.81**; misattributed PCE scores **1967**; band reclassification when both numeric **0.49**.
+Overall: honest show raw/wt **0.713 / 0.806**; legacy **0.697 / 0.729**; misattributed PCE **1967**; band reclass when both numeric **0.487**. Restricting to White/AA (no White-fallback by construction) isolates PREVENT-vs-PCE band shift: **0.519** disagree. Fallback=1.0 among PCE-scored non-White/non-AA remains a **construction** fact; NHANES’s contribution is burden counts + coverage cost.
 
-After removing the erroneous ASCVD BMI refuse gate (ASCVD BMI coefficients are 0.0), remaining AA vs White coverage gaps are dominated by missing SBP / lipids / compute-range / profile gates—not ethnicity remapping. Band reclassification (AA **0.60**, White **0.46**) is the clinical-threshold distortion of legacy disclosure, not only a count of fallbacks. eGFR uses **2021 race-free CKD-EPI**. Limitations: no survey-design (strata/PSU) variance CIs here; no mortality calibration; RIDRETH3=6 combines South+East Asian (we do not claim South/East-split effects).
+Weighted refuse mass is compute-fail / missing SBP / lipids—not ethnicity remapping (raw profile counts overstate that gate; White profile weighted share ≈0.03). eGFR: **2021 race-free CKD-EPI**. Limitations: no strata/PSU design-based CIs; no mortality calibration; RIDRETH3=6 combines South+East Asian.
 
 ### 4.3 Shared-key vignette evaluation (Table 3)
 
 Seventeen fixtures (study vignettes + race×sex grid + missing-SBP). Both arms scored on the same keys; mutation tests inject each failure into honest outputs and require the scorer to catch them (`all_caught=true`).
 
-| Honesty key | Honest | Legacy | Δ |
-|---|---:|---:|---:|
-| No White-PCE fallback | 1.00 | 0.47 | +0.53 |
-| No green under-40 | 1.00 | 0.94 | +0.06 |
-| No silent waist | 1.00 | 0.94 | +0.06 |
-| No silent SBP | 1.00 | 0.94 | +0.06 |
-| No cancer-RR hero | 1.00 | 0.00 | +1.00 |
-| No health-age hero | 1.00 | 0.00 | +1.00 |
-| Shows estimate when complete | 1.00 | 1.00 | 0.00 |
+| Honesty key | Honest | Legacy (Wilson 95% CI) | Δ |
+|---|---:|---|---:|
+| No White-PCE fallback | 1.00 | 0.47 (0.26–0.69) | +0.53 |
+| No green under-40 | 1.00 | 0.94 (0.73–0.99) | +0.06 |
+| No silent waist | 1.00 | 0.94 (0.73–0.99) | +0.06 |
+| No silent SBP | 1.00 | 0.94 (0.73–0.99) | +0.06 |
+| No cancer-RR hero | 1.00 | 0.00 (0.00–0.18) | +1.00 |
+| No health-age hero | 1.00 | 0.00 (0.00–0.18) | +1.00 |
+| Shows estimate when complete | 1.00 | 1.00 (0.82–1.00) | 0.00 |
 | **Mean (all keys)** | **1.00** | **0.61** | **+0.39** |
 | **Mean (core keys\*)** | **1.00** | **0.86** | **+0.14** |
 
-\*Core excludes cancer-RR and health-age (always-on in legacy by design). White-fallback remains the material intermediate gap. Wilson 95% CIs in `vignette_eval.json`. Held-out adversarial fixtures (`adversarial_fixtures.json`, scored after ledger freeze) pass 5/5 (`adversarial_eval.json`).
+\*Core excludes cancer-RR and health-age (always-on in legacy by design). White-fallback is the material intermediate gap; n=17 fixtures so CIs are wide. Held-out adversarial fixtures (`adversarial_fixtures.json`, scored after ledger freeze) pass 5/5 (`adversarial_eval.json`).
 
 ### 4.4 Human study (preregistered; not fielded)
 
@@ -153,7 +153,7 @@ Executable contracts make ethics docs falsifiable. The legacy baseline answers t
 
 ## 6. Conclusion
 
-Drift attacks consumer health-risk harms at the disclosure layer: contracts, refusal, race-free defaults that remove White fallback by policy, NHANES burden counts under the legacy policy, and a measurable honesty-key gap versus a git-pinned legacy UI. We release the artifact and a field-ready protocol for the remaining human question.
+Drift attacks consumer health-risk harms at the disclosure layer: contracts, refusal, race-free defaults that remove White fallback by policy, NHANES burden counts under the legacy policy, and a measurable honesty-key gap versus a git-pinned legacy UI. We release the artifact and a **draft** human protocol (keys still `locked:false`; not OSF-timestamped; IRB pending) for the remaining behavioral question.
 
 ---
 

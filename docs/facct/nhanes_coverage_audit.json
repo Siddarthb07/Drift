@@ -19,6 +19,9 @@
   "overall": {
     "honest_show_rate": 0.7133,
     "weighted_honest_show_rate": 0.8057,
+    "legacy_show_rate": 0.697,
+    "weighted_legacy_show_rate": 0.729,
+    "band_reclass_no_fallback_white_aa": 0.519,
     "legacy_white_fallback_rate_among_all": 0.2743,
     "legacy_pce_scored_n": 4999,
     "legacy_white_fallback_rate_among_pce_scored": 0.3935,
@@ -57,6 +60,8 @@
         }
       },
       "legacy": {
+        "show_rate": 0.72,
+        "weighted_show_rate": 0.7636,
         "white_fallback_rate_among_all": 0.0,
         "white_fallback_rate_among_pce_scored": 0.0,
         "pce_scored_n": 1684,
@@ -66,7 +71,9 @@
       "reclassification_when_both_numeric": {
         "n": 1429,
         "band_disagree_rate": 0.4577,
-        "mean_abs_delta_pp": 5.8672
+        "mean_abs_delta_pp": 5.8672,
+        "no_fallback_stratum_n": 1429,
+        "no_fallback_band_disagree_rate": 0.4577
       },
       "note": null
     },
@@ -98,6 +105,8 @@
         }
       },
       "legacy": {
+        "show_rate": 0.6598,
+        "weighted_show_rate": 0.6849,
         "white_fallback_rate_among_all": 0.6598,
         "white_fallback_rate_among_pce_scored": 1.0,
         "pce_scored_n": 223,
@@ -107,7 +116,9 @@
       "reclassification_when_both_numeric": {
         "n": 177,
         "band_disagree_rate": 0.4915,
-        "mean_abs_delta_pp": 5.5254
+        "mean_abs_delta_pp": 5.5254,
+        "no_fallback_stratum_n": 0,
+        "no_fallback_band_disagree_rate": null
       },
       "note": "Fallback among PCE-scored non-White/non-AA is 1.0 by construction."
     },
@@ -141,6 +152,8 @@
         }
       },
       "legacy": {
+        "show_rate": 0.712,
+        "weighted_show_rate": 0.6642,
         "white_fallback_rate_among_all": 0.712,
         "white_fallback_rate_among_pce_scored": 1.0,
         "pce_scored_n": 1125,
@@ -150,7 +163,9 @@
       "reclassification_when_both_numeric": {
         "n": 895,
         "band_disagree_rate": 0.438,
-        "mean_abs_delta_pp": 4.8073
+        "mean_abs_delta_pp": 4.8073,
+        "no_fallback_stratum_n": 0,
+        "no_fallback_band_disagree_rate": null
       },
       "note": "Fallback among PCE-scored non-White/non-AA is 1.0 by construction."
     },
@@ -184,6 +199,8 @@
         }
       },
       "legacy": {
+        "show_rate": 0.6714,
+        "weighted_show_rate": 0.6665,
         "white_fallback_rate_among_all": 0.6714,
         "white_fallback_rate_among_pce_scored": 1.0,
         "pce_scored_n": 619,
@@ -193,7 +210,9 @@
       "reclassification_when_both_numeric": {
         "n": 502,
         "band_disagree_rate": 0.4124,
-        "mean_abs_delta_pp": 4.0291
+        "mean_abs_delta_pp": 4.0291,
+        "no_fallback_stratum_n": 0,
+        "no_fallback_band_disagree_rate": null
       },
       "note": "RIDRETH3=6 Non-Hispanic Asian (South+East combined). Fallback among PCE-scored non-White/non-AA is 1.0 by legacy construction."
     },
@@ -227,6 +246,8 @@
         }
       },
       "legacy": {
+        "show_rate": 0.6764,
+        "weighted_show_rate": 0.6727,
         "white_fallback_rate_among_all": 0.0,
         "white_fallback_rate_among_pce_scored": 0.0,
         "pce_scored_n": 1348,
@@ -236,7 +257,9 @@
       "reclassification_when_both_numeric": {
         "n": 1103,
         "band_disagree_rate": 0.5984,
-        "mean_abs_delta_pp": 6.8731
+        "mean_abs_delta_pp": 6.8731,
+        "no_fallback_stratum_n": 1103,
+        "no_fallback_band_disagree_rate": 0.5984
       },
       "note": null
     }

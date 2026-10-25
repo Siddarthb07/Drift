@@ -6,7 +6,7 @@
 - Git-pinned legacy baseline (`legacy_baseline.py` ↔ `a8dcc33`)
 - NHANES coverage + reclassification audit (`scripts/nhanes_coverage_audit.py`)
 - Metamorphic honesty tests + PREVENT goldens
-- Study kit (frozen PROTOCOL/OSF; server assignment; collector)
+- Study kit (PROTOCOL/OSF draft; server assignment; collector; keys still locked:false)
 - CI: `.github/workflows/ci.yml`
 
 ## Reproduce
