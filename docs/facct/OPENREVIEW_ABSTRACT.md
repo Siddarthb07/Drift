@@ -1,5 +1,0 @@
-# OpenReview abstract (paste-ready)
-
-Consumer health apps compile published risk equations into screens. Harms often come from disclosure policy—silent imputation, White-equation fallback, false-precision heroes—not from a new model. We present executable disclosure contracts: a claim ledger bound to runtime display policy (band / refuse / factors-only), implemented in Drift. Default CVD uses race-free AHA PREVENT; PCE is limited to validated White/AA cohorts. A git-pinned legacy baseline reconstructs prior failure modes.
-
-On NHANES 2017–March 2020 adults (**n=7172**, WTMECPRP), every legacy PCE score for non-White/non-AA races is a White fallback by construction; burden is **1967** misattributed scores (**1125** Hispanic, **619** Asian, **223** Multiracial). Weighted honest show: White 0.835, AA 0.730. Band reclassification when both numeric: 0.487 overall; White/AA-only (PREVENT vs PCE, no fallback) 0.519. Shared-key fixtures: 1.00 vs 0.61 (core Δ=+0.14). PREVENT goldens match published examples. Fail-closed CI + paper↔JSON sync. Preregistered human RCT (N≈600) awaits IRB and clinician-locked keys. Artifact: open Drift + audit scripts.

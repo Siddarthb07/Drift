@@ -6,7 +6,6 @@
 
 > Educational decision-support only. **Not a medical device.** Not a diagnosis.
 
-FAccT draft: [`docs/facct/PAPER_DRAFT.md`](docs/facct/PAPER_DRAFT.md)
 
 ## What works in this build
 
@@ -75,7 +74,6 @@ Fitbit uses HTTP Basic client authentication on token exchange; Google requests 
 
 | Piece | Path |
 |---|---|
-| Paper draft | `docs/facct/PAPER_DRAFT.md` |
 | Audit results | `docs/facct/audit_results.json` |
 | Claim ledger | `claims.yaml` |
 | System card | `cards/SYSTEM_CARD.md` |
