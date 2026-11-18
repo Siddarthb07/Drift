@@ -253,7 +253,13 @@ def compute_risk_scores(
         if not raw:
             cvd = _refuse(
                 "Could not compute",
-                "Inputs out of equation range.",
+                "One or more inputs fall outside the published PREVENT calculator ranges "
+                "(e.g., total cholesterol 130–320 mg/dL, HDL 20–100, SBP 90–200 mmHg, "
+                "eGFR 15–140). Very high out-of-range values (especially SBP above 200 mmHg "
+                "or total cholesterol above 320 mg/dL) are not shown as a number and must "
+                "not be read as reassurance or as 'low risk.' Seek prompt clinical care—"
+                "urgent evaluation for severely elevated blood pressure—rather than "
+                "relying on this educational screen.",
                 "compute_fail",
                 cvd_source,
             )
@@ -286,10 +292,13 @@ def compute_risk_scores(
                         "note": "Optional PCE comparison (race-stratified, US White/AA only) — shown as a band, not a false-precision percent.",
                     }
 
-    # Ensure refused path also carries race/age for claim predicates
+    # Ensure refused/show paths carry race/age/sbp for claim-ledger predicates
     if isinstance(cvd, dict):
         cvd.setdefault("race", race)
         cvd.setdefault("age", age)
+        if sbp is not None:
+            cvd.setdefault("sbp", sbp)
+            cvd.setdefault("systolic", sbp)
 
     results["CVD"] = apply_disclosure(cvd, mode=mode, claim_id=claim_id)
     append_audit(
