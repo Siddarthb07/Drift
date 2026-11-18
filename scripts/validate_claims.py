@@ -18,6 +18,7 @@ SOURCE_FILES = [
     ROOT / "legacy_baseline.py",
     ROOT / "disclosure.py",
     ROOT / "app_v5.py",
+    ROOT / "bp_category_disclosure.py",
 ]
 
 
@@ -53,6 +54,7 @@ def main() -> int:
     emitted |= {
         "prevent_ascvd", "pce_ascvd", "findrisc", "cancer_lifestyle_factors",
         "health_age_heuristic", "lifestyle_trajectory", "legacy_baseline",
+        "bp_category_acc2017", "bp_modifiable_factors", "bp_home_average_heuristic",
     }
     missing = emitted - set(claims)
     if missing:
