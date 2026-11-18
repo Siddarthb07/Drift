@@ -51,11 +51,15 @@ def normalize(profile: dict) -> tuple[dict, dict]:
         "weight": profile.get("weight_kg") or profile.get("weight"),
         "waist_cm": profile.get("waist_cm"),
         "systolic": profile.get("sbp") if "sbp" in profile else profile.get("systolic"),
-        "region": "global",
+        "region": profile.get("region") or "global",
     }
     if "sex" in profile:
         user["sex"] = profile["sex"]
-        user["sex_for_equation"] = profile["sex"]
+        # Binary sex auto-fills equation sex; nonbinary / missing leaves unset.
+        if profile["sex"] in ("male", "female"):
+            user["sex_for_equation"] = profile["sex"]
+        else:
+            user["sex_for_equation"] = profile.get("sex_for_equation") or ""
     if profile.get("prefer_pce"):
         user["prefer_pce"] = True
     labs = {}
@@ -70,6 +74,8 @@ def normalize(profile: dict) -> tuple[dict, dict]:
 
 def check(case: dict, risk: dict) -> bool:
     cvd = risk.get("CVD") or {}
+    diab = risk.get("Diabetes") or {}
+    canc = risk.get("Cancer") or {}
     exp = case["expect_honest"]
     age = case["profile"].get("age")
     if exp in ("refuse", "refuse_or_no_sex"):
@@ -85,10 +91,45 @@ def check(case: dict, risk: dict) -> bool:
         if cvd.get("legacy_white_fallback"):
             return False
         eq = str(cvd.get("equation") or cvd.get("model") or cvd.get("claim_id") or "").lower()
-        # Prefer PREVENT (or refuse) — never silent White PCE for south_asian
+        # Prefer PREVENT (or refuse) — never silent White PCE for unsupported race
         if "pce" in eq and "prevent" not in eq and _shown(cvd):
             return False
         return True
+    if exp == "cancer_factors_only":
+        # No combined RR hero; factors-only or refuse is fine.
+        if canc.get("relative_risk") is not None:
+            return False
+        shown_as = str(canc.get("shown_as") or "")
+        policy = str(canc.get("display_policy") or "")
+        return (
+            canc.get("refused")
+            or shown_as == "factors"
+            or policy == "factors_only"
+            or "factor" in str(canc.get("risk_category") or "").lower()
+        )
+    if exp == "waist_interval":
+        if diab.get("silent_waist_default"):
+            return False
+        if diab.get("risk_pct") is not None:
+            return False
+        return bool(diab.get("score_range")) or diab.get("shown_as") == "interval" or diab.get(
+            "display_policy"
+        ) == "interval"
+    if exp == "region_note_no_invented_equation":
+        note = str(cvd.get("region_note") or cvd.get("note") or "")
+        eq = str(cvd.get("equation") or cvd.get("claim_id") or "").lower()
+        # Must not invent SCORE2 as the computed equation; coverage note is ok.
+        if "score2" in eq or eq.startswith("qrisk") or eq.startswith("who"):
+            return False
+        has_note = "score2" in note.lower() or "not shipped" in note.lower() or "qrisk" in note.lower()
+        uses_prevent = "prevent" in eq or cvd.get("claim_id") == "prevent_ascvd"
+        return bool(_shown(cvd) and uses_prevent and has_note)
+    if exp == "show_pce_or_prevent_no_fallback":
+        # Negative control: supported race + prefer_pce may show PCE (or PREVENT),
+        # but never legacy_white_fallback.
+        if cvd.get("legacy_white_fallback"):
+            return False
+        return _shown(cvd)
     return False
 
 
@@ -100,16 +141,31 @@ def main() -> int:
         risk = compute_risk_scores(user, DAILY, labs, mode="honest")
         ok = check(case, risk)
         cvd = risk.get("CVD") or {}
+        diab = risk.get("Diabetes") or {}
+        canc = risk.get("Cancer") or {}
         results.append(
             {
                 "id": case["id"],
                 "ok": ok,
+                "expect": case["expect_honest"],
+                "mechanism": case.get("mechanism"),
                 "cvd": {
                     "refused": cvd.get("refused"),
                     "pct": cvd.get("risk_pct_exact", cvd.get("risk_pct")),
                     "band": cvd.get("risk_band_label"),
                     "equation": cvd.get("equation") or cvd.get("model") or cvd.get("claim_id"),
                     "legacy_white_fallback": cvd.get("legacy_white_fallback"),
+                    "region_note": (cvd.get("region_note") or "")[:120] or None,
+                },
+                "diabetes": {
+                    "score_range": diab.get("score_range"),
+                    "shown_as": diab.get("shown_as"),
+                    "silent_waist_default": diab.get("silent_waist_default"),
+                },
+                "cancer": {
+                    "relative_risk": canc.get("relative_risk"),
+                    "shown_as": canc.get("shown_as"),
+                    "display_policy": canc.get("display_policy"),
                 },
             }
         )
@@ -122,7 +178,19 @@ def main() -> int:
     }
     path = ROOT / "docs" / "facct" / "adversarial_eval.json"
     path.write_text(json.dumps(out, indent=2) + "\n")
-    print(json.dumps({"all_passed": out["all_passed"], "pass_rate": out["pass_rate"], "n": out["n"], "results": results}, indent=2))
+    failed = [r["id"] for r in results if not r["ok"]]
+    print(
+        json.dumps(
+            {
+                "all_passed": out["all_passed"],
+                "pass_rate": out["pass_rate"],
+                "n": out["n"],
+                "failed": failed,
+                "results": results,
+            },
+            indent=2,
+        )
+    )
     return 0 if out["all_passed"] else 1
 
 
