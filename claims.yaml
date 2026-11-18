@@ -1,11 +1,51 @@
 # Drift claim ledger — every UI number must resolve to a claim_id.
 # Fail-closed: unknown claim_id raises; CI validates emitted IDs vs this file.
+# Coverage inventory (YAML vs imperative): docs/facct/ledger_coverage.json
 version: 1
+ledger_notes: |
+  YAML-gated (enforced in disclosure._check_requires / _enforce_prohibited_uses):
+    age bounds on prevent_ascvd/pce_ascvd; any_of_fields[sbp,systolic];
+    findrisc silent_waist_imputation + collapse_interval_to_point;
+    factors_only compounded_relative_risk_gauge.
+  C2 migration: imperative gates declared here and executed by scripts/exec_yaml_gates.py
+    (missing_egfr, labs_cholesterol_ranges, sex_equation_required, score2_non_invention,
+    public_view_strip_keys, study_allow_baseline_env). Production disclosure.py remains primary.
+  See docs/facct/ledger_coverage.json.
+imperative_gates_declared:
+  missing_egfr:
+    applies_to: [prevent_ascvd]
+    status: yaml_executor_online
+    guideline: "Khan 2024 PREVENT requires eGFR"
+  labs_cholesterol_ranges:
+    applies_to: [prevent_ascvd, pce_ascvd]
+    status: yaml_executor_online
+    guideline: "Published calculator input ranges"
+  sex_equation_required:
+    applies_to: [prevent_ascvd, pce_ascvd]
+    status: yaml_executor_online
+    guideline: "Sex-specific coefficients"
+  score2_non_invention:
+    applies_to: ["*"]
+    status: yaml_executor_online
+    guideline: "Do not invent unsupported regional equations"
+  public_view_strip_keys:
+    applies_to: ["*"]
+    status: yaml_executor_online
+    design_choice: true
+  study_allow_baseline_env:
+    applies_to: [legacy_baseline]
+    status: yaml_executor_online
+    design_choice: true
 claims:
   prevent_ascvd:
     title: "AHA PREVENT 10-year ASCVD (race-free)"
     evidence_class: published_equation
     display_policy: band
+    # consumer: band exacts; clinician: allow point estimate (no over-refusal on valid calculators)
+    audience_default: consumer
+    audience_policies:
+      consumer: band
+      clinician: number
     validated_population: "US adults 30–79 without prior CVD; race-free by design"
     prohibited_uses:
       - diagnosis
@@ -16,11 +56,17 @@ claims:
     requires:
       age_min: 30
       age_max: 79
+      # Measured SBP — no silent 120 mmHg (also engine-gated missing_sbp)
+      any_of_fields: [sbp, systolic]
 
   pce_ascvd:
     title: "ACC/AHA 2013 Pooled Cohort Equations"
     evidence_class: published_equation
     display_policy: band
+    audience_default: consumer
+    audience_policies:
+      consumer: band
+      clinician: number
     validated_population: "US White and African American adults ages 40–79"
     prohibited_uses:
       - apply_to_other_race_via_white_fallback
@@ -31,6 +77,7 @@ claims:
       race_in: [white, aa]
       age_min: 40
       age_max: 79
+      any_of_fields: [sbp, systolic]
 
   findrisc:
     title: "FINDRISC Type 2 diabetes score"
@@ -43,7 +90,7 @@ claims:
       - collapse_interval_to_point
     source: "Lindström & Tuomilehto, Diabetes Care 2003"
     runtime: default
-    notes: "Missing waist → score interval enforced by disclosure layer; never silent 94/80 cm."
+    notes: "Missing waist → score interval enforced by disclosure layer; never silent 94/80 cm. prohibited_uses enforced in disclosure._enforce_prohibited_uses."
 
   cancer_lifestyle_factors:
     title: "WCRF/IARC lifestyle factor list"
@@ -89,3 +136,47 @@ claims:
       - clinical_use
     source: "legacy_baseline.py pinned to a8dcc33 behaviors"
     runtime: baseline_study_arm_only
+
+  # ── Second domain (portability): ACC/AHA BP categories — not PREVENT/PCE ──
+  bp_category_acc2017:
+    title: "ACC/AHA 2017 office blood-pressure category"
+    evidence_class: published_guideline
+    display_policy: qualitative
+    validated_population: "Adults; intended for office BP in guideline measurement context"
+    prohibited_uses:
+      - silent_missing_bp_imputation
+      - diagnosis
+      - treatment_initiation_without_clinician
+      - false_precision_without_measurement_provenance
+      - insurance_underwriting
+    source: "Whelton et al., Hypertension 2018 (ACC/AHA 2017 guideline)"
+    runtime: default
+    requires:
+      age_min: 18
+    notes: "Missing SBP or DBP → refuse; never silent 120/80. Category label only — not a CVD risk equation."
+
+  bp_modifiable_factors:
+    title: "Modifiable factors associated with blood pressure (educational list)"
+    evidence_class: guideline_factor_list
+    display_policy: factors_only
+    suppress_numeric: true
+    validated_population: "No validated absolute BP-risk product from this factor list"
+    prohibited_uses:
+      - compounded_relative_risk_gauge
+      - absolute_probability_claim
+      - diagnosis
+    source: "ACC/AHA 2017 lifestyle recommendations (factor-level only)"
+    runtime: default
+
+  bp_home_average_heuristic:
+    title: "Heuristic home BP average (not a clinical mean)"
+    evidence_class: heuristic
+    display_policy: refuse
+    suppress_numeric: true
+    validated_population: "none — unpublished averaging without measurement protocol"
+    prohibited_uses:
+      - hero_numeric_display
+      - false_precision_without_measurement_provenance
+      - silent_missing_bp_imputation
+    source: "Not an ABPM/HBPM protocol mean; unpublished if/else"
+    runtime: default
