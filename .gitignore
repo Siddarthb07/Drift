@@ -15,3 +15,19 @@ study/results/*.jsonl
 study/results/*.db
 !study/results/.gitkeep
 ml/**/*.pkl
+
+# Local paper build (keep off remote)
+docs/facct/paper/
+docs/facct/Drift_v2_FAccT_Paper.pdf
+docs/facct/Drift_v2_FAccT_Review.pdf
+docs/facct/PAPER_DRAFT.pdf
+docs/facct/PAPER_DRAFT.md
+docs/facct/OPENREVIEW_ABSTRACT.md
+docs/jbhi/paper/
+docs/jbhi/Drift_JBHI_Paper.pdf
+docs/jbhi/Drift_JBHI_Review_Censored.pdf
+.tools/
+
+# NHANES downloads (large)
+data/nhanes/
+data/nhanes_lmf/
