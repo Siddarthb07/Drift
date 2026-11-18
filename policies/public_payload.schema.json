@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://drift.local/schemas/public_payload.schema.json",
+  "title": "DriftPublicPayload",
+  "description": "Schema for consumer-facing public API/template payloads. Forbids audit exacts and hero fields that contracts strip. Intended surface: consumer UIs, not clinician calculators.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "enum": [
+        "prevent_ascvd",
+        "pce_ascvd",
+        "findrisc",
+        "cancer_lifestyle",
+        "health_age_heuristic",
+        "bp_category_acc_aha",
+        "bp_category_esc"
+      ]
+    },
+    "health_age": false,
+    "CVD": { "$ref": "#/$defs/riskBlock" },
+    "Diabetes": { "$ref": "#/$defs/diabetesBlock" },
+    "Cancer": { "$ref": "#/$defs/cancerBlock" }
+  },
+  "$defs": {
+    "noExactKeys": {
+      "type": "object",
+      "propertyNames": {
+        "not": { "pattern": "_exact$" }
+      }
+    },
+    "riskBlock": {
+      "allOf": [
+        { "$ref": "#/$defs/noExactKeys" },
+        {
+          "type": "object",
+          "properties": {
+            "risk_pct": { "type": ["number", "null"] },
+            "risk_band_label": { "type": ["string", "null"] },
+            "shown_as": { "type": ["string", "null"] },
+            "refused": { "type": ["boolean", "null"] },
+            "gate": { "type": ["string", "null"] },
+            "relative_risk": false,
+            "relative_risk_exact": false
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "diabetesBlock": {
+      "allOf": [
+        { "$ref": "#/$defs/noExactKeys" },
+        {
+          "type": "object",
+          "properties": {
+            "risk_pct": { "type": ["number", "null"] },
+            "score_range": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "type": "number" }
+            },
+            "shown_as": { "type": ["string", "null"] },
+            "refused": { "type": ["boolean", "null"] }
+          },
+          "additionalProperties": true,
+          "not": {
+            "required": ["score_range", "risk_pct"],
+            "properties": {
+              "refused": { "const": false }
+            }
+          }
+        }
+      ]
+    },
+    "cancerBlock": {
+      "allOf": [
+        { "$ref": "#/$defs/noExactKeys" },
+        {
+          "type": "object",
+          "properties": {
+            "relative_risk": false,
+            "factors": { "type": "array" }
+          },
+          "additionalProperties": true
+        }
+      ]
+    }
+  }
+}
