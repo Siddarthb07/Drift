@@ -210,7 +210,7 @@ _PUBLIC_STRIP_KEYS = (
 
 
 def public_view(payload: Any) -> Any:
-    """Strip false-precision fields from any serving-path payload (UI / JSON API)."""
+    """Strip exact-percent audit fields from any serving-path payload (UI / JSON API)."""
     if isinstance(payload, dict):
         out = {}
         for k, v in payload.items():
