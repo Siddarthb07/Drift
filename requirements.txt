@@ -4,6 +4,6 @@ requests-oauthlib>=2.0.0
 numpy>=2.5.0
 pandas>=3.0.3
 bcrypt>=5.0.0
-PyYAML>=6.0.0
+PyYAML>=6.0.3
 pytest>=7.4.0
 cryptography>=42.0.0
