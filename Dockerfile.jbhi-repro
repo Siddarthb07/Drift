@@ -1,0 +1,7 @@
+# E: one-command regeneration of JBHI outside-corpus numbers
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt* pyproject.toml* ./
+RUN pip install --no-cache-dir pyyaml pandas numpy pyarrow hypothesis quickjs pyreadstat 2>/dev/null || pip install pyyaml pandas numpy
+COPY . .
+CMD ["bash", "-lc", "python scripts/build_surface_and_b4_table.py && python scripts/build_guideline_traceability.py && python scripts/eval_false_precision_nhanes.py && python scripts/eval_downstream_propagation.py && python scripts/eval_mutation_disclosure.py && python scripts/eval_enforcement_benchmark.py && python scripts/verify_disclosure_bounded.py && python scripts/exec_yaml_gates.py && python scripts/check_paper_numbers.py"]
